@@ -8,8 +8,8 @@ from typing import Set, Any, List
 import inflect
 
 from converters import NumeralConverter
-from ttlinks.common.base_utils import CoRHandler, BinaryClass, BinaryFlyWeightFactory
-from ttlinks.ipservice.ip_utils import IPType
+from ttlinks.ttlinks.common.base_utils import CoRHandler, BinaryClass, BinaryFlyWeightFactory
+from ttlinks.ttlinks.ipservice.ip_utils import IPType
 
 
 # from ip_utils import BinaryClass, BinaryFlyWeightFactory

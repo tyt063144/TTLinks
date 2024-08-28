@@ -7,7 +7,7 @@ from typing import Generator, List, Any
 from converters import BinaryDigitsIPv4ConverterHandler, BinaryDigitsIPv6ConverterHandler
 from ip_address import IPv4Addr, IPv4NetMask, IPv4WildCard, IPv6Addr, IPv6NetMask, IPv6WildCard
 from ip_utils import NetToolsSuite, IPv4AddrType, IPv6AddrType
-from ttlinks.common.base_utils import CoRHandler
+from ttlinks.ttlinks.common.base_utils import CoRHandler
 
 
 class IPv4AddrClassifierHandler(CoRHandler):

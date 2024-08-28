@@ -11,8 +11,8 @@ from ip_validators import IPv4IPBinaryValidator, \
     IPv4IPStringValidator, IPv4NetmaskBinaryValidator, IPv4NetmaskDotDecimalValidator, IPv4NetmaskCIDRValidator, \
     IPv6NetmaskBinaryValidator, IPv6NetmaskCIDRValidator, IPv6IPBinaryValidator, \
     IPv6IPColonHexValidator, IPv6NetmaskColonHexValidator
-from ttlinks.common.base_utils import BinaryClass
-from ttlinks.ipservice.ip_utils import IPType
+from ttlinks.ttlinks.common.base_utils import BinaryClass
+from ttlinks.ttlinks.ipservice.ip_utils import IPType
 
 
 class IPAddr(ABC):
