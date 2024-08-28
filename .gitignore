@@ -7,3 +7,4 @@ venv/
 *.egg-info/
 *.pypirc
 *.cfg
+setup.py
