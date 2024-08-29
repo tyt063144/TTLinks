@@ -247,7 +247,7 @@ class BinaryDigitsIPv4ConverterHandler(IPConverterHandler):
         Returns:
         Any: A list of BinaryClass instances or forward the request to the next handler.
         """
-        if isinstance(request, list) and all(isinstance(item, int) for item in request):
+        if isinstance(request, list) and all(isinstance(item, int) for item in request) and len(request)==32:
             return self.to_binary_class(request)
         else:
             return super().handle(request)
@@ -401,7 +401,7 @@ class BinaryDigitsIPv6ConverterHandler(IPConverterHandler):
         Returns:
         Any: A list of BinaryClass instances or forward the request to the next handler.
         """
-        if isinstance(request, list) and all(isinstance(item, int) for item in request):
+        if isinstance(request, list) and all(isinstance(item, int) for item in request) and len(request)==128:
             return self.to_binary_class(request)
         else:
             return super().handle(request)
@@ -424,3 +424,4 @@ class BinaryDigitsIPv6ConverterHandler(IPConverterHandler):
             BinaryFlyWeightFactory.get_binary_class(binary_string)
             for binary_string in binary_string_list
         ]
+
