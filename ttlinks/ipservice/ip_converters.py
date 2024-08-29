@@ -424,27 +424,3 @@ class BinaryDigitsIPv6ConverterHandler(IPConverterHandler):
             BinaryFlyWeightFactory.get_binary_class(binary_string)
             for binary_string in binary_string_list
         ]
-
-if __name__ == "__main__":
-    binary_digits_ipv6 = [
-        0, 0, 1, 0, 0, 0, 0, 0,  # 2001
-        0, 0, 0, 0, 0, 0, 0, 1,  # 2001
-        0, 0, 0, 0, 1, 1, 0, 1,  # 0db8
-        1, 0, 1, 1, 1, 0, 0, 0,  # 0db8
-        0, 0, 0, 0, 0, 0, 0, 0,  # 0
-        0, 0, 0, 0, 0, 0, 0, 0,  # 0
-        0, 0, 0, 0, 0, 0, 0, 0,  # 0
-        0, 0, 0, 0, 0, 0, 0, 0,  # 0
-        0, 0, 0, 0, 0, 0, 0, 0,  # 0
-        0, 0, 0, 0, 0, 0, 0, 0,  # 0
-        0, 0, 0, 0, 0, 0, 0, 0,  # 0
-        0, 0, 0, 0, 0, 0, 0, 0,  # 0
-        0, 0, 0, 0, 0, 0, 0, 0,  # 0
-        0, 0, 0, 0, 0, 0, 0, 0,  # 0
-        0, 0, 0, 0, 0, 0, 0, 0,  # 0
-        0, 0, 0, 0, 0, 0, 0, 1  # 1
-    ]
-    converter = BinaryDigitsIPv6ConverterHandler()
-    binary_classes = converter.handle(binary_digits_ipv6)
-
-    print("Binary Digits IPv6 as BinaryClass:", [str(bc) for bc in binary_classes])
