@@ -1,14 +1,14 @@
-## TTLLinks IP and MAC Address Management and Conversion Toolkit
-### Overview
+# TTLLinks IP and MAC Address Management and Conversion Toolkit
+## Overview
 This project provides a comprehensive toolkit for managing, validating, and converting IP addresses in both IPv4 and IPv6 formats, with planned support for MAC address management. Leveraging design patterns such as Chain of Responsibility and Flyweight, this toolkit ensures efficient and flexible handling of IP and MAC-related operations. The modular design allows for easy integration and extension within larger networking and automation systems.
 
-### Installation
+## Installation
 This project is available on PyPI and can be installed using pip:
 ```bash
 pip install ttlinks
 ```
 
-### Usage
+## Usage
 After installation, you can import the necessary classes and utilities from the ttlinks package:
 ```python
 from ttlinks.common.base_utils import BinaryClass
@@ -18,38 +18,38 @@ from ttlinks.ipservice.ip_utils import NetToolsSuite, IPType
 # ...more
 ```
 
-### Features
-#### Common
+## Features
+### 1. Common
 - [Common](docs/common.md)
-1. Binary Management
-* The `BinaryClass` offers robust management of binary strings, ensuring that the string contains only '0's and '1's through validation. It also supports conversion to lists of integers and provides string representations that are useful for debugging and display. Additionally, BinaryClass serves as a foundational layer in the `ipservice` and `macservice` modules, underpinning all IP and MAC address operations.
-* Create BinaryClass
-  ```python
-  from ttlinks.common.base_utils import BinaryClass
-  binary_class = BinaryClass('11111110')
-  print(binary_class)
-  print(binary_class.binary_digits())
-  ```
-  Expected Output:
-  ```
-  11111110
-  [1, 1, 1, 1, 1, 1, 1, 0]
-  ```
-2. Flyweight Pattern for Memory Optimization:
-* The `BinaryFlyWeightFactory` and `BinaryFlyWeight` classes implement the Flyweight pattern to manage instances of `BinaryClass`. This pattern minimizes memory usage by sharing instances of `BinaryClass` with identical binary strings across the application.
-* Memory-Efficient Management of Binary Strings:
-  ```python
-  from ttlinks.common.base_utils import BinaryFlyWeightFactory
-  binary1 = BinaryFlyWeightFactory.get_binary_class("101010")
-  binary2 = BinaryFlyWeightFactory.get_binary_class("101010")
-  print(binary1 is binary2)  
-  ```
-  Expected Output:
-  ```
-  True  # since they share the same instance
-  ```
-3. Chain of Responsibility Pattern:
-   * The `CoRHandler` abstract base class sets up the framework for building a chain of responsibility, allowing different handlers to process requests in a sequence. This pattern is extensively used for IP/MAC validation and conversion tasks, enabling modular and flexible processing.
+Here’s a concise description for `common.py`:
+
+---
+
+#### 1.1. Overview of `common.py`
+
+The `common.py` module is a foundational part of the IP and MAC address management toolkit, providing essential utilities for handling binary data and enabling flexible request processing.
+
+#### 1.2. Key Components
+
+1.2.1. **`BinaryClass`**:
+   - Manages and validates binary strings, ensuring they contain only '0's and '1's.
+   - Converts binary strings into lists of integers for easier manipulation.
+   - Used as a foundational element across IP and MAC address operations.
+
+1.2.2. **`CoRHandler`**:
+   - Implements the Chain of Responsibility pattern, allowing requests to be processed sequentially by multiple handlers.
+   - Facilitates the validation and conversion of IP addresses in various formats without manual intervention.
+
+1.2.3. **`BinaryFlyWeightFactory`**:
+   - Applies the Flyweight pattern to manage `BinaryClass` instances efficiently.
+   - Reduces memory usage by reusing instances of identical binary strings.
+
+#### 1.3. Usage
+
+- **Binary Validation**: Use `BinaryClass` to ensure binary strings are valid and to convert them into structured formats.
+- **Request Handling**: Leverage `CoRHandler` to create flexible, chained validation processes for IP and MAC addresses.
+- **Memory Optimization**: Utilize `BinaryFlyWeightFactory` to minimize memory consumption when dealing with large sets of binary data.
+
 
 #### Converters
 1. The `NumeralConverter` class in the `converters` module allows you to convert between binary, decimal, and hexadecimal formats easily.
