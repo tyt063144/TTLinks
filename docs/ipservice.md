@@ -169,12 +169,10 @@ The IPConverterHandler is an abstract base class in the IP address management to
    
    print("Colon-Hex IPv6:", ipv6_address)
    print("Binary Representation:", [str(bc) for bc in binary_classes])
-   
    ```
      Expected Output:
-   ```python
-   Colon-Hex IPv6: 2001:0db8::1
-   Binary Representation: ['00100000', '00000001', '00001101', '10111000', '00000000', '00000000', '00000000', '00000001']
+   ```
+   Binary Representation: ['00100000', '00000001', '00001101', '10111000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000001']
    ```
 2. `CIDRIPv6ConverterHandler` - Convert a CIDR notation IPv6 address to its binary representation:
    ```python
@@ -188,9 +186,8 @@ The IPConverterHandler is an abstract base class in the IP address management to
    print("Binary Network Mask:", [str(bc) for bc in binary_classes])
    ```
    Expected Output:
-   ```python
-   CIDR IPv6: /64
-   Binary Network Mask: ['11111111', '11111111', '11111111', '11111111', '00000000', '00000000', '00000000', '00000000']
+   ```
+   Binary Network Mask: ['11111111', '11111111', '11111111', '11111111', '11111111', '11111111', '11111111', '11111111', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000']
    ```
 3. `BinaryIPv6ConverterHandler` - Convert an IPv6 address represented as a list of BinaryClass instances to its processed binary format:
    ```python
@@ -202,9 +199,17 @@ The IPConverterHandler is an abstract base class in the IP address management to
        BinaryClass('00000001'),  # 2001
        BinaryClass('00001101'),  # 0db8
        BinaryClass('10111000'),  # 0db8
-       BinaryClass('00000000'),  # ::
-       BinaryClass('00000000'),  # ::
-       BinaryClass('00000000'),  # ::
+       BinaryClass('00000000'),  # 0
+       BinaryClass('00000000'),  # 0
+       BinaryClass('00000000'),  # 0
+       BinaryClass('00000000'),  # 0
+       BinaryClass('00000000'),  # 0
+       BinaryClass('00000000'),  # 0
+       BinaryClass('00000000'),  # 0
+       BinaryClass('00000000'),  # 0
+       BinaryClass('00000000'),  # 0
+       BinaryClass('00000000'),  # 0
+       BinaryClass('00000000'),  # 0
        BinaryClass('00000001')   # 1
    ]
    converter = BinaryIPv6ConverterHandler()
@@ -213,30 +218,39 @@ The IPConverterHandler is an abstract base class in the IP address management to
    print("Processed Binary IPv6:", [str(bc) for bc in binary_classes])
    ```
    Expected Output:
-   ```python
-   Processed Binary IPv6: ['00100000', '00000001', '00001101', '10111000', '00000000', '00000000', '00000000', '00000001']
+   ```
+   Processed Binary IPv6: ['00100000', '00000001', '00001101', '10111000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000001']
    ```
 4. `BinaryDigitsIPv6ConverterHandler` - Convert a list of binary digits (0s and 1s) representing an IPv6 address to BinaryClass instances:
    ```python
    from ttlinks.ipservice.converters import BinaryDigitsIPv6ConverterHandler
    
-   binary_digits_ipv6 = [
-       0, 0, 1, 0, 0, 0, 0, 0,  # 2001
-       0, 0, 0, 0, 0, 0, 0, 1,  # 2001
-       0, 0, 0, 0, 1, 1, 0, 1,  # 0db8
-       1, 0, 1, 1, 1, 0, 0, 0,  # 0db8
-       0, 0, 0, 0, 0, 0, 0, 0,  # ::
-       0, 0, 0, 0, 0, 0, 0, 0,  # ::
-       0, 0, 0, 0, 0, 0, 0, 0,  # ::
-       0, 0, 0, 0, 0, 0, 0, 1   # 1
+    binary_digits_ipv6 = [
+        0, 0, 1, 0, 0, 0, 0, 0,  # 2001
+        0, 0, 0, 0, 0, 0, 0, 1,  # 2001
+        0, 0, 0, 0, 1, 1, 0, 1,  # 0db8
+        1, 0, 1, 1, 1, 0, 0, 0,  # 0db8
+        0, 0, 0, 0, 0, 0, 0, 0,  # 0
+        0, 0, 0, 0, 0, 0, 0, 0,  # 0
+        0, 0, 0, 0, 0, 0, 0, 0,  # 0
+        0, 0, 0, 0, 0, 0, 0, 0,  # 0
+        0, 0, 0, 0, 0, 0, 0, 0,  # 0
+        0, 0, 0, 0, 0, 0, 0, 0,  # 0
+        0, 0, 0, 0, 0, 0, 0, 0,  # 0
+        0, 0, 0, 0, 0, 0, 0, 0,  # 0
+        0, 0, 0, 0, 0, 0, 0, 0,  # 0
+        0, 0, 0, 0, 0, 0, 0, 0,  # 0
+        0, 0, 0, 0, 0, 0, 0, 0,  # 0
+        0, 0, 0, 0, 0, 0, 0, 1  # 1
    ]
    converter = BinaryDigitsIPv6ConverterHandler()
    binary_classes = converter.handle(binary_digits_ipv6)
    
    print("Binary Digits IPv6 as BinaryClass:", [str(bc) for bc in binary_classes])
    ```
-   ```python
-   Binary Digits IPv6 as BinaryClass: ['00100000', '00000001', '00001101', '10111000', '00000000', '00000000', '00000000', '00000001']
+   Expected Output:
+   ```
+   Binary Digits IPv6 as BinaryClass: ['00100000', '00000001', '00001101', '10111000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000000', '00000001']
    ```
 5. Using a Chain of Handlers to Determine and Process an IPv6 Address:
 The chain method can validate multiple formats simultaneously, so users don't need to run handlers individually.
