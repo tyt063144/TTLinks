@@ -7,7 +7,7 @@ from typing import Set, Any, List
 
 import inflect
 
-from converters import NumeralConverter
+from ip_converters import NumeralConverter
 from ttlinks.ttlinks.common.base_utils import CoRHandler, BinaryClass, BinaryFlyWeightFactory
 from ttlinks.ttlinks.ipservice.ip_utils import IPType
 

@@ -4,7 +4,7 @@ import copy
 import itertools
 from abc import ABC, abstractmethod
 from typing import Generator, List, Any
-from converters import BinaryDigitsIPv4ConverterHandler, BinaryDigitsIPv6ConverterHandler
+from ip_converters import BinaryDigitsIPv4ConverterHandler, BinaryDigitsIPv6ConverterHandler
 from ip_address import IPv4Addr, IPv4NetMask, IPv4WildCard, IPv6Addr, IPv6NetMask, IPv6WildCard
 from ip_utils import NetToolsSuite, IPv4AddrType, IPv6AddrType
 from ttlinks.ttlinks.common.base_utils import CoRHandler

@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Iterable, Union
 from typing import List
 
-from converters import NumeralConverter, \
+from ip_converters import NumeralConverter, \
     BinaryIPv4ConverterHandler, BinaryIPv6ConverterHandler, DotDecimalIPv4ConverterHandler, CIDRIPv4ConverterHandler, \
     ColonHexIPv6ConverterHandler, CIDRIPv6ConverterHandler
 from ip_validators import IPv4IPBinaryValidator, \
