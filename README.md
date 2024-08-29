@@ -20,6 +20,7 @@ from ttlinks.ipservice.ip_utils import NetToolsSuite, IPType
 
 ### Features
 #### Common
+- [Common](docs/common.md)
 1. Binary Management
 * The `BinaryClass` offers robust management of binary strings, ensuring that the string contains only '0's and '1's through validation. It also supports conversion to lists of integers and provides string representations that are useful for debugging and display. Additionally, BinaryClass serves as a foundational layer in the `ipservice` and `macservice` modules, underpinning all IP and MAC address operations.
 * Create BinaryClass
