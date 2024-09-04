@@ -436,6 +436,48 @@ class IPv6IPBinaryValidator(IPv6IPValidatorHandler):
         return super().validate(request)
 
 
+class IPv6IPStringValidator(IPv6IPValidatorHandler):
+    """
+    Concrete handler to validate IPv6 addresses provided as colon-hex strings.
+    """
+    def handle(self, request: Any):
+        """
+        Validate the IPv6 address string if it meets the colon-hex format, otherwise pass to the next handler.
+
+        Args:
+        request (Any): The IPv6 address string to validate.
+
+        Returns:
+        Any: IPType.IPv6 if valid, otherwise the result of the next handler.
+        """
+        if isinstance(request, str) and self.validate(request):
+            self.clear_errors()
+            return IPType.IPv6
+        else:
+            return super().handle(request)
+
+    def validate(self, request: Any):
+        """
+        Validate a colon-hex string by converting it to binary classes and using the superclass validation.
+
+        Args:
+        request (Any): The colon-hex string to validate.
+
+        Returns:
+        bool: True if the string represents a valid IPv6 address, otherwise False.
+        """
+        try:
+            ipv6_full_string = ipaddress.ip_address(request).exploded.upper().replace(':', '')
+            octets = [ipv6_full_string[i:i + 2] for i in range(0, len(ipv6_full_string), 2)]
+            address = [
+                BinaryFlyWeightFactory.get_binary_class(NumeralConverter.hexadecimal_to_binary(octet))
+                for octet in octets
+            ]
+            return super().validate(address)
+        except ValueError:
+            self._errors.add(f"{request} does not appear to be an IPv6 address")
+            return False
+
 class IPv6IPColonHexValidator(IPv6IPValidatorHandler):
     """
     Concrete handler to validate IPv6 addresses provided in colon-separated hexadecimal notation.

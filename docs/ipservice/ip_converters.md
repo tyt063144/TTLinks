@@ -1,8 +1,10 @@
 # `NumeralConverter`
+```python
+from ttlinks.ipservice.converters import NumeralConverter
+```
 The `NumeralConverter` class in the `converters` module allows you to convert between binary, decimal, and hexadecimal formats easily.
 1. `binary_to_decimal` - Convert a binary string to its decimal representation:
      ```python
-     from ttlinks.ipservice.converters import NumeralConverter
      octet1 = NumeralConverter.binary_to_decimal('11000000')
      octet2 = NumeralConverter.binary_to_decimal('10101000')
      octet3 = NumeralConverter.binary_to_decimal('00000001')
@@ -90,13 +92,13 @@ The IPConverterHandler is an abstract base class in the IP address management to
 3. `BinaryIPv4ConverterHandler` - Convert an IPv4 address represented as a list of `BinaryClass` instances to its processed binary format:
    ```python
    from ttlinks.ipservice.converters import BinaryIPv4ConverterHandler
-   from ttlinks.common.base_utils import BinaryClass
+   from ttlinks.common.base_utils import BinaryFlyWeightFactory
 
    binary_ipv4 = [
-       BinaryClass('11000000'),  # 192
-       BinaryClass('10101000'),  # 168
-       BinaryClass('00000001'),  # 1
-       BinaryClass('00000001')   # 1
+       BinaryFlyWeightFactory.get_binary_class('11000000'),  # 192
+       BinaryFlyWeightFactory.get_binary_class('10101000'),  # 168
+       BinaryFlyWeightFactory.get_binary_class('00000001'),  # 1
+       BinaryFlyWeightFactory.get_binary_class('00000001')   # 1
    ]
    converter = BinaryIPv4ConverterHandler()
    binary_classes = converter.handle(binary_ipv4)
@@ -130,6 +132,11 @@ The IPConverterHandler is an abstract base class in the IP address management to
 5. Using a Chain of Handlers to Determine and Process an IPv4 Address:
 * The chain method can validate multiple formats simultaneously, so users don't need to run handlers individually.
   ```python
+   from ttlinks.ipservice.converters import BinaryDigitsIPv4ConverterHandler
+   from ttlinks.ipservice.converters import CIDRIPv4ConverterHandler
+   from ttlinks.ipservice.converters import DotDecimalIPv4ConverterHandler
+   from ttlinks.ipservice.converters import BinaryIPv4ConverterHandler
+  
    binary_digits_ipv4 = [
        1, 1, 0, 0, 0, 0, 0, 0,  # 192
        1, 0, 1, 0, 1, 0, 0, 0,  # 168
@@ -192,25 +199,25 @@ The IPConverterHandler is an abstract base class in the IP address management to
 3. `BinaryIPv6ConverterHandler` - Convert an IPv6 address represented as a list of BinaryClass instances to its processed binary format:
    ```python
    from ttlinks.ipservice.converters import BinaryIPv6ConverterHandler
-   from ttlinks.common.base_utils import BinaryClass
+   from ttlinks.common.base_utils import BinaryFlyWeightFactory
    
    binary_ipv6 = [
-       BinaryClass('00100000'),  # 2001
-       BinaryClass('00000001'),  # 2001
-       BinaryClass('00001101'),  # 0db8
-       BinaryClass('10111000'),  # 0db8
-       BinaryClass('00000000'),  # 0
-       BinaryClass('00000000'),  # 0
-       BinaryClass('00000000'),  # 0
-       BinaryClass('00000000'),  # 0
-       BinaryClass('00000000'),  # 0
-       BinaryClass('00000000'),  # 0
-       BinaryClass('00000000'),  # 0
-       BinaryClass('00000000'),  # 0
-       BinaryClass('00000000'),  # 0
-       BinaryClass('00000000'),  # 0
-       BinaryClass('00000000'),  # 0
-       BinaryClass('00000001')   # 1
+       BinaryFlyWeightFactory.get_binary_class('00100000'),  # 2001
+       BinaryFlyWeightFactory.get_binary_class('00000001'),  # 2001
+       BinaryFlyWeightFactory.get_binary_class('00001101'),  # 0db8
+       BinaryFlyWeightFactory.get_binary_class('10111000'),  # 0db8
+       BinaryFlyWeightFactory.get_binary_class('00000000'),  # 0
+       BinaryFlyWeightFactory.get_binary_class('00000000'),  # 0
+       BinaryFlyWeightFactory.get_binary_class('00000000'),  # 0
+       BinaryFlyWeightFactory.get_binary_class('00000000'),  # 0
+       BinaryFlyWeightFactory.get_binary_class('00000000'),  # 0
+       BinaryFlyWeightFactory.get_binary_class('00000000'),  # 0
+       BinaryFlyWeightFactory.get_binary_class('00000000'),  # 0
+       BinaryFlyWeightFactory.get_binary_class('00000000'),  # 0
+       BinaryFlyWeightFactory.get_binary_class('00000000'),  # 0
+       BinaryFlyWeightFactory.get_binary_class('00000000'),  # 0
+       BinaryFlyWeightFactory.get_binary_class('00000000'),  # 0
+       BinaryFlyWeightFactory.get_binary_class('00000001')   # 1
    ]
    converter = BinaryIPv6ConverterHandler()
    binary_classes = converter.handle(binary_ipv6)
@@ -255,6 +262,11 @@ The IPConverterHandler is an abstract base class in the IP address management to
 5. Using a Chain of Handlers to Determine and Process an IPv6 Address:
 The chain method can validate multiple formats simultaneously, so users don't need to run handlers individually.
    ```python
+    from ttlinks.ipservice.converters import ColonHexIPv6ConverterHandler
+    from ttlinks.ipservice.converters import CIDRIPv6ConverterHandler
+    from ttlinks.ipservice.converters import BinaryIPv6ConverterHandler
+    from ttlinks.ipservice.converters import BinaryDigitsIPv6ConverterHandler
+   
     binary_digits_ipv6 = [
         0, 0, 1, 0, 0, 0, 0, 0,  # 2001
         0, 0, 0, 0, 0, 0, 0, 1,  # 2001

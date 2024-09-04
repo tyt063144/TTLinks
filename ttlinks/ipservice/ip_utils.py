@@ -20,6 +20,7 @@ class IPType(Enum):
 
 
 class IPv4AddrType(Enum):
+    """Enumeration for different types of IPv4 addresses."""
     UNDEFINED_TYPE = 0
     UNSPECIFIED = 1
     CURRENT_NETWORK = 2
@@ -48,6 +49,7 @@ class IPv4AddrType(Enum):
 
 
 class IPv6AddrType(Enum):
+    """Enumeration for different types of IPv6 addresses."""
     UNDEFINED_TYPE = 0
     UNSPECIFIED = 1  # ::/128
     SRV6 = 2  # 5f00::/16, IPv6 Segment Routing
@@ -77,6 +79,7 @@ class IPv6AddrType(Enum):
 
 
 class NetToolsSuite:
+    """Singleton class providing various network utility tools."""
     __instance = None
 
     def __new__(cls):
@@ -125,5 +128,23 @@ class NetToolsSuite:
 
     @staticmethod
     def ip_within_range(network_digits: List[int], netmask_digits: List[int], compared_digits: List[int]) -> bool:
+        """
+        Check if a given IP address (represented as a list of binary digits) falls within a specific network range.
+
+        Args:
+            network_digits (List[int]): The binary digits representing the network portion of the IP address.
+            netmask_digits (List[int]): The binary digits representing the netmask. A 1 indicates a fixed bit.
+            compared_digits (List[int]): The binary digits representing the IP address to compare.
+
+        Returns:
+            bool: True if the compared IP address is within the specified network range, False otherwise.
+
+        Example:
+            network_digits = [1, 1, 0, 0, 0, 0, 0, 0]  # 192.x.x.x in binary
+            netmask_digits = [1, 1, 1, 1, 1, 1, 1, 1]  # 255.0.0.0 in binary
+            compared_digits = [1, 1, 0, 0, 0, 1, 0, 1]  # 193.x.x.x in binary
+            result = NetToolsSuite.ip_within_range(network_digits, netmask_digits, compared_digits)
+            # result will be True if 193.x.x.x is within the 192.x.x.x/8 range
+        """
         matching_count = netmask_digits.count(1)
         return network_digits[:matching_count] == compared_digits[:matching_count]
