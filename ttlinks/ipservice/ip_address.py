@@ -4,15 +4,15 @@ from abc import ABC, abstractmethod
 from typing import Iterable, Union
 from typing import List
 
-from ip_converters import NumeralConverter, \
+from ttlinks.ipservice.ip_converters import NumeralConverter, \
     BinaryIPv4ConverterHandler, BinaryIPv6ConverterHandler, DotDecimalIPv4ConverterHandler, CIDRIPv4ConverterHandler, \
     ColonHexIPv6ConverterHandler, CIDRIPv6ConverterHandler
-from ip_validators import IPv4IPBinaryValidator, \
+from ttlinks.ipservice.ip_validators import IPv4IPBinaryValidator, \
     IPv4IPStringValidator, IPv4NetmaskBinaryValidator, IPv4NetmaskDotDecimalValidator, IPv4NetmaskCIDRValidator, \
     IPv6NetmaskBinaryValidator, IPv6NetmaskCIDRValidator, IPv6IPBinaryValidator, \
     IPv6IPColonHexValidator, IPv6NetmaskColonHexValidator
-from ttlinks.ttlinks.common.base_utils import BinaryClass
-from ttlinks.ttlinks.ipservice.ip_utils import IPType
+from ttlinks.ipservice.ip_utils import IPType
+from ttlinks.common.base_utils import BinaryClass
 
 
 class IPAddr(ABC):

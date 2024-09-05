@@ -39,7 +39,9 @@ These boolean properties help identify specific characteristics of the IP addres
 #### Usage Example
 
 ```python
-from ip_address import IPv4Addr, IPv4NetMask
+from ttlinks.ipservice.ip_address import IPv4Addr, IPv4NetMask
+from ttlinks.ipservice.ip_configs import IPv4HostIPConfig
+
 
 # Create IP and netmask objects
 ip_address = IPv4Addr("192.168.1.10")
@@ -95,7 +97,8 @@ The `IPv4SubnetConfig` class extends the `IPv4HostIPConfig` to provide specializ
 #### Usage Example
 
 ```python
-from ip_address import IPv4Addr, IPv4NetMask
+from ttlinks.ipservice.ip_address import IPv4Addr, IPv4NetMask
+from ttlinks.ipservice.ip_configs import IPv4SubnetConfig
 
 # Initialize subnet configuration with an IP address within the subnet
 ip_string = '192.168.1.50'  # Not the network ID
@@ -179,6 +182,9 @@ The `IPv4WildcardConfig` class manages IPv4 addresses by employing wildcard mask
 
 #### Usage Example
 ```python
+from ttlinks.ipservice.ip_address import IPv4Addr, IPv4WildCard
+from ttlinks.ipservice.ip_configs import IPv4WildcardConfig
+
 # Initialize wildcard configuration
 ip_address = IPv4Addr("192.168.1.0")
 wildcard_mask = IPv4WildCard("0.0.1.3")  # Wildcard mask allowing variations in the last two octets
@@ -252,7 +258,8 @@ The `IPv6HostIPConfig` class is designed for configuring IPv6 addresses specific
 
 #### Usage Example
 ```python
-from ip_address import IPv6Addr, IPv6NetMask
+from ttlinks.ipservice.ip_address import IPv6Addr, IPv6NetMask
+from ttlinks.ipservice.ip_configs import IPv6HostIPConfig
 
 # Create IP and netmask objects
 ip_address = IPv6Addr("fe80::0000:0000:8a2e:0370:7334")
@@ -302,7 +309,8 @@ The `IPv6SubnetConfig` class is tailored for managing IPv6 subnet configurations
 #### Usage Example
 
 ```python
-from ip_address import IPv6Addr, IPv6NetMask
+from ttlinks.ipservice.ip_address import IPv6Addr, IPv6NetMask
+from ttlinks.ipservice.ip_configs import IPv6SubnetConfig
 
 # Initialize subnet configuration with an IP address within the subnet
 subnet_config = IPv6SubnetConfig(IPv6Addr("2001:db8::ff00"), IPv6NetMask("ffff:ffff:ffff:ffff::"))
@@ -402,7 +410,8 @@ There are no specific properties listed for this class as its primary function r
 #### Usage Example
 
 ```python
-from ip_address import IPv6Addr, IPv6WildCard
+from ttlinks.ipservice.ip_address import IPv6Addr, IPv6WildCard
+from ttlinks.ipservice.ip_configs import IPv6WildcardConfig
 
 # Initialize wildcard configuration
 ip_address = IPv6Addr("2001:db8:0:FFFF::1:0")

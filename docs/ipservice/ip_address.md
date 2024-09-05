@@ -14,7 +14,8 @@ The `IPv4Addr` class is designed to handle and validate IPv4 addresses, ensuring
 
 ## Usage Example
 ```python
-from ttlinks.ttlinks.common.base_utils import BinaryClass
+from ttlinks.common.base_utils import BinaryClass
+from ttlinks.ipservice.ip_address import IPv4Addr
 
 # Example IPv4 address in binary class format
 ipv4_binary = [
@@ -69,7 +70,8 @@ The `IPv4NetMask` class is specifically designed for handling and validating IPv
 
 ## Usage Example
 ```python
-from ttlinks.ttlinks.common.base_utils import BinaryClass
+from ttlinks.common.base_utils import BinaryClass
+from ttlinks.ipservice.ip_address import IPv4NetMask
 
 # Example IPv4 netmask in binary class format
 ipv4_netmask_binary = [
@@ -122,7 +124,8 @@ The `IPv4WildCard` class is designed to handle IPv4 wildcard masks, which specif
 ## Usage Example
 
 ```python
-from ttlinks.ttlinks.common.base_utils import BinaryClass, BinaryFlyWeightFactory
+from ttlinks.common.base_utils import BinaryClass
+from ttlinks.ipservice.ip_address import IPv4WildCard
 
 # Example IPv4 wildcard mask in binary class format
 ipv4_wildcard_binary = [
@@ -168,7 +171,8 @@ The `IPv6Addr` class is tailored to manage and validate IPv6 addresses, ensuring
 
 ## Usage Example
 ```python
-from ttlinks.ttlinks.common.base_utils import BinaryClass
+from ttlinks.common.base_utils import BinaryClass
+from ttlinks.ipservice.ip_address import IPv6Addr
 
 # Example IPv6 address in binary class format
 ipv6_binary = [
@@ -232,7 +236,8 @@ The `IPv6NetMask` class is designed to handle and validate IPv6 netmasks, ensuri
 ## Usage Example
 
 ```python
-from ttlinks.ttlinks.common.base_utils import BinaryClass, BinaryFlyWeightFactory
+from ttlinks.common.base_utils import BinaryClass
+from ttlinks.ipservice.ip_address import IPv6NetMask
 
 # Example IPv6 netmask in binary class format
 ipv6_netmask_binary = [
@@ -292,8 +297,8 @@ The `IPv6WildCard` class handles IPv6 wildcard masks, which are used to specify 
 ## Usage Example
 
 ```python
-from ttlinks.ipservice.ip_validators import IPv6IPBinaryValidator, IPv6IPColonHexValidator
-from ttlinks.ttlinks.common.base_utils import BinaryClass, BinaryFlyWeightFactory
+from ttlinks.common.base_utils import BinaryClass
+from ttlinks.ipservice.ip_address import IPv6WildCard
 
 # Example IPv6 wildcard mask in binary class format
 ipv6_wildcard_binary = [

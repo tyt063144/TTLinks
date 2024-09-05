@@ -3,7 +3,7 @@ import re
 from abc import abstractmethod
 from typing import Any, List
 
-from ttlinks.ttlinks.common.base_utils import CoRHandler, BinaryClass, BinaryFlyWeightFactory
+from ttlinks.common.base_utils import CoRHandler, BinaryClass, BinaryFlyWeightFactory
 
 
 class NumeralConverter:
