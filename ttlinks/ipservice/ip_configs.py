@@ -1538,7 +1538,7 @@ class IPv6SubnetConfig(IPv6HostIPConfig):
         re_subnetting_length = mask - subnet_mask_size
         network_id_binary_digits = list(self.network_id.get_binary_digits())
         netmask_binary_digits = list(self.netmask.get_binary_digits())
-        binary_bit_ipv6_converter = BinaryDigitsIPv4ConverterHandler()
+        binary_bit_ipv6_converter = BinaryDigitsIPv6ConverterHandler()
         netmask_binary_digits[subnet_mask_size: mask] = [1] * re_subnetting_length
         for subnetting_bit_combination in itertools.product([0, 1], repeat=re_subnetting_length):
             network_id_binary_digits[subnet_mask_size: mask] = subnetting_bit_combination

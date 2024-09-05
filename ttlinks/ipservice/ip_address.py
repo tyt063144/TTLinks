@@ -391,7 +391,7 @@ class IPv6NetMask(IPNetMask, IPv6Addr):
     def __str__(self) -> str:
         """ Return the standard colon-separated hexadecimal format of the IPv6 netmask. """
         ip_hex_string = [
-            str(NumeralConverter.binary_to_hexadecimal(str(address))).ljust(2, '0')
+            str(NumeralConverter.binary_to_hexadecimal(str(address))).rjust(2, '0')
             for address in self._address
         ]
         return ':'.join([''.join(ip_hex_string[index: index + 2]) for index in range(0, len(ip_hex_string), 2)])
@@ -454,7 +454,7 @@ class IPv6WildCard(IPv6NetMask):
             str: The IPv6 wildcard mask in colon-separated format, suitable for display and further processing.
         """
         ip_hex_string = [
-            str(NumeralConverter.binary_to_hexadecimal(str(address))).ljust(2, '0')
+            str(NumeralConverter.binary_to_hexadecimal(str(address))).rjust(2, '0')
             for address in self._address
         ]
         return ':'.join([''.join(ip_hex_string[index: index + 2]) for index in range(0, len(ip_hex_string), 2)])

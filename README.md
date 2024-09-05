@@ -113,6 +113,7 @@ The `ip_validators` module is a critical part of the IP address management toolk
     - **`IPv4NetmaskBinaryValidator`**: Validates IPv4 netmasks provided as binary class instances, ensuring that they represent valid contiguous masks.
     - **`IPv4NetmaskDotDecimalValidator`**: Validates IPv4 netmasks in dot-decimal format, converting them to binary class instances for validation.
     - **`IPv4NetmaskCIDRValidator`**: Validates IPv4 netmasks provided in CIDR notation, ensuring they represent valid network masks.<br>
+    - ...more
 
   **IPv6**
     - **`IPv6IPBinaryValidator`**: Validates IPv6 addresses provided as lists of binary class instances, ensuring that each segment is within the valid range.
@@ -120,6 +121,55 @@ The `ip_validators` module is a critical part of the IP address management toolk
     - **`IPv6NetmaskBinaryValidator`**: Validates IPv6 netmasks provided as binary class instances, ensuring they represent valid contiguous masks.
     - **`IPv6NetmaskColonHexValidator`**: Validates IPv6 netmasks in colon-separated hexadecimal format, converting them to binary class instances for validation.
     - **`IPv6NetmaskCIDRValidator`**: Validates IPv6 netmasks provided in CIDR notation, ensuring they represent valid network masks.
+    - ...more
+
+### 2.4. IP_ADDRESS
+- [ip_address](docs/ipservice/ip_address.md)
+
+#### 2.4.1. Overview of `ip_address.py`
+The `ip_address` module provides an abstract base class for handling IP addresses and concrete implementations for IPv4 and IPv6 addresses. It includes validation, conversion, and representation functionalities for both address types, allowing seamless transformations between binary, decimal, and colon-separated hexadecimal formats for IPv6.
+
+#### 2.4.2. Key Components
+
+- **IP Address Classes**:
+  - **`IPAddr`**: Abstract base class for handling both IPv4 and IPv6 addresses, providing a common interface for validation, binary conversions, and string representations.
+  
+  **IPv4**
+    - **`IPv4Addr`**: Represents an IPv4 address and includes validation through handlers and methods for converting between dot-decimal notation and binary formats.
+    - **`IPv4NetMask`**: Represents an IPv4 netmask, validating netmask formats (dot-decimal, CIDR, and binary) and calculating mask size.
+    - **`IPv4WildCard`**: Represents an IPv4 wildcard mask, allowing operations such as size calculation and validation.
+  
+  **IPv6**
+    - **`IPv6Addr`**: Represents an IPv6 address and includes validation through handlers and methods for converting between colon-separated hexadecimal and binary formats.
+    - **`IPv6NetMask`**: Represents an IPv6 netmask, validating the format (binary, colon-hexadecimal, and CIDR) and calculating mask size.
+    - **`IPv6WildCard`**: Represents an IPv6 wildcard mask, handling 'do not care' bits and offering similar functionality as netmask classes.
+
+
+### 2.5. IP_CONFIGS
+- [ip_configs](docs/ipservice/ip_configs.md)
+
+#### 2.5.1. Overview of `ip_configs.py`
+The `ip_configs` module is intricately designed for the configuration, management, and classification of IP addresses across both IPv4 and IPv6 protocols. This module supports complex network configuration tasks such as subnet management, dynamic IP adjustments, and robust classification of IP addresses based on network characteristics and policies. It provides tools for handling typical and wildcard IP scenarios, making it a comprehensive suite for network-related operations in various environments.
+
+#### 2.5.2. Key Components
+
+- **Interface Configuration Classes**:
+  - **`InterfaceIPConfig`**: An abstract base class that defines the standard functionalities for configuring IP addresses, ensuring implementations validate and properly adjust IP addresses according to network requirements.
+  
+  **IPv4 Configuration**
+    - **`InterfaceIPv4Config`**: Provides the foundation for IPv4 address configurations, including methods to validate and adjust IP and netmask settings.
+    - **`IPv4HostIPConfig`**: Tailored for IPv4 host configurations, this class extends functionality to manage broadcast addresses, network IDs, and includes detailed classification of IP types based on network characteristics.
+    - **`IPv4SubnetConfig`**: Focused on managing IPv4 subnets, allowing operations like subnet division and merging, and detailed IP range management within the subnet.
+    - **`IPv4WildcardConfig`**: Handles IPv4 configurations using wildcard masks, facilitating the setup and querying of addresses based on wildcard conventions.
+
+  **IPv6 Configuration**
+    - **`InterfaceIPv6Config`**: Adapted for IPv6 settings, this class ensures compliance with IPv6 formatting and network configurations.
+    - **`IPv6HostIPConfig`**: Manages IPv6 host settings, including calculations for network details and classifications of IP types.
+    - **`IPv6SubnetConfig`**: Provides tools for IPv6 subnet management, such as subnet division and merging, along with managing host addresses within the subnet.
+    - **`IPv6WildcardConfig`**: Enables configuration and management of IPv6 addresses using wildcard masks, allowing for flexible network setups.
+
+- **IP Address Classifiers**:
+  - A comprehensive suite of classifiers is included for both IPv4 and IPv6 addresses that categorize IPs based on defined network characteristics such as private, public, multicast, link-local, and special categories like loopback and documentation. These classifiers use a chain of responsibility pattern to efficiently determine the category of each IP address, enhancing the module's utility in security and network management applications.
 
 ## Contributing
 Contributions to this project are welcome! Please feel free to submit issues or pull requests on <a href='https://github.com/tyt063144/TTLinks'>GitHub</a>. Ensure your code follows the established style and passes all tests.
@@ -128,4 +178,4 @@ Contributions to this project are welcome! Please feel free to submit issues or 
 This project is licensed under the MIT License. See the LICENSE file for more details.
 
 ## Contact
-For further information, please contact Yantao at tyt063144@gmail.com.
+For further information, please contact Yantao Tao at tyt063144@gmail.com.
