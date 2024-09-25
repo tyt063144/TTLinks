@@ -7,4 +7,5 @@ venv/
 *.egg-info/
 *.pypirc
 *.cfg
+*.vsdx
 setup.py

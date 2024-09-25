@@ -1,426 +1,548 @@
 import ipaddress
 import re
 from abc import abstractmethod
-from typing import Any, List
+from typing import Any, List, Union
 
-from ttlinks.common.base_utils import CoRHandler, BinaryClass, BinaryFlyWeightFactory
-
-
-class NumeralConverter:
-    @staticmethod
-    def binary_to_decimal(binary: str) -> int:
-        """
-        Convert a binary string to its decimal integer representation.
-        :param binary: (str). The binary string to convert.
-        :return: (int). The decimal representation of the binary string.
-        """
-        if type(binary) is not str:
-            raise TypeError("Binary is not a string.")
-        return int(binary, 2)
-
-    @staticmethod
-    def decimal_to_binary(decimal: int, r_just: int = 8) -> str:
-        """
-        Convert a decimal integer to its binary string representation,
-        right-justified and padded with zeros to at least `r_just` characters.
-        :param decimal: (int). The decimal integer to convert.
-        :param r_just: (int). The minimum width of the resulting binary string;
-                             defaults to 8 for byte alignment.
-        :return: (str). The binary string representation of the decimal.
-        """
-        if type(decimal) is not int:
-            raise TypeError("decimal is not a int.")
-        if type(r_just) is not int:
-            raise TypeError("r_just is not a int.")
-        return bin(decimal)[2:].rjust(r_just, '0')
-
-    @staticmethod
-    def binary_to_hexadecimal(binary: str) -> str:
-        """
-        Convert a binary string to its hexadecimal string representation.
-        :param binary: (str). The binary string to convert.
-        :return: (str). The uppercase hexadecimal representation of the binary string.
-        """
-        if type(binary) is not str:
-            raise TypeError("binary is not a string.")
-        # Convert binary to an integer
-        decimal_value = int(binary, 2)
-        # Convert the integer to a hexadecimal string, remove the '0x' prefix
-        hexadecimal_string = hex(decimal_value)[2:]
-        return hexadecimal_string.upper()  # Return the hexadecimal in uppercase
-
-    @staticmethod
-    def hexadecimal_to_binary(hexadecimal: str, r_just: int = 8) -> str:
-        """
-        Convert a hexadecimal string to its binary string representation,
-        right-justified and padded with zeros to at least `r_just` characters.
-        :param hexadecimal: (str). The hexadecimal string to convert.
-        :param r_just: (int). The minimum width of the resulting binary string;
-                             defaults to 8 for byte alignment.
-        :return: (str). The binary string representation of the hexadecimal.
-        """
-        if type(hexadecimal) is not str:
-            raise TypeError("hexadecimal is not a string.")
-        if type(r_just) is not int:
-            raise TypeError("r_just is not a int.")
-        # Convert hexadecimal to an integer
-        decimal_value = int(hexadecimal, 16)
-        # Convert the integer to a binary string, remove the '0b' prefix
-        binary_string = bin(decimal_value)[2:].rjust(r_just, '0')
-        return binary_string
+from ttlinks.common.binary_utils.binary import Octet
+from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
+from ttlinks.common.design_template.cor import SimpleCoRHandler
+from ttlinks.common.tools.converters import NumeralConverter
 
 
-class IPConverterHandler(CoRHandler):
+class IPConverterHandler(SimpleCoRHandler):
     """
-    Abstract base class for IP conversion handlers implementing the Chain of Responsibility pattern.
-    It provides a framework for setting the next handler in the chain and abstract methods to process requests.
+    Abstract base class for handling IP conversion requests in a chain-of-responsibility pattern.
+    It provides a mechanism to pass requests down a chain of handlers and defines the structure for converting IP components to octets.
+
+    Parameters:
+    request (Any): The incoming request to be handled, which could represent an IP address or similar data.
+
+    Returns:
+    The result of the next handler in the chain if it exists, otherwise returns None.
     """
-    _next_handler = None
-
-    def set_next(self, h: CoRHandler) -> CoRHandler:
-        """
-        Set the next handler in the chain.
-
-        Args:
-        h (CoRHandler): An instance of CoRHandler to be the next in the chain.
-
-        Returns:
-        CoRHandler: The next handler instance for method chaining.
-
-        Raises:
-        TypeError: If the provided handler is not an instance of CoRHandler.
-        """
-        if not isinstance(h, CoRHandler):
-            raise TypeError("The next handler must be an instance of CoRHandler.")
-        self._next_handler = h
-        return h
 
     @abstractmethod
     def handle(self, request: Any):
         """
-        Process the request and pass it to the next handler if it cannot be handled.
+        Handles the request. If the current handler cannot process the request,
+        it passes the request to the next handler in the chain (if any).
 
-        Args:
-        request (Any): The request to process.
+        Parameters:
+        request (Any): The incoming request to be handled.
 
         Returns:
-        Any: The result from processing the request or from the next handler.
+        The processed result from the next handler, if available; otherwise, returns None.
         """
         if self._next_handler:
             return self._next_handler.handle(request)
         return self._next_handler
 
     @abstractmethod
-    def to_binary_class(self, request: Any) -> List[BinaryClass]:
+    def _to_octets(self, request: Any) -> List[Octet]:
         """
-        Convert the IP address in the request to a list of binary representations.
+        Abstract method that should be implemented to convert the incoming request (IP address or components)
+        into a list of octets.
 
-        Args:
-        request (Any): The IP address or part thereof to convert.
+        Parameters:
+        request (Any): The IP-related data to convert into octet format.
 
         Returns:
-        List[BinaryClass]: A list of BinaryClass instances representing the binary format.
+        A list of octets representing the converted form of the request.
         """
         pass
 
 
-class DotDecimalIPv4ConverterHandler(IPConverterHandler):
+class OctetIPv4ConverterHandler(IPConverterHandler):
     """
-    Handler to convert dot-decimal IP addresses to binary classes.
-    """
+    A concrete implementation of the IPConverterHandler for handling IPv4 addresses.
+    It checks if the incoming request is a list of 4 octets (as expected for IPv4) and converts them using the _to_octets method.
 
-    def handle(self, request: Any):
-        """
-        Process dot-decimal IP address strings, converting them to binary class lists.
+    Parameters:
+    request (Any): The incoming request, expected to be a list of 4 octets for IPv4.
 
-        Args:
-        request (Any): The dot-decimal IP address to convert.
-
-        Returns:
-        Any: A list of BinaryClass instances or forward the request to the next handler.
-        """
-        if isinstance(request, str) and re.search(r'\d+\.\d+\.\d+.\d+', request):
-            return self.to_binary_class(request)
-        else:
-            return super().handle(request)
-
-    def to_binary_class(self, request: Any) -> List[BinaryClass]:
-        """
-        Convert a dot-decimal IP address into binary classes using a factory for weight sharing.
-
-        Args:
-        request (Any): The dot-decimal IP address to convert.
-
-        Returns:
-        List[BinaryClass]: Binary representations of each octet.
-        """
-        return [
-            BinaryFlyWeightFactory.get_binary_class(NumeralConverter.decimal_to_binary(octet))
-            for octet in map(int, request.split('.'))
-        ]
-
-
-class CIDRIPv4ConverterHandler(IPConverterHandler):
-    """
-    Handler to convert CIDR notation IP addresses to binary classes.
+    Returns:
+    A list of octets if the request is valid; otherwise passes the request to the next handler in the chain.
     """
 
     def handle(self, request: Any):
         """
-        Process CIDR notation IP address strings, converting them to binary class lists.
+        Handles the request by checking if it's a valid list of 4 octets for an IPv4 address.
+        If valid, it converts the request to a list of octets using the _to_octets method.
+        Otherwise, the request is passed to the next handler in the chain.
 
-        Args:
-        request (Any): The CIDR IP address to convert.
+        Parameters:
+        request (Any): The incoming request, expected to be a list of 4 octets for an IPv4 address.
 
         Returns:
-        Any: A list of BinaryClass instances or forward the request to the next handler.
+        A list of octets if the request is valid; otherwise, the result from the next handler.
         """
-        if isinstance(request, str):
-            return self.to_binary_class(request)
+        if isinstance(request, list) and len(request) == 4 and all(isinstance(octet, Octet) for octet in request):
+            return self._to_octets(request)
         else:
             return super().handle(request)
 
-    def to_binary_class(self, request: Any) -> List[BinaryClass]:
+    def _to_octets(self, request: List[Octet]) -> List[Octet]:
         """
-        Convert a CIDR notation IP address into binary classes.
+        Converts the provided list of octets (IPv4) into its desired octet format.
+        In this case, the method assumes the request is already in the correct format and returns it unchanged.
 
-        Args:
-        request (Any): The CIDR IP address to convert.
+        Parameters:
+        request (List[Octet]): The list of 4 octets representing the IPv4 address.
 
         Returns:
-        List[BinaryClass]: Binary representations of the network mask.
-        """
-        mask_match = re.search(r'/(\d+)', request)
-        binary_string = ('1' * int(mask_match.group(1))).ljust(32, '0')
-        address = [
-            BinaryFlyWeightFactory.get_binary_class(binary_string[index: index + 8])
-            for index in range(0, len(binary_string), 8)
-        ]
-        return address
-
-
-class BinaryIPv4ConverterHandler(IPConverterHandler):
-    """
-    Handler to directly process lists of binary class instances.
-    """
-
-    def handle(self, request: Any):
-        """
-        Process requests that are already lists of BinaryClass instances.
-
-        Args:
-        request (Any): The list of BinaryClass instances.
-
-        Returns:
-        Any: The input list of BinaryClass instances or forward the request to the next handler.
-        """
-        if isinstance(request, list):
-            return self.to_binary_class(request)
-        else:
-            return super().handle(request)
-
-    def to_binary_class(self, request: Any) -> List[BinaryClass]:
-        """
-        Directly return the list of binary classes.
-
-        Args:
-        request (Any): The list of BinaryClass instances.
-
-        Returns:
-        List[BinaryClass]: The input list.
+        The same list of octets, assuming it is already in the correct format.
         """
         return request
 
 
 class BinaryDigitsIPv4ConverterHandler(IPConverterHandler):
     """
-    Handler to convert a list of integer digits (0 or 1) representing an IPv4 address into binary classes.
+    A concrete handler that processes binary digit representations of IPv4 addresses.
+    It expects the request to be a list of 32 integers representing the binary digits of an IPv4 address.
+
+    Parameters:
+    request (Any): The incoming request, expected to be a list of 32 integers (0s and 1s) representing binary digits of an IPv4 address.
+
+    Returns:
+    A list of Octet objects created from the binary digits if the request is valid; otherwise, the request is passed to the next handler.
     """
 
     def handle(self, request: Any):
         """
-        Process lists representing IPv4 addresses where each integer represents a binary digit.
+        Handles the request by checking if it's a list of 32 integers representing the binary digits of an IPv4 address.
+        If valid, it converts the binary digits to octets using the _to_octets method.
+        Otherwise, the request is passed to the next handler in the chain.
 
-        Args:
-        request (Any): The list of binary digits representing an IPv4 address.
+        Parameters:
+        request (Any): The incoming request, expected to be a list of 32 integers.
 
         Returns:
-        Any: A list of BinaryClass instances or forward the request to the next handler.
+        A list of octets created from the binary digits if the request is valid; otherwise, the result from the next handler.
         """
-        if isinstance(request, list) and all(isinstance(item, int) for item in request) and len(request)==32:
-            return self.to_binary_class(request)
+        if isinstance(request, list) and all(isinstance(item, int) for item in request) and len(request) == 32:
+            try:
+                return self._to_octets(request)
+            except (ValueError, TypeError):
+                return super().handle(request)
         else:
             return super().handle(request)
 
-    def to_binary_class(self, request: Any) -> List[BinaryClass]:
+    def _to_octets(self, request: list[int]) -> List[Octet]:
         """
-        Convert the binary digit list into binary classes by grouping them into octets.
+        Converts a list of 32 binary digits (integers) into a list of 4 octets by grouping every 8 bits.
+        Each group of 8 bits is treated as a binary string and converted into an octet via the OctetFlyWeightFactory.
 
-        Args:
-        request (Any): The list of binary digits.
+        Parameters:
+        request (list[int]): A list of 32 integers representing binary digits (0 or 1) of an IPv4 address.
 
         Returns:
-        List[BinaryClass]: Binary representations grouped into octets.
+        A list of Octet objects created from the binary digits.
         """
         binary_string_list = [
             ''.join(map(str, request[bit_index: bit_index + 8]))
             for bit_index in range(0, len(request), 8)
         ]
         return [
-            BinaryFlyWeightFactory.get_binary_class(binary_string)
+            OctetFlyWeightFactory.get_octet(binary_string)
             for binary_string in binary_string_list
         ]
 
 
-class ColonHexIPv6ConverterHandler(IPConverterHandler):
+class CIDRIPv4ConverterHandler(IPConverterHandler):
     """
-    Handler to convert IPv6 addresses in colon-separated hexadecimal notation to binary classes.
+    A concrete handler that processes CIDR notation of IPv4 addresses.
+    It expects the request to be a CIDR string in the format '/X', where X is a number representing the subnet mask length.
+
+    Parameters:
+    request (Any): The incoming request, expected to be a string in CIDR format (e.g., '/24').
+
+    Returns:
+    A list of Octet objects representing the subnet mask if the request is valid; otherwise, the request is passed to the next handler.
     """
 
     def handle(self, request: Any):
         """
-        Process IPv6 address strings in colon-separated hexadecimal format, converting them to binary classes.
+        Handles the request by checking if it's a valid CIDR string (e.g., '/24').
+        If valid, it converts the CIDR notation into octets using the _to_octets method.
+        Otherwise, the request is passed to the next handler in the chain.
 
-        Args:
-        request (Any): The IPv6 address string in hexadecimal format.
+        Parameters:
+        request (Any): The incoming request, expected to be a CIDR string in the form '/X'.
 
         Returns:
-        Any: A list of BinaryClass instances or forward the request to the next handler.
+        A list of octets representing the subnet mask if the request is valid; otherwise, the result from the next handler.
         """
-        if isinstance(request, str):
+        if isinstance(request, str) and re.search(r'^/(\d+)$', request):
             try:
-                return self.to_binary_class(request)
-            except ValueError:
+                return self._to_octets(request)
+            except (ValueError, TypeError):
                 return super().handle(request)
         else:
             return super().handle(request)
 
-    def to_binary_class(self, request: Any) -> List[BinaryClass]:
+    def _to_octets(self, request: str) -> List[Octet]:
         """
-        Convert a colon-separated hexadecimal IPv6 address into binary classes.
+        Converts a CIDR string (e.g., '/24') into a subnet mask represented by octets.
+        It generates a binary string with the specified number of '1's followed by '0's to make up 32 bits,
+        and then divides it into octets using the OctetFlyWeightFactory.
 
-        Args:
-        request (Any): The IPv6 address to convert.
+        Parameters:
+        request (str): A string in CIDR format (e.g., '/24'), representing the subnet mask.
 
         Returns:
-        List[BinaryClass]: Binary representations of each hexadecimal segment.
+        A list of Octet objects representing the subnet mask.
         """
-        ipv6_full_string = ipaddress.ip_address(request).exploded.upper().replace(':', '')
-        octets = [ipv6_full_string[i:i + 2] for i in range(0, len(ipv6_full_string), 2)]
+        mask_match = re.search(r'^/(\d+)$', request)
+        binary_string = ('1' * int(mask_match.group(1))).ljust(32, '0')
         address = [
-            BinaryFlyWeightFactory.get_binary_class(NumeralConverter.hexadecimal_to_binary(octet))
-            for octet in octets
-        ]
-        return address
-
-
-class BinaryIPv6ConverterHandler(IPConverterHandler):
-    """
-    Handler to directly process lists of binary class instances representing an IPv6 address.
-    """
-
-    def handle(self, request: Any):
-        """
-        Process requests that are already lists of BinaryClass instances for IPv6 addresses.
-
-        Args:
-        request (Any): The list of BinaryClass instances.
-
-        Returns:
-        Any: The input list of BinaryClass instances or forward the request to the next handler.
-        """
-        if isinstance(request, list):
-            return self.to_binary_class(request)
-        else:
-            return super().handle(request)
-
-    def to_binary_class(self, request: Any) -> List[BinaryClass]:
-        """
-        Directly return the list of binary classes for IPv6 addresses.
-
-        Args:
-        request (Any): The list of BinaryClass instances.
-
-        Returns:
-        List[BinaryClass]: The input list.
-        """
-        return request
-
-
-class CIDRIPv6ConverterHandler(IPConverterHandler):
-    """
-    Handler to convert CIDR notation IPv6 addresses to binary classes.
-    """
-
-    def handle(self, request: Any):
-        """
-        Process CIDR notation IPv6 address strings, converting them to binary class lists.
-
-        Args:
-        request (Any): The CIDR IPv6 address to convert.
-
-        Returns:
-        Any: A list of BinaryClass instances or forward the request to the next handler.
-        """
-        if isinstance(request, str):
-            return self.to_binary_class(request)
-        else:
-            return super().handle(request)
-
-    def to_binary_class(self, request: Any) -> List[BinaryClass]:
-        """
-        Convert a CIDR notation IPv6 address into binary classes.
-
-        Args:
-        request (Any): The CIDR IPv6 address to convert.
-
-        Returns:
-        List[BinaryClass]: Binary representations of the network mask.
-        """
-        mask_match = re.search(r'/(\d+)', request)
-        binary_string = ('1' * int(mask_match.group(1))).ljust(128, '0')
-        address = [
-            BinaryFlyWeightFactory.get_binary_class(binary_string[index: index + 8])
+            OctetFlyWeightFactory.get_octet(binary_string[index: index + 8])
             for index in range(0, len(binary_string), 8)
         ]
         return address
 
 
-class BinaryDigitsIPv6ConverterHandler(IPConverterHandler):
+class DotIPv4ConverterHandler(IPConverterHandler):
     """
-    Handler to convert a list of integer digits (0 or 1) representing an IPv6 address into binary classes.
+    A concrete handler that processes IPv4 addresses in dotted decimal notation (e.g., '192.168.0.1').
+    It expects the request to be a string representing an IPv4 address in the standard format with four decimal octets.
+
+    Parameters:
+    request (Any): The incoming request, expected to be a string in dotted decimal format (e.g., '192.168.0.1').
+
+    Returns:
+    A list of Octet objects if the request is valid; otherwise, the request is passed to the next handler.
     """
 
     def handle(self, request: Any):
         """
-        Process lists representing IPv6 addresses where each integer represents a binary digit.
+        Handles the request by checking if it's a valid IPv4 address in dotted decimal notation.
+        If valid, it converts the address to a list of octets using the _to_octets method.
+        Otherwise, the request is passed to the next handler in the chain.
 
-        Args:
-        request (Any): The list of binary digits representing an IPv6 address.
+        Parameters:
+        request (Any): The incoming request, expected to be a string representing an IPv4 address in dotted decimal notation.
 
         Returns:
-        Any: A list of BinaryClass instances or forward the request to the next handler.
+        A list of octets representing the binary form of the address if valid; otherwise, the result from the next handler.
         """
-        if isinstance(request, list) and all(isinstance(item, int) for item in request) and len(request)==128:
-            return self.to_binary_class(request)
+        if isinstance(request, str) and re.search(r'^\d+\.\d+\.\d+.\d+$', request):
+            try:
+                return self._to_octets(request)
+            except (ValueError, TypeError):
+                return super().handle(request)
         else:
             return super().handle(request)
 
-    def to_binary_class(self, request: Any) -> List[BinaryClass]:
+    def _to_octets(self, request: str) -> List[Octet]:
         """
-        Convert the binary digit list into binary classes by grouping them into octets.
+        Converts an IPv4 address in dotted decimal notation into a list of octets.
+        Each octet in the address is converted from its decimal form into binary, and then the binary is converted to an Octet object.
 
-        Args:
-        request (Any): The list of binary digits.
+        Parameters:
+        request (str): A string representing the IPv4 address in dotted decimal format (e.g., '192.168.0.1').
 
         Returns:
-        List[BinaryClass]: Binary representations grouped into octets.
+        A list of Octet objects representing the binary form of the IPv4 address.
+        """
+        return [
+            OctetFlyWeightFactory.get_octet(NumeralConverter.decimal_to_binary(octet_decimal))
+            for octet_decimal in map(int, request.split('.'))
+        ]
+
+
+class OctetIPv6ConverterHandler(IPConverterHandler):
+    """
+    A concrete handler that processes IPv6 addresses represented as a list of 16 octets.
+    It expects the request to be a list of 16 octets, which is the standard size for IPv6 addresses.
+
+    Parameters:
+    request (Any): The incoming request, expected to be a list of 16 octets representing an IPv6 address.
+
+    Returns:
+    The list of octets if the request is valid; otherwise, the request is passed to the next handler in the chain.
+    """
+
+    def handle(self, request: Any):
+        """
+        Handles the request by checking if it's a valid list of 16 octets for an IPv6 address.
+        If valid, it returns the request directly (assuming it's already in the correct format).
+        Otherwise, the request is passed to the next handler in the chain.
+
+        Parameters:
+        request (Any): The incoming request, expected to be a list of 16 octets representing an IPv6 address.
+
+        Returns:
+        The list of octets if valid; otherwise, the result from the next handler.
+        """
+        if isinstance(request, list) and len(request) == 16 and all(isinstance(octet, Octet) for octet in request):
+            return self._to_octets(request)
+        else:
+            return super().handle(request)
+
+    def _to_octets(self, request: Any) -> List[Octet]:
+        """
+        Returns the provided list of 16 octets, assuming the request is already in the correct format.
+        For IPv6 addresses, the request is expected to already be a list of octets.
+
+        Parameters:
+        request (Any): A list of 16 octets representing an IPv6 address.
+
+        Returns:
+        The same list of octets that was passed in.
+        """
+        return request
+
+
+class BinaryDigitsIPv6ConverterHandler(IPConverterHandler):
+    """
+    A concrete handler that processes IPv6 addresses represented as a list of 128 binary digits.
+    It expects the request to be a list of 128 integers (0s and 1s) representing binary digits of an IPv6 address.
+
+    Parameters:
+    request (Any): The incoming request, expected to be a list of 128 integers representing the binary form of an IPv6 address.
+
+    Returns:
+    A list of Octet objects created from the binary digits if the request is valid; otherwise, the request is passed to the next handler.
+    """
+
+    def handle(self, request: Any):
+        """
+        Handles the request by checking if it's a valid list of 128 integers representing the binary digits of an IPv6 address.
+        If valid, it converts the binary digits to octets using the _to_octets method.
+        Otherwise, the request is passed to the next handler in the chain.
+
+        Parameters:
+        request (Any): The incoming request, expected to be a list of 128 binary digits (0s and 1s).
+
+        Returns:
+        A list of octets created from the binary digits if valid; otherwise, the result from the next handler.
+        """
+        if isinstance(request, list) and all(isinstance(item, int) for item in request) and len(request) == 128:
+            try:
+                return self._to_octets(request)
+            except (ValueError, TypeError):
+                return super().handle(request)
+        else:
+            return super().handle(request)
+
+    def _to_octets(self, request: Any) -> List[Octet]:
+        """
+        Converts a list of 128 binary digits (0s and 1s) into a list of octets by grouping every 8 bits.
+        Each group of 8 bits is treated as a binary string and converted into an octet via the OctetFlyWeightFactory.
+
+        Parameters:
+        request (Any): A list of 128 integers representing binary digits of an IPv6 address.
+
+        Returns:
+        A list of Octet objects created from the binary digits.
         """
         binary_string_list = [
             ''.join(map(str, request[bit_index: bit_index + 8]))
             for bit_index in range(0, len(request), 8)
         ]
         return [
-            BinaryFlyWeightFactory.get_binary_class(binary_string)
+            OctetFlyWeightFactory.get_octet(binary_string)
             for binary_string in binary_string_list
         ]
+
+
+class CIDRIPv6ConverterHandler(IPConverterHandler):
+    """
+    A concrete handler that processes CIDR notation for IPv6 addresses.
+    It expects the request to be a CIDR string in the format '/X', where X is a number representing the subnet mask length.
+
+    Parameters:
+    request (Any): The incoming request, expected to be a string in CIDR format (e.g., '/64').
+
+    Returns:
+    A list of Octet objects representing the subnet mask if the request is valid; otherwise, the request is passed to the next handler.
+    """
+
+    def handle(self, request: Any):
+        """
+        Handles the request by checking if it's a valid CIDR string (e.g., '/64').
+        If valid, it converts the CIDR notation into octets using the _to_octets method.
+        Otherwise, the request is passed to the next handler in the chain.
+
+        Parameters:
+        request (Any): The incoming request, expected to be a CIDR string (e.g., '/64').
+
+        Returns:
+        A list of octets representing the subnet mask if valid; otherwise, the result from the next handler.
+        """
+        if isinstance(request, str) and re.search(r'^/(\d+)$', request):
+            try:
+                return self._to_octets(request)
+            except (ValueError, TypeError):
+                return super().handle(request)
+        else:
+            return super().handle(request)
+
+    def _to_octets(self, request: str) -> List[Octet]:
+        """
+        Converts a CIDR string (e.g., '/64') into a subnet mask represented by octets.
+        It generates a binary string with the specified number of '1's followed by '0's to make up 128 bits,
+        and then divides it into octets using the OctetFlyWeightFactory.
+
+        Parameters:
+        request (str): A string in CIDR format (e.g., '/64'), representing the subnet mask.
+
+        Returns:
+        A list of Octet objects representing the subnet mask.
+        """
+        mask_match = re.search(r'^/(\d+)$', request)
+        binary_string = ('1' * int(mask_match.group(1))).ljust(128, '0')
+        address = [
+            OctetFlyWeightFactory.get_octet(binary_string[index: index + 8])
+            for index in range(0, len(binary_string), 8)
+        ]
+        return address
+
+
+class ColonIPv6ConverterHandler(IPConverterHandler):
+    """
+    A concrete handler that processes IPv6 addresses in colon-hexadecimal notation (e.g., '2001:0db8:85a3:0000:0000:8a2e:0370:7334').
+    It expects the request to be a string representing an IPv6 address in standard colon notation.
+    If the conversion fails, the request is passed to the next handler in the chain.
+
+    Parameters:
+    request (Any): The incoming request, expected to be a string in colon-hexadecimal format representing an IPv6 address.
+
+    Returns:
+    A list of Octet objects if the request is valid; otherwise, the request is passed to the next handler.
+    """
+
+    def handle(self, request: Any):
+        """
+        Handles the request by checking if it's a string representing an IPv6 address.
+        If valid, it converts the IPv6 address to octets using the _to_octets method.
+        If the conversion fails, it passes the request to the next handler in the chain.
+
+        Parameters:
+        request (Any): The incoming request, expected to be a string representing an IPv6 address in colon-hexadecimal notation.
+
+        Returns:
+        A list of octets representing the IPv6 address if valid; otherwise, the result from the next handler.
+        """
+        if isinstance(request, str):
+            try:
+                return self._to_octets(request)
+            except (ValueError, TypeError):
+                return super().handle(request)
+        else:
+            return super().handle(request)
+
+    def _to_octets(self, request: str) -> List[Octet]:
+        """
+        Converts an IPv6 address in colon-hexadecimal notation into a list of octets.
+        It uses the ipaddress library to expand the shorthand form of the IPv6 address (if any) and removes colons.
+        The hexadecimal octets are then converted into binary, and Octet objects are created using the OctetFlyWeightFactory.
+
+        Parameters:
+        request (str): A string representing an IPv6 address in colon-hexadecimal notation.
+
+        Returns:
+        A list of Octet objects representing the binary form of the IPv6 address.
+        """
+        ipv6_full_string = ipaddress.ip_address(request).exploded.upper().replace(':', '')
+        octets = [ipv6_full_string[i:i + 2] for i in range(0, len(ipv6_full_string), 2)]
+        address = [
+            OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary(octet))
+            for octet in octets
+        ]
+        return address
+
+
+class IPConverter:
+    """
+    A utility class that provides static methods to convert different IP address formats into octets.
+    It uses a chain-of-responsibility pattern, where multiple converter handlers are applied in sequence
+    to process and convert IP addresses of various formats (IPv4 or IPv6) into a list of octets.
+
+    Methods:
+    - convert_to_ipv4_octet: Converts an IPv4 address from various formats into octets.
+    - convert_to_ipv6_octet: Converts an IPv6 address from various formats into octets.
+    - convert_to_ip: Converts either an IPv4 or IPv6 address from various formats into octets.
+    """
+    @staticmethod
+    def convert_to_ipv4_octets(request_format: Any, converters: List[IPConverterHandler] = None) -> List[Octet]:
+        """
+        Converts an IPv4 address from various formats (e.g., dotted decimal, binary digits, CIDR) into a list of octets.
+        It applies a series of converter handlers in sequence until one successfully converts the input.
+
+        Parameters:
+        request_format (Any): The input representing an IPv4 address, which can be in different formats (dotted decimal, binary, CIDR).
+        converters (List[IPConverterHandler], optional): A list of IPConverterHandler instances for handling different IPv4 formats.
+                                                         If not provided, a default list of handlers will be used.
+
+        Returns:
+        List[Octet]: A list of Octet objects representing the IPv4 address, after conversion from the input format.
+        """
+        if converters is None:
+            converters = [
+                OctetIPv4ConverterHandler(),
+                BinaryDigitsIPv4ConverterHandler(),
+                CIDRIPv4ConverterHandler(),
+                DotIPv4ConverterHandler(),
+            ]
+        converter_handler = converters[0]
+        for next_handler in converters[1:]:
+            converter_handler.set_next(next_handler)
+            converter_handler = next_handler
+        return converters[0].handle(request_format)
+
+    @staticmethod
+    def convert_to_ipv6_octets(request_format: Any, converters: List[IPConverterHandler] = None) -> List[Octet]:
+        """
+        Converts an IPv6 address from various formats (e.g., colon-hexadecimal, binary digits, CIDR) into a list of octets.
+        It applies a series of converter handlers in sequence until one successfully converts the input.
+
+        Parameters:
+        request_format (Any): The input representing an IPv6 address, which can be in different formats (colon-hexadecimal, binary, CIDR).
+        converters (List[IPConverterHandler], optional): A list of IPConverterHandler instances for handling different IPv6 formats.
+                                                         If not provided, a default list of handlers will be used.
+
+        Returns:
+        List[Octet]: A list of Octet objects representing the IPv6 address, after conversion from the input format.
+        """
+        if converters is None:
+            converters = [
+                OctetIPv6ConverterHandler(),
+                BinaryDigitsIPv6ConverterHandler(),
+                CIDRIPv6ConverterHandler(),
+                ColonIPv6ConverterHandler(),
+            ]
+        converter_handler = converters[0]
+        for next_handler in converters[1:]:
+            converter_handler.set_next(next_handler)
+            converter_handler = next_handler
+        return converters[0].handle(request_format)
+
+    @staticmethod
+    def convert_to_ip_octets(request_format: Any, converters: List[IPConverterHandler] = None) -> List[Octet]:
+        """
+        Converts either an IPv4 or IPv6 address from various formats into a list of octets.
+        It applies a series of converter handlers in sequence until one successfully converts the input, regardless of whether it is IPv4 or IPv6.
+
+        Parameters:
+        request_format (Any): The input representing an IP address, which can be in different formats (dotted decimal, binary, CIDR, colon-hexadecimal).
+        converters (List[IPConverterHandler], optional): A list of IPConverterHandler instances for handling different IP formats (both IPv4 and IPv6).
+                                                         If not provided, a default list of handlers for both IPv4 and IPv6 will be used.
+
+        Returns:
+        List[Octet]: A list of Octet objects representing the IP address (either IPv4 or IPv6), after conversion from the input format.
+        """
+        if converters is None:
+            converters = [
+                OctetIPv4ConverterHandler(),
+                BinaryDigitsIPv4ConverterHandler(),
+                DotIPv4ConverterHandler(),
+                OctetIPv6ConverterHandler(),
+                BinaryDigitsIPv6ConverterHandler(),
+                ColonIPv6ConverterHandler(),
+            ]
+        converter_handler = converters[0]
+        for next_handler in converters[1:]:
+            converter_handler.set_next(next_handler)
+            converter_handler = next_handler
+        return converters[0].handle(request_format)

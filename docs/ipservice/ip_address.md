@@ -1,345 +1,345 @@
-# 1. `IPv4Addr`
+Based on the content of the `ip_address.py` module you uploaded, here's a Markdown documentation template:
 
-The `IPv4Addr` class is designed to handle and validate IPv4 addresses, ensuring they comply with IPv4 standards.
+# `ip_address.py` Module Documentation
 
-## Properties
-- **`_address`**: A list of `BinaryClass` instances representing the validated IPv4 address.
+## Overview
+The `ip_address.py` module provides a comprehensive framework for representing and handling IP addresses, including IPv4 and IPv6, along with their associated netmasks and wildcard masks. This module utilizes abstract and concrete classes to enforce structure and ensure that all IP address types adhere to valid formats and operations.
 
-## Methods
-- **`_validate(address)`**: Validates the provided IPv4 address using both binary and string formats. Raises a `ValueError` if the address is invalid.
-- **`get_binary_strings()`**: Returns a concatenated string of binary values from the IPv4 address.
-- **`get_binary_digits()`**: Generates each binary digit in the IPv4 address as integers.
-- **`__str__()`**: Returns the standard dot-separated decimal format of the IPv4 address.
-- **`__repr__()`**: Provides a detailed representation of the IPv4Addr instance for debugging purposes.
+## Features
 
-## Usage Example
+- **IP Address Validation**: Ensures that the input strings or other formats are valid IP addresses, raising exceptions for invalid inputs.
+- **Binary Conversion**: Converts IP addresses to binary octet formats, providing both string and digit representations.
+- **String Representation**: Supports user-friendly string outputs for IP addresses in conventional notations (dotted decimal for IPv4 and colon-hexadecimal for IPv6).
+- **Mask Size Calculation**: Calculates the size of network masks and wildcard masks to determine the scope of networks or ranges.
+
+---
+
+## Abstract Classes
+
+### 1. `IPAddr`
+#### Description
+
+The `IPAddr` class is an abstract base class designed to outline the fundamental structure and functionality for IP address representations. It enforces the implementation of essential methods such as validation, binary conversion, and user-friendly string representations across derived classes.
+
+#### Inherits: None
+
+This class serves as a template for creating specific IP address types (e.g., IPv4, IPv6), ensuring that all derived classes adhere to a consistent interface and behavior, crucial for reliable IP address manipulation in networking applications.
+
+### 2. `IPNetMask`
+#### Description
+
+`IPNetMask` is an abstract base class that extends `IPAddr` to specifically handle network masks associated with IP addresses. It adds the requirement for methods that manage and calculate the size of network masks, thus differentiating the handling of full IP addresses from their subnet mask components.
+
+#### Inherits: `IPAddr`
+
+This abstraction allows for the specialized handling of network masks, segregating it from general IP address functionalities and focusing on aspects relevant to subnetting and network design.
+
+---
+
+## Concrete Classes
+### 1. `IPv4Addr`
+#### Description
+
+The `IPv4Addr` class is a concrete implementation of the `IPAddr` abstract base class, specifically tailored for handling IPv4 addresses. It includes functionality for validating IPv4 addresses, converting them to binary formats, and representing them in both human-readable and official string forms.
+
+#### Inherits: `IPAddr`
+
+#### Methods
+
+- **_validate(address: Any) -> None**:
+  Ensures that the provided address is a valid IPv4 address by checking its format and converting it into a list of octets. If the address is invalid, it raises a `ValueError`.
+  - **Parameters**:
+    - `address (Any)`: The IPv4 address to be validated, in string or other format.
+  - **Raises**:
+    - `ValueError`: If the provided address is not a valid IPv4 address.
+
+- **binary_digits -> Iterable[int]**:
+  Returns the binary digits of the IPv4 address by converting each octet to binary and yielding the individual bits.
+  - **Returns**:
+    - `Iterable[int]`: A generator yielding the binary digits of the IPv4 address.
+
+- **binary_string -> str**:
+  Constructs and returns the binary representation of the IPv4 address as a string by concatenating the binary strings of each octet.
+  - **Returns**:
+    - `str`: A string representation of the IPv4 address in binary form.
+
+- **__str__() -> str**:
+  Provides a human-readable string representation of the IPv4 address using the standard dotted decimal notation.
+  - **Returns**:
+    - `str`: The IPv4 address as a string in dotted decimal format.
+
+- **__repr__() -> str**:
+  Provides the official string representation of the IPv4 address, used primarily for debugging purposes.
+  - **Returns**:
+    - `str`: The internal representation of the IPv4 address.
+
+#### Example Usage
+
 ```python
-from ttlinks.common.base_utils import BinaryClass
+# Example showing how to use the IPv4Addr class
 from ttlinks.ipservice.ip_address import IPv4Addr
-
-# Example IPv4 address in binary class format
-ipv4_binary = [
-    BinaryClass('11000000'),  # Represents 192
-    BinaryClass('10101000'),  # Represents 168
-    BinaryClass('00000001'),  # Represents 1
-    BinaryClass('00000001')  # Represents 1
-]
-ipv4_addr1 = IPv4Addr(ipv4_binary)
-print(f'Binary string is: {ipv4_addr1.get_binary_strings()}')
-print(f'Binary digits is: {ipv4_addr1.get_binary_digits()}')
-print(list(ipv4_addr1.get_binary_digits()))
-print(str(ipv4_addr1))
-print(repr(ipv4_addr1))
-print('---')
-ipv4_addr2 = IPv4Addr('8.8.8.8')
-print(f'Binary string is: {ipv4_addr2.get_binary_strings()}')
-print(f'Binary digits is: {ipv4_addr2.get_binary_digits()}')
-print(list(ipv4_addr2.get_binary_digits()))
-print(str(ipv4_addr2))
-print(repr(ipv4_addr2))
+ipv4 = IPv4Addr("192.168.1.1")
+print(ipv4)
+print(repr(ipv4))
+print(ipv4.binary_string)
+print(list(ipv4.binary_digits))
 ```
 Expected Output:
 ```
-Binary string is: 11000000101010000000000100000001
-Binary digits is: <generator object IPv4Addr.get_binary_digits at 0x00000247CBBE8F20>
-[1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]
 192.168.1.1
-IPv4Addr('_address=[BinaryClass(binary_string='11000000'), BinaryClass(binary_string='10101000'), BinaryClass(binary_string='00000001'), BinaryClass(binary_string='00000001')])
----
-Binary string is: 00001000000010000000100000001000
-Binary digits is: <generator object IPv4Addr.get_binary_digits at 0x00000247CBBE9000>
-[0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
-8.8.8.8
-IPv4Addr('_address=[BinaryClass(binary_string='00001000'), BinaryClass(binary_string='00001000'), BinaryClass(binary_string='00001000'), BinaryClass(binary_string='00001000')])
+IPv4Addr('_address=[Octet(_binary_string=11000000), Octet(_binary_string=10101000), Octet(_binary_string=00000001), Octet(_binary_string=00000001)])
+11000000101010000000000100000001
+[1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]
 ```
 
-# 2. `IPv4NetMask`
+### 2. `IPv6Addr`
+#### Description
 
-The `IPv4NetMask` class is specifically designed for handling and validating IPv4 netmasks. It ensures that the netmask values and formats are correct, utilizing various validators for thorough checks.
+The `IPv6Addr` class implements the `IPAddr` abstract base class, focusing on the management and manipulation of IPv6 addresses. This class handles the validation, binary conversion, and representation of IPv6 addresses, ensuring compliance with IPv6 standards and providing tools for effective networking operations.
 
-## Properties
-- **`_address`**: Stores the validated IPv4 netmask as a list of `BinaryClass` instances.
+#### Inherits: `IPAddr`
 
-## Methods
-- **`_validate(address)`**: Validates the IPv4 netmask using a chain of responsibility pattern linking different format validators. It handles both binary class list and string format inputs and raises a `ValueError` if the netmask is invalid.
-- **`get_mask_size()`**: Calculates the size of the netmask by counting the number of '1's in the binary representation.
-- **`get_binary_strings()`**: Concatenates the binary strings of each segment in the IPv4 netmask.
-- **`get_binary_digits()`**: Generates each binary digit in the IPv4 netmask as integers.
-- **`__str__()`**: Returns the standard dot-separated decimal format of the IPv4 netmask.
-- **`__repr__()`**: Provides a detailed representation of the IPv4NetMask instance for debugging purposes.
+#### Methods
 
-## Usage Example
+- **_validate(address: Any) -> None**:
+  Validates a given IPv6 address to check its correctness and formats it into a structured octet list. If the input is not a valid IPv6 address, it throws a `ValueError`.
+  - **Parameters**:
+    - `address (Any)`: The IPv6 address to be validated, typically in a string format.
+  - **Raises**:
+    - `ValueError`: If the address fails validation checks, indicating it is not a valid IPv6 address.
+
+- **binary_digits -> Iterable[int]**:
+  Generates the binary digits of the IPv6 address. This method iterates through each octet, converting it to binary, and yields individual bits.
+  - **Returns**:
+    - `Iterable[int]`: A sequence of integers representing the binary digits of the IPv6 address.
+
+- **binary_string -> str**:
+  Constructs a binary string representation of the IPv6 address by concatenating the binary forms of each octet.
+  - **Returns**:
+    - `str`: The binary string representation of the IPv6 address.
+
+- **__str__() -> str**:
+  Converts the IPv6 address into a human-readable string using the standard colon-separated hexadecimal format.
+  - **Returns**:
+    - `str`: The IPv6 address in colon-separated hexadecimal format.
+
+- **__repr__() -> str**:
+  Provides a detailed string representation of the IPv6 address for debugging purposes.
+  - **Returns**:
+    - `str`: An internal representation detailing the IPv6 address.
+
+#### Example Usage
+
 ```python
-from ttlinks.common.base_utils import BinaryClass
+# Demonstrating the use of the IPv6Addr class
+from ttlinks.ipservice.ip_address import IPv6Addr
+ipv6 = IPv6Addr("2001:0db8:85a3:0000:0000:8a2e:0370:7334")
+print(ipv6)
+print(repr(ipv6))
+print(ipv6.binary_string)
+print(list(ipv6.binary_digits))
+```
+Expected Output:
+```
+2001:db8:85a3::8a2e:370:7334
+IPv6Addr('_address=[Octet(_binary_string=00100000), Octet(_binary_string=00000001), Octet(_binary_string=00001101), Octet(_binary_string=10111000), Octet(_binary_string=10000101), Octet(_binary_string=10100011), Octet(_binary_string=00000000), Octet(_binary_string=00000000), Octet(_binary_string=00000000), Octet(_binary_string=00000000), Octet(_binary_string=10001010), Octet(_binary_string=00101110), Octet(_binary_string=00000011), Octet(_binary_string=01110000), Octet(_binary_string=01110011), Octet(_binary_string=00110100)])
+00100000000000010000110110111000100001011010001100000000000000000000000000000000100010100010111000000011011100000111001100110100
+[0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0]
+```
+
+### 3. `IPv4NetMask`
+#### Description
+
+The `IPv4NetMask` class extends both the `IPNetMask` and `IPv4Addr` classes, specializing in handling network masks specifically for IPv4 addresses. This class is crucial for managing network boundaries in IPv4-based networks, providing functionalities for validating network masks and calculating their sizes.
+
+#### Inherits: `IPNetMask`, `IPv4Addr`
+
+#### Methods
+
+- **_validate(address: Any) -> None**:
+  Validates the given IPv4 network mask to ensure it adheres to acceptable standards. If the mask is invalid, a `ValueError` is raised.
+  - **Parameters**:
+    - `address (Any)`: The IPv4 network mask to validate, which can be in CIDR notation or dotted decimal format.
+  - **Raises**:
+    - `ValueError`: Triggered if the network mask is not a valid IPv4 mask.
+
+- **get_mask_size() -> int**:
+  Calculates the size of the network mask by counting the number of '1' bits in its binary representation. This size corresponds to the number of bits used for the network part of an address in CIDR notation.
+  - **Returns**:
+    - `int`: The size of the network mask, indicating the number of bits that define the network portion of an address.
+
+- **binary_string -> str**:
+  Returns a string representation of the binary format of the network mask, allowing for easy interpretation of network boundaries.
+  - **Returns**:
+    - `str`: The binary representation of the IPv4 network mask.
+
+#### Example Usage
+
+```python
+# Example demonstrating how to use the IPv4NetMask class
 from ttlinks.ipservice.ip_address import IPv4NetMask
-
-# Example IPv4 netmask in binary class format
-ipv4_netmask_binary = [
-    BinaryClass('11111111'),  # Represents 255
-    BinaryClass('11111111'),  # Represents 255
-    BinaryClass('11111111'),  # Represents 255
-    BinaryClass('00000000')  # Represents 0
-]
-ipv4_netmask1 = IPv4NetMask(ipv4_netmask_binary)
-print(str(ipv4_netmask1))
-print("Netmask size:", ipv4_netmask1.get_mask_size())
-
-ipv4_netmask2 = IPv4NetMask('255.255.192.0')
-print(str(ipv4_netmask2))
-print("Netmask size:", ipv4_netmask2.get_mask_size())
-
-ipv4_netmask3 = IPv4NetMask('/27')
-print(str(ipv4_netmask3))
-print("Netmask size:", ipv4_netmask3.get_mask_size())
-print("Binary string:", ipv4_netmask3.get_binary_strings())
-print("Binary digits:", list(ipv4_netmask3.get_binary_digits()))
+ipv4_netmask = IPv4NetMask("/24")  # Also works with 255.255.255.0
+print(ipv4_netmask)
+print(repr(ipv4_netmask))
+print(ipv4_netmask.get_mask_size())
+print(ipv4_netmask.binary_string)
+print(list(ipv4_netmask.binary_digits))
 ```
 Expected Output:
 ```
 255.255.255.0
-Netmask size: 24
-255.255.192.0
-Netmask size: 18
-255.255.255.224
-Netmask size: 27
-Binary string: 11111111111111111111111111100000
-Binary digits: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]
+IPv4NetMask('_address=[Octet(_binary_string=11111111), Octet(_binary_string=11111111), Octet(_binary_string=11111111), Octet(_binary_string=00000000)])
+24
+11111111111111111111111100000000
+[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0]
 ```
 
-# 3. `IPv4WildCard`
+### 4. `IPv4WildCard`
+#### Description
 
-The `IPv4WildCard` class is designed to handle IPv4 wildcard masks, which specify bits that should not match in networking operations, effectively inverting the usual function of netmasks.
+The `IPv4WildCard` class is a specialized version of the `IPv4NetMask` class, designed to handle IPv4 wildcard masks. Wildcard masks are used in networking to specify ranges of IP addresses, particularly for access control lists and routing protocols. This class provides functionality for validating wildcard masks and calculating the number of possible IP addresses they can represent based on their binary structure.
 
-## Properties
-- **`_address`**: Stores the validated IPv4 wildcard mask as a list of `BinaryClass` instances.
+#### Inherits: `IPv4NetMask`
 
-## Methods
-- **`_validate(address)`**: Validates the IPv4 wildcard mask using a chain of responsibility pattern designed for both binary and string formats. Raises a `ValueError` if the wildcard mask is invalid.
-- **`get_mask_size()`**: Calculates the effective size of the wildcard mask by counting the number of '1' bits, which are treated as "don't care" positions.
-- **`get_binary_strings()`**: Concatenates the binary strings of each segment in the IPv4 wildcard mask.
-- **`get_binary_digits()`**: Generates each binary digit in the IPv4 wildcard mask as integers.
-- **`__str__()`**: Returns the standard dot-separated decimal format of the IPv4 wildcard mask.
-- **`__repr__()`**: Provides a detailed string representation of the IPv4WildCard instance for debugging purposes.
+#### Methods
 
-## Usage Example
+- **_validate(address: Any) -> None**:
+  Ensures that the provided address is a valid IPv4 wildcard mask. If the mask is not valid, it raises a `ValueError`.
+  - **Parameters**:
+    - `address (Any)`: The wildcard mask to be validated, typically provided in dotted decimal format.
+  - **Raises**:
+    - `ValueError`: If the address is not a valid IPv4 wildcard mask.
+
+- **get_mask_size() -> int**:
+  Calculates the potential size of the IP address range that the wildcard mask can cover. This is determined by counting the number of '1' bits in the binary representation of the mask, which are considered "don't care" bits allowing flexibility in the IP addresses.
+  - **Returns**:
+    - `int`: The number of possible IP addresses that can be represented by the wildcard mask.
+
+- **binary_string -> str**:
+  Generates the binary string representation of the wildcard mask, which is useful for understanding the mask's impact on IP address filtering and matching.
+  - **Returns**:
+    - `str`: The binary representation of the IPv4 wildcard mask.
+
+#### Example Usage
 
 ```python
-from ttlinks.common.base_utils import BinaryClass
+# Example demonstrating how to use the IPv4WildCard class
 from ttlinks.ipservice.ip_address import IPv4WildCard
-
-# Example IPv4 wildcard mask in binary class format
-ipv4_wildcard_binary = [
-    BinaryClass('00000000'),
-    BinaryClass('00000000'),
-    BinaryClass('00000011'),
-    BinaryClass('11111111')
-]
-ipv4_wildcard1 = IPv4WildCard(ipv4_wildcard_binary)
-print(str(ipv4_wildcard1))
-print("Effective size of the wildcard mask:", ipv4_wildcard1.get_mask_size())
-
-ipv4_wildcard2 = IPv4WildCard('0.255.0.255')
-print(str(ipv4_wildcard2))
-print("Effective size of the wildcard mask:", ipv4_wildcard2.get_mask_size())
-print("Binary string:", ipv4_wildcard2.get_binary_strings())
-print("Binary digits:", list(ipv4_wildcard2.get_binary_digits()))
+ipv4_wildcard = IPv4WildCard("0.255.0.255")
+print(ipv4_wildcard)
+print(repr(ipv4_wildcard))
+print(ipv4_wildcard.get_mask_size())
+print(ipv4_wildcard.binary_string)
+print(ipv4_wildcard.binary_digits)
 ```
-
 Expected Output:
 ```
-0.0.3.255
-Effective size of the wildcard mask: 1024
 0.255.0.255
-Effective size of the wildcard mask: 65536
-Binary string: 00000000111111110000000011111111
-Binary digits: [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
+IPv4WildCard('_address=[Octet(_binary_string=00000000), Octet(_binary_string=11111111), Octet(_binary_string=00000000), Octet(_binary_string=11111111)])
+65536
+00000000111111110000000011111111
+[0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
 ```
 
-# 4. `IPv6Addr`
+### 5. `IPv6NetMask`
+#### Description
 
-The `IPv6Addr` class is tailored to manage and validate IPv6 addresses, ensuring compliance with IPv6 standards.
+The `IPv6NetMask` class extends both the `IPNetMask` and `IPv6Addr` classes to specifically handle network masks for IPv6 addresses. This class is crucial for managing network boundaries in IPv6-based networks, offering functionalities to validate network masks and compute their sizes in terms of the number of network bits.
 
-## Properties
-- **`_address`**: Stores the validated IPv6 address as a list of `BinaryClass` instances.
+#### Inherits: `IPNetMask`, `IPv6Addr`
 
-## Methods
-- **`_validate(address)`**: Validates the provided IPv6 address using binary and colon-separated hexadecimal validation handlers. Raises a `ValueError` if the address is invalid.
-- **`get_binary_strings()`**: Returns a concatenated string of binary values from the IPv6 address.
-- **`get_binary_digits()`**: Generates each binary digit in the IPv6 address as integers.
-- **`__str__()`**: Returns the standard colon-separated hexadecimal format of the IPv6 address.
-- **`__repr__()`**: Provides a detailed representation of the IPv6Addr instance for debugging purposes.
+#### Methods
 
-## Usage Example
-```python
-from ttlinks.common.base_utils import BinaryClass
-from ttlinks.ipservice.ip_address import IPv6Addr
+- **_validate(address: Any) -> None**:
+  Validates the provided IPv6 network mask to ensure it adheres to acceptable IPv6 netmask standards. If the mask is invalid, a `ValueError` is raised.
+  - **Parameters**:
+    - `address (Any)`: The IPv6 network mask to validate, which can be in CIDR notation or full IPv6 format.
+  - **Raises**:
+    - `ValueError`: Triggered if the network mask is not a valid IPv6 mask.
 
-# Example IPv6 address in binary class format
-ipv6_binary = [
-    BinaryClass('00100000'),  # Represents 2001
-    BinaryClass('00000001'),  # Represents 0001
-    BinaryClass('00001101'),  # Represents 0db8
-    BinaryClass('10111000'),  # Represents db80
-    BinaryClass('00000000'),  # Represents 0000
-    # BinaryClass('00000000'), x 10
-    BinaryClass('00000001')  # Represents 0001
-]
-ipv6_addr1 = IPv6Addr(ipv6_binary)
-print(f'Binary string is: {ipv6_addr1.get_binary_strings()}')
-print(f'Binary digits is: {ipv6_addr1.get_binary_digits()}')
-print(list(ipv6_addr1.get_binary_digits()))
-print(str(ipv6_addr1))
-print(repr(ipv6_addr1))
-print('---')
-ipv6_addr2 = IPv6Addr('fe80::')
-print(f'Binary string is: {ipv6_addr2.get_binary_strings()}')
-print(f'Binary digits is: {ipv6_addr2.get_binary_digits()}')
-print(list(ipv6_addr2.get_binary_digits()))
-print(str(ipv6_addr2))
-print(repr(ipv6_addr2))
-```
+- **get_mask_size() -> int**:
+  Calculates the size of the IPv6 network mask by counting the number of '1' bits in its binary representation. This measurement is crucial for determining the network portion of an IPv6 address.
+  - **Returns**:
+    - `int`: The size of the network mask, indicating the number of bits that define the network portion of an address in CIDR notation.
 
-Expected Output:
-```
-Binary string is: 00100000000000010000110110111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001
-Binary digits is: <generator object IPv6Addr.get_binary_digits at 0x0000027D269F90E0>
-[0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-2001:0DB8:0000:0000:0000:0000:0000:0001
-IPv6Addr('_address=[BinaryClass(binary_string='00100000'), BinaryClass(binary_string='00000001'), BinaryClass(binary_string='00001101'), BinaryClass(binary_string='10111000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000001')])
----
-Binary string is: 11111110100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-Binary digits is: <generator object IPv6Addr.get_binary_digits at 0x0000027D269F90E0>
-[1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-FE80:0000:0000:0000:0000:0000:0000:0000
-IPv6Addr('_address=[BinaryClass(binary_string='11111110'), BinaryClass(binary_string='10000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000'), BinaryClass(binary_string='00000000')])
-```
+- **binary_string -> str**:
+  Provides a binary string representation of the IPv6 network mask, facilitating a clear understanding of network segmentation and boundary definition.
+  - **Returns**:
+    - `str`: The binary string representation of the IPv6 network mask.
 
-## Description
-
-The `IPv6Addr` class provides comprehensive validation through a combination of binary and hexadecimal format checks, using validators like `IPv6IPBinaryValidator` and `IPv6IPColonHexValidator`. The validation ensures that each part of the IPv6 address is within the acceptable range and correctly formatted. If validation fails, a detailed error message is raised to assist in debugging.
-
-# 5. `IPv6NetMask`
-
-The `IPv6NetMask` class is designed to handle and validate IPv6 netmasks, ensuring they conform to the correct formats and rules essential for IPv6 networking.
-
-## Properties
-- **`_address`**: Stores the validated IPv6 netmask as a list of `BinaryClass` instances.
-
-## Methods
-- **`_validate(address)`**: Validates the IPv6 netmask using a comprehensive chain of responsibility pattern that includes binary, colon-hexadecimal, and CIDR format validators. If the netmask is invalid, it raises a `ValueError` with a detailed error message.
-- **`get_mask_size()`**: Calculates the size of the netmask by counting the number of '1' bits in its binary representation. This size is critical for defining the network and broadcast portions of an IP address range.
-- **`get_binary_strings()`**: Concatenates the binary strings of each segment in the IPv6 netmask, providing a complete binary representation.
-- **`get_binary_digits()`**: Generates each binary digit in the IPv6 netmask as integers, useful for operations that require bit-level manipulation.
-- **`__str__()`**: Returns the standard colon-separated hexadecimal format of the IPv6 netmask, making it readable and consistent with common network configuration formats.
-- **`__repr__()`**: Provides a detailed string representation of the IPv6NetMask instance, useful for debugging and logging.
-
-## Usage Example
+#### Example Usage
 
 ```python
-from ttlinks.common.base_utils import BinaryClass
+# Example showing how to use the IPv6NetMask class
 from ttlinks.ipservice.ip_address import IPv6NetMask
-
-# Example IPv6 netmask in binary class format
-ipv6_netmask_binary = [
-    BinaryClass('11111111'),  # Represents FFFF
-    BinaryClass('11111111'),  # Represents FFFF
-    BinaryClass('11111111'),  # Represents FFFF
-    BinaryClass('11111000'),  # Represents FFF8
-    BinaryClass('00000000'),  # Represents 0000
-    # BinaryClass('00000000'), x 11
-]
-ipv6_netmask1 = IPv6NetMask(ipv6_netmask_binary)
-print(str(ipv6_netmask1))
-print("Netmask size:", ipv6_netmask1.get_mask_size())
-
-ipv6_netmask2 = IPv6NetMask('FF00::')
-print(str(ipv6_netmask2))
-print("Netmask size:", ipv6_netmask2.get_mask_size())
-
-ipv6_netmask3 = IPv6NetMask('/64')
-print(str(ipv6_netmask3))
-print("Netmask size:", ipv6_netmask3.get_mask_size())
-print("Binary string:", ipv6_netmask3.get_binary_strings())
-print("Binary digits:", list(ipv6_netmask3.get_binary_digits()))
+ipv6_netmask = IPv6NetMask("ffff:f000::")  # Also works with CIDR notation
+print(ipv6_netmask)
+print(ipv6_netmask.get_mask_size())
+print(repr(ipv6_netmask))
+print(ipv6_netmask.binary_string)
+print(list(ipv6_netmask.binary_digits))
 ```
-
 Expected Output:
 ```
-FFFF:FFF8:0000:0000:0000:0000:0000:0000
-Netmask size: 29
-FF00:0000:0000:0000:0000:0000:0000:0000
-Netmask size: 8
-FFFF:FFFF:FFFF:FFFF:0000:0000:0000:0000
-Netmask size: 64
-Binary string: 11111111111111111111111111111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000
-Binary digits: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+ffff:f000::
+20
+IPv6NetMask('_address=[Octet(_binary_string=11111111), Octet(_binary_string=11111111), ...])
+11111111111111111111000000000000000...
+[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, ...]
 ```
 
-## Description
+### 6. `IPv6WildCard`
+#### Description
 
-The `IPv6NetMask` class provides crucial validation for IPv6 netmasks, utilizing a set of validators that check the netmask's compliance with IPv6 standards. This validation ensures that the netmask is appropriately structured for network operations, supporting routing and subnetting practices in IPv6 networks. The calculated mask size indicates how many bits are used for the network portion of addresses, a key factor in network design and management.
+The `IPv6WildCard` class is an extension of the `IPv6NetMask` class, designed specifically to handle wildcard masks for IPv6 addresses. Wildcard masks are used in networking to specify ranges of IP addresses, particularly for matching purposes in network configurations such as routing and security. This class facilitates the validation of wildcard masks and calculates the potential size of the address range they cover.
 
-# 6. `IPv6WildCard`
+#### Inherits: `IPv6NetMask`
 
-The `IPv6WildCard` class handles IPv6 wildcard masks, which are used to specify bits that should not match in network configurations, essentially inverting the typical function of netmasks.
+#### Methods
 
-## Properties
-- **`_address`**: Stores the validated IPv6 wildcard mask as a list of `BinaryClass` instances.
+- **_validate(address: Any) -> None**:
+  Validates the given IPv6 wildcard mask to ensure it adheres to expected formats. If the mask is not valid, it raises a `ValueError`.
+  - **Parameters**:
+    - `address (Any)`: The IPv6 wildcard mask to be validated, typically provided in colon-separated hexadecimal format.
+  - **Raises**:
+    - `ValueError`: If the address is not a valid IPv6 wildcard mask.
 
-## Methods
-- **`_validate(address)`**: Validates the IPv6 wildcard mask using a combination of binary and colon-hexadecimal format validators. If the wildcard mask is invalid, it raises a `ValueError` with detailed error messages from the validators.
-- **`get_mask_size()`**: Calculates the effective size of the wildcard mask based on the count of '1' bits, which are interpreted as 'do not care' bits in the wildcard context. This calculation translates to the potential combinations that the wildcard mask covers.
-- **`get_binary_strings()`**: Concatenates the binary strings of each segment in the IPv6 wildcard mask, providing a complete binary representation.
-- **`get_binary_digits()`**: Generates each binary digit in the IPv6 wildcard mask as integers, which can be essential for bitwise operations in network protocols.
-- **`__str__()`**: Returns the standard colon-separated hexadecimal format of the IPv6 wildcard mask, aligning it with common notation in network configurations.
-- **`__repr__()`**: Provides a detailed string representation of the IPv6WildCard instance, useful for debugging purposes.
+- **get_mask_size() -> int**:
+  Calculates the size of the IP address range that the wildcard mask can potentially cover by counting the number of '1' bits in its binary representation, which represent "don't care" positions.
+  - **Returns**:
+    - `int`: The number of possible IP addresses that can be represented by the wildcard mask.
 
-## Usage Example
+- **binary_string -> str**:
+  Generates the binary string representation of the wildcard mask, which is essential for understanding the flexibility and range of IP address matching it allows.
+  - **Returns**:
+    - `str`: The binary representation of the IPv6 wildcard mask.
+
+#### Example Usage
 
 ```python
-from ttlinks.common.base_utils import BinaryClass
+# Demonstrating how to use the IPv6WildCard class
 from ttlinks.ipservice.ip_address import IPv6WildCard
-
-# Example IPv6 wildcard mask in binary class format
-ipv6_wildcard_binary = [
-    BinaryClass('00000000'), 
-    BinaryClass('00000000'), 
-    BinaryClass('11111111'), 
-    BinaryClass('11111111'), 
-    BinaryClass('00000000'), 
-    BinaryClass('00000000'), 
-    BinaryClass('00000000'), 
-    BinaryClass('00000000'), 
-    BinaryClass('00000000'), 
-    BinaryClass('00000000'), 
-    BinaryClass('00000000'), 
-    BinaryClass('00000000'), 
-    BinaryClass('00000000'), 
-    BinaryClass('00000000'), 
-    BinaryClass('00000000'), 
-    BinaryClass('00000001')  
-]
-ipv6_wildcard1 = IPv6WildCard(ipv6_wildcard_binary)
-print(str(ipv6_wildcard1))
-print("Effective size of the wildcard mask:", ipv6_wildcard1.get_mask_size())
-
-ipv6_wildcard2 = IPv6WildCard('::AB00:0:0')
-print(str(ipv6_wildcard2))
-print("Effective size of the wildcard mask:", ipv6_wildcard2.get_mask_size())
-print("Binary string:", ipv6_wildcard2.get_binary_strings())
-print("Binary digits:", list(ipv6_wildcard2.get_binary_digits()))
+ipv6_wildcard = IPv6WildCard("ffff:f000::AB")
+print(ipv6_wildcard)
+print(repr(ipv6_wildcard))
+print(ipv6_wildcard.get_mask_size())
+print(ipv6_wildcard.binary_string)
+print(list(ipv6_wildcard.binary_digits))
 ```
-
 Expected Output:
 ```
-0000:FFFF:0000:0000:0000:0000:0000:0001
-Effective size of the wildcard mask: 131072
-0000:0000:0000:0000:0000:AB00:0000:0000
-Effective size of the wildcard mask: 32
-Binary string: 00000000000000000000000000000000000000000000000000000000000000000000000000000000101010110000000000000000000000000000000000000000
-Binary digits: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+ffff:f000::ab
+IPv6WildCard('_address=[Octet(_binary_string=11111111), Octet(_binary_string=11111111), ...])
+33554432
+11111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010101011
+[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1]
 ```
 
-## Description
+---
+## Dependencies
 
-The `IPv6WildCard` class is critical for network configurations where specific bits within an IPv6 address should be ignored, such as in access control lists (ACLs) or routing policies. This class utilizes validators like `IPv6IPBinaryValidator` and `IPv6IPColonHexValidator` to ensure the wildcard mask's validity. The `get_mask_size()` method offers an understanding of the wildcard's breadth, indicating how many address combinations it can represent, which is crucial for precise network traffic management.
+The module depends on several external libraries and modules:
+- `ipaddress`: Used for IP address manipulation and validation.
+- `ttlinks.common.binary_utils.binary`: Provides utilities for binary operations.
+- `ttlinks.ipservice.ip_converters`: Converts IP addresses into binary and other formats.
+- `ttlinks.ipservice.ip_type_classifiers`: Classifies strings and other inputs as specific IP address types.
