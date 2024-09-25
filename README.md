@@ -28,7 +28,7 @@ For more details, visit:
 If you're interested in seeing how these modules function in practice, check out the test cases. They provide a great way to understand how the different components work together.
 
 For more details, visit:
-- [IP Address Services Test Cases](tests/)
+- [IP Address Services Test Cases](ttlinks/tests/)
 
 
 ### Future Updates
