@@ -12,7 +12,7 @@ from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
 from ttlinks.common.design_template.cor import BidirectionalCoRHandler
 from ttlinks.common.tools.converters import NumeralConverter
 from ttlinks.macservice.mac_converters import BinaryDigitsMAC48ConverterHandler
-from ttlinks.macservice.oui_utils import OUIType, OUIUnit
+from ttlinks.macservice.oui_utils import OUIType, OUIUnit, OUIMask
 
 
 class IEEEOuiFile(File):
@@ -308,11 +308,7 @@ class IabOuiTxtFileParserHandler(OUITxtFileParserHandler):
             _mask (List[Octet]): A list of octets representing the mask for the IAB OUI range.
             _oui_type (OUIType): Specifies the OUI type as IAB.
         """
-        self._mask: List[Octet] = (
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 4 +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('F0'))] +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))]
-        )
+        self._mask: List[Octet] = OUIMask.IAB.value
         self._oui_type = OUIType.IAB
 
     def handle(self, oui_doc_path: str):
@@ -410,11 +406,7 @@ class MasOuiTxtFileParserHandler(OUITxtFileParserHandler):
             _mask (List[Octet]): A list of octets representing the mask for MA-S OUI ranges.
             _oui_type (OUIType): Specifies the OUI type as MA-S.
         """
-        self._mask: List[Octet] = (
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 4 +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('F0'))] +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))]
-        )
+        self._mask: List[Octet] = OUIMask.MA_S.value
         self._oui_type = OUIType.MA_S
 
     def handle(self, oui_doc_path: str):
@@ -516,11 +508,7 @@ class MamOuiTxtFileParserHandler(OUITxtFileParserHandler):
             _mask (List[Octet]): A list of octets representing the mask for MA-M OUI ranges.
             _oui_type (OUIType): Specifies the OUI type as MA-M.
         """
-        self._mask: List[Octet] = (
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 3 +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('F0'))] +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))] * 2
-        )
+        self._mask: List[Octet] = OUIMask.MA_M.value
         self._oui_type = OUIType.MA_M
 
     def handle(self, oui_doc_path: str):
@@ -622,10 +610,7 @@ class MalOuiTxtFileParserHandler(OUITxtFileParserHandler):
             _mask (List[Octet]): A list of octets representing the mask for MA-L OUI ranges.
             _oui_type (OUIType): Specifies the OUI type as MA-L.
         """
-        self._mask: List[Octet] = (
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 3 +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))] * 3
-        )
+        self._mask: List[Octet] = OUIMask.MA_L.value
         self._oui_type = OUIType.MA_L
 
     def handle(self, oui_doc_path: str):
@@ -727,10 +712,7 @@ class CidOuiTxtFileParserHandler(OUITxtFileParserHandler):
             _mask (List[Octet]): A list of octets representing the mask for CID OUI ranges.
             _oui_type (OUIType): Specifies the OUI type as CID.
         """
-        self._mask: List[Octet] = (
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 3 +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))] * 3
-        )
+        self._mask: List[Octet] = OUIMask.CID.value
         self._oui_type = OUIType.CID
 
     def handle(self, oui_doc_path: str):
@@ -832,11 +814,7 @@ class IabOuiCsvFileParserHandler(OUICsvFileParserHandler):
             _mask (List[Octet]): A list of octets representing the mask for IAB OUI ranges.
             _oui_type (OUIType): Specifies the OUI type as IAB.
         """
-        self._mask: List[Octet] = (
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 4 +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('F0'))] +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))]
-        )
+        self._mask: List[Octet] = OUIMask.IAB.value
         self._oui_type = OUIType.IAB
 
     def handle(self, oui_doc_path: str):
@@ -933,11 +911,7 @@ class MasOuiCsvFileParserHandler(OUICsvFileParserHandler):
             _mask (List[Octet]): A list of octets representing the mask for MA-S OUI ranges.
             _oui_type (OUIType): Specifies the OUI type as MA-S.
         """
-        self._mask: List[Octet] = (
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 4 +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('F0'))] +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))]
-        )
+        self._mask: List[Octet] = OUIMask.MA_S.value
         self._oui_type = OUIType.MA_S
 
     def handle(self, oui_doc_path: str):
@@ -1034,11 +1008,7 @@ class MamOuiCsvFileParserHandler(OUICsvFileParserHandler):
             _mask (List[Octet]): A list of octets representing the mask for MA-M OUI ranges.
             _oui_type (OUIType): Specifies the OUI type as MA-M.
         """
-        self._mask: List[Octet] = (
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 3 +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('F0'))] +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))] * 2
-        )
+        self._mask: List[Octet] = OUIMask.MA_M.value
         self._oui_type = OUIType.MA_M
 
     def handle(self, oui_doc_path: str):
@@ -1135,10 +1105,7 @@ class MalOuiCsvFileParserHandler(OUICsvFileParserHandler):
             _mask (List[Octet]): A list of octets representing the mask for MA-L OUI ranges.
             _oui_type (OUIType): Specifies the OUI type as MA-L.
         """
-        self._mask: List[Octet] = (
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 3 +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))] * 3
-        )
+        self._mask: List[Octet] = OUIMask.MA_L.value
         self._oui_type = OUIType.MA_L
 
     def handle(self, oui_doc_path: str):
@@ -1235,10 +1202,7 @@ class CidOuiCsvFileParserHandler(OUICsvFileParserHandler):
             _mask (List[Octet]): A list of octets representing the mask for CID OUI ranges.
             _oui_type (OUIType): Specifies the OUI type as CID.
         """
-        self._mask: List[Octet] = (
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 3 +
-                [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))] * 3
-        )
+        self._mask: List[Octet] = OUIMask.CID.value
         self._oui_type = OUIType.CID
 
     def handle(self, oui_doc_path: str):
@@ -1358,127 +1322,3 @@ class OuiFileParser:
             parser_handler.set_next(next_handler)
             parser_handler = next_handler
         return parsers[0].handle(oui_file_path)
-
-
-if __name__ == '__main__':
-    # handler = IabOuiTxtFileParserHandler()
-    # result = handler.handle('./resources/test_iab.txt')
-    # index = 0
-    # if result is not None:
-    #     for oui_unit in result['oui_units']:
-    #         print(oui_unit.record)
-    #         index += 1
-    #         if index == 5:
-    #             break
-    #
-    # handler = MasOuiTxtFileParserHandler()
-    # result = handler.handle('./resources/test_mas.txt')
-    # index = 0
-    # if result is not None:
-    #     for oui_unit in result['oui_units']:
-    #         print(oui_unit.record)
-    #         index += 1
-    #         if index == 5:
-    #             break
-    #
-    # handler = MamOuiTxtFileParserHandler()
-    # result = handler.handle('./resources/test_mam.txt')
-    # index = 0
-    # if result is not None:
-    #     for oui_unit in result['oui_units']:
-    #         print(oui_unit.record)
-    #         index += 1
-    #         if index == 5:
-    #             break
-    #
-    # handler = MalOuiTxtFileParserHandler()
-    # result = handler.handle('./resources/test_mal.txt')
-    # index = 0
-    # if result is not None:
-    #     for oui_unit in result['oui_units']:
-    #         print(oui_unit.record)
-    #         index += 1
-    #         if index == 5:
-    #             break
-    #
-    # handler = CidOuiTxtFileParserHandler()
-    # result = handler.handle('./resources/test_cid.txt')
-    # index = 0
-    # if result is not None:
-    #     for oui_unit in result['oui_units']:
-    #         print(oui_unit.record)
-    #         index += 1
-    #         if index == 5:
-    #             break
-    #
-    # handler = IabOuiCsvFileParserHandler()
-    # result = handler.handle('./resources/test_iab.csv')
-    # index = 0
-    # if result is not None:
-    #     for oui_unit in result['oui_units']:
-    #         print(oui_unit.record)
-    #         index += 1
-    #         if index == 5:
-    #             break
-    #
-    # handler = MasOuiCsvFileParserHandler()
-    # result = handler.handle('./resources/test_mas.csv')
-    # index = 0
-    # if result is not None:
-    #     for oui_unit in result['oui_units']:
-    #         print(oui_unit.record)
-    #         index += 1
-    #         if index == 5:
-    #             break
-    #
-    # handler = MamOuiCsvFileParserHandler()
-    # result = handler.handle('./resources/test_mam.csv')
-    # index = 0
-    # if result is not None:
-    #     for oui_unit in result['oui_units']:
-    #         print(oui_unit.record)
-    #         index += 1
-    #         if index == 5:
-    #             break
-    #
-    # handler = MalOuiCsvFileParserHandler()
-    # result = handler.handle('./resources/test_mal.csv')
-    # index = 0
-    # if result is not None:
-    #     for oui_unit in result['oui_units']:
-    #         print(oui_unit.record)
-    #         index += 1
-    #         if index == 5:
-    #             break
-
-    # handler = CidOuiCsvFileParserHandler()
-    # result = handler.handle('./resources/test_cid.csv')
-    # index = 0
-    # if result is not None:
-    #     for oui_unit in result['oui_units']:
-    #         print(oui_unit.record)
-    #         index += 1
-    #         if index == 5:
-    #             break
-
-    # result = OuiFileParser.parse_oui_file('./resources/default_mal.txt')
-    # index = 0
-    # if result is not None:
-    #     for oui_unit in result['oui_units']:
-    #         print(oui_unit.record)
-    #         index += 1
-    #         if index == 5:
-    #             break
-
-    print(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test_resources/'))
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#

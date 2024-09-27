@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from itertools import product
-from typing import List
+from typing import List, Tuple, Any
+
+from ttlinks.common.binary_utils.binary import Octet
+from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
 
 
 class BinaryTools:
 
     @staticmethod
-    def expand_by_mask(digits: List[int], mask: List[int]) -> List[tuple[int]]:
+    def expand_by_mask(digits: List[int], mask: List[int]) -> list[tuple[Any, ...]]:
         """
         Expands the given digits based on the mask to generate all possible combinations.
 
@@ -67,3 +70,15 @@ class BinaryTools:
 
         matching_count = mask_digits.count(1)
         return id_digits[:matching_count] == compared_digits[:matching_count]
+
+    @staticmethod
+    def apply_mask_variations(address: List[Octet], mask : List[Octet]):
+        address_string = ''.join([str(address_bit) for address_bit in address])
+        mask_string = ''.join([str(mask_bit) for mask_bit in mask])
+        adjusted_address = ''
+        for address_bit, mask_bit in zip(address_string, mask_string):
+            if mask_bit == '0':
+                adjusted_address += '0'
+            else:
+                adjusted_address += address_bit
+        return [OctetFlyWeightFactory.get_octet(adjusted_address[i:i+8]) for i in range(0, len(adjusted_address), 8)]

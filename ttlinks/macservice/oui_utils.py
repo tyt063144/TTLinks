@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Dict, List, Union
 
@@ -6,6 +5,7 @@ from ttlinks.common.binary_utils.binary import Octet
 from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
 from ttlinks.common.design_template.factory import Factory
 from ttlinks.common.tools.converters import NumeralConverter
+from ttlinks.macservice.mac_converters import MACConverter
 
 
 class OUIType(Enum):
@@ -106,6 +106,12 @@ class OUIUnit:
 
     @property
     def oui_id_binary_digits(self) -> List[int]:
+        """
+        Returns the binary digits for the OUI's identifier as a list of integers.
+
+        Returns:
+        - List[int]: Binary digits of the OUI ID.
+        """
         result = []
         for octet in self.__oui_id:
             result.extend(octet.binary_digits)
@@ -113,6 +119,12 @@ class OUIUnit:
 
     @property
     def oui_mask_binary_digits(self) -> List[int]:
+        """
+        Returns the binary digits for the OUI's mask as a list of integers.
+
+        Returns:
+        - List[int]: Binary digits of the OUI mask.
+        """
         result = []
         for octet in self.__oui_mask:
             result.extend(octet.binary_digits)
@@ -121,11 +133,10 @@ class OUIUnit:
     @property
     def record(self) -> Dict:
         """
-        Returns a dictionary containing the hexadecimal representations of the start and mask binaries,
-        along with other OUI details such as type, organization, range, and address.
+        Returns a dictionary containing the hexadecimal representation of the OUI details.
 
         Returns:
-            Dict: A dictionary with the OUI details.
+        - Dict: A dictionary with keys 'oui_id', 'oui_mask', 'oui_type', 'organization', 'mac_range', 'oui_hex', 'address'.
         """
         return {
             'oui_id': ':'.join([
@@ -145,17 +156,67 @@ class OUIUnit:
 
 
 class OUIUnitCreator(Factory):
+    """
+    A factory class for creating instances of OUIUnit. It processes the raw input and creates the appropriate OUIUnit.
+
+    Method:
+    - create_product: Creates a new OUIUnit based on the provided arguments (oui_id, oui_mask, oui_type, etc.).
+    """
+
     def create_product(self, **kwargs):
+        """
+        Converts the provided OUI data to octets and creates an OUIUnit instance.
+
+        Parameters:
+        - kwargs (dict): Contains raw input like 'oui_id', 'oui_mask', 'oui_type', etc., which is processed before creating the OUIUnit.
+
+        Returns:
+        - OUIUnit: A new instance of the OUIUnit class.
+        """
         data = {
-            'oui_id': [
-                OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary(binary))
-                for binary in kwargs['oui_id'].split(':')
-            ],
-            'oui_mask': [
-                OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary(binary))
-                for binary in kwargs['oui_mask'].split(':')
-            ],
+            'oui_id': MACConverter.convert_oui(kwargs['oui_id']),
+            'oui_mask': MACConverter.convert_oui(kwargs['oui_mask']),
             'oui_type': OUIType[kwargs['oui_type']]
         }
         kwargs.update(data)
         return OUIUnit(**kwargs)
+
+
+class OUIDBStrategy(Enum):
+    """
+    An enumeration to categorize different strategies for loading or searching OUI data.
+    OUI loader strategies include:
+    - SIMPLE_ITERATION: A simple iteration strategy for loading or searching OUI data.
+    - TRIE: A trie-based strategy for loading or searching OUI data.
+    """
+    SIMPLE_ITERATION = 0
+    TRIE = 1
+
+class OUIMask(Enum):
+    """
+    An enumeration to categorize different types of masks used for OUI search.
+    OUI masks include:
+    """
+    IAB = (
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 4 +
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('F0'))] +
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))]
+    )
+    MA_S = (
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 4 +
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('F0'))] +
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))]
+    )
+    MA_M = (
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 3 +
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('F0'))] +
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))] * 2
+    )
+    MA_L = (
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 3 +
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))] * 3
+    )
+    CID = (
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 3 +
+            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))] * 3
+    )
