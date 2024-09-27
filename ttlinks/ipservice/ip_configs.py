@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import itertools
 from abc import ABC, abstractmethod
-from typing import Generator, List, Any
+from typing import Generator, List, Any, Union
 
 from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
 from ttlinks.common.tools.network import BinaryTools
@@ -106,8 +106,8 @@ class InterfaceIPv4Config(InterfaceIPConfig):
         Returns:
         None
         """
-        self._ip_addr: IPv4Addr | None = None
-        self._netmask: IPv4NetMask | None = None
+        self._ip_addr: Union[IPv4Addr, None] = None
+        self._netmask: Union[IPv4NetMask, None] = None
         self._initialize(*args)
 
     @abstractmethod

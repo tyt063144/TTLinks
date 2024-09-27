@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from abc import abstractmethod
-from typing import Any, List
+from typing import Any, List, Union
 
 from ttlinks.common.binary_utils.binary import Octet
 from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
@@ -252,7 +252,7 @@ class MACConverter:
         return converters[0].handle(mac)
 
     @staticmethod
-    def convert_to_eui64(mac: Any) -> List[Octet] | None:
+    def convert_to_eui64(mac: Any) -> Union[List[Octet], None]:
         mac_address = MACConverter.convert_mac(mac)
         if mac_address is not None:
             converter_handler = OctetEUI64ConverterHandler()

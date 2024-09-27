@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from ttlinks.Files.file_classifiers import FileClassifier
-from ttlinks.Files.file_types import FileType
+from ttlinks.files.file_classifiers import FileClassifier
+from ttlinks.files.file_types import FileType
 
 
 class File(ABC):

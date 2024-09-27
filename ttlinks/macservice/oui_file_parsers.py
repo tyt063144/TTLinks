@@ -5,8 +5,8 @@ import re
 from abc import abstractmethod, ABC
 from typing import List, Dict, Union
 
-from ttlinks.Files.file_classifiers import FileType
-from ttlinks.Files.file_utils import File
+from ttlinks.files.file_classifiers import FileType
+from ttlinks.files.file_utils import File
 from ttlinks.common.binary_utils.binary import Octet
 from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
 from ttlinks.common.design_template.cor import BidirectionalCoRHandler

@@ -40,7 +40,7 @@ class InterfaceMACAddr(ABC):
 
     _address: List[Octet] = []
     _oui: Union[OUIUnit, None] = None
-    _mac_type: MACType | None = None
+    _mac_type: Union[MACType, None] = None
     _oui_database = None
     _current_strategy = None
 

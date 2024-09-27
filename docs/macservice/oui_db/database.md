@@ -78,9 +78,35 @@ for mac, result in results.items():
 ```
 Example Output:
 ```
-MAC: 00-09-0F-FE-00-01 - OUI: {'oui_id': '00:09:0F:00:00:00', 'oui_mask': 'FF:FF:FF:00:00:00', 'oui_type': 'MA_L', 'organization': 'Fortinet, Inc.', 'mac_range': '00:09:0F:00:00:00-00:09:0F:FF:FF:FF', 'oui_hex': '00-09-0F', 'address': '1090 Kifer Road, Sunnyvale, CA 94086, US'}
-MAC: 00:50:C2:1F:5a:bb - OUI: {'oui_id': '00:50:C2:1F:50:00', 'oui_mask': 'FF:FF:FF:FF:F0:00', 'oui_type': 'IAB', 'organization': 'Abest Communication Corp.', 'mac_range': '00:50:C2:1F:50:00-00:50:C2:1F:5F:FF', 'oui_hex': '00-50-C2', 'address': '19-7 Ting-Tien-Liao, Hsien-Jenli Tamshui, Taipei 251, TW'}
-MAC: 08-BF-B8 - OUI: {'oui_id': '08:BF:B8:00:00:00', 'oui_mask': 'FF:FF:FF:00:00:00', 'oui_type': 'MA_L', 'organization': 'ASUSTek COMPUTER INC.', 'mac_range': '08:BF:B8:00:00:00-08:BF:B8:FF:FF:FF', 'oui_hex': '08-BF-B8', 'address': 'No.15,Lide Rd., Beitou, Dist.,Taipei 112,Taiwan, Taipei, Taiwan 112, TW'}
+MAC: 00-09-0F-FE-00-01 - OUI: {
+    'oui_id': '00:09:0F:00:00:00', 
+    'oui_mask': 'FF:FF:FF:00:00:00', 
+    'oui_type': 'MA_L', 
+    'organization': 
+    'Fortinet, Inc.', 
+    'mac_range': '00:09:0F:00:00:00-00:09:0F:FF:FF:FF', 
+    'oui_hex': '00-09-0F', 
+    'address': '1090 Kifer Road, Sunnyvale, CA 94086, US'
+}
+MAC: 00:50:C2:1F:5a:bb - OUI: {
+    'oui_id': '00:50:C2:1F:50:00', 
+    'oui_mask': 'FF:FF:FF:FF:F0:00', 
+    'oui_type': 'IAB', 
+    'organization': 
+    'Abest Communication Corp.', 
+    'mac_range': '00:50:C2:1F:50:00-00:50:C2:1F:5F:FF', 
+    'oui_hex': '00-50-C2', 
+    'address': '19-7 Ting-Tien-Liao, Hsien-Jenli Tamshui, Taipei 251, TW'
+}
+MAC: 08-BF-B8 - OUI: {
+'oui_id': '08:BF:B8:00:00:00', 
+'oui_mask': 'FF:FF:FF:00:00:00', 
+'oui_type': 'MA_L', 
+'organization': 'ASUSTek COMPUTER INC.', 
+'mac_range': '08:BF:B8:00:00:00-08:BF:B8:FF:FF:FF', 
+'oui_hex': '08-BF-B8', 
+'address': 'No.15,Lide Rd., Beitou, Dist.,Taipei 112,Taiwan, Taipei, Taiwan 112, TW'
+}
 MAC: b2:3c:4d:5e:6f:7a - No match found
 MAC: c3:4d:5e:6f:7a:8b - No match found
 ```

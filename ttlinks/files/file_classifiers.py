@@ -1,7 +1,7 @@
 import os
 from abc import abstractmethod
 
-from ttlinks.Files.file_types import FileType
+from ttlinks.files.file_types import FileType
 from ttlinks.common.design_template.cor import SimpleCoRHandler
 
 
