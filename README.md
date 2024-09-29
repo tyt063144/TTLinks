@@ -21,8 +21,8 @@ For more details, visit:
 ### MAC Services
 **TTLinks** includes a powerful MAC service module for validating MAC addresses, converting between various formats, and performing OUI lookups using a local database. This is especially useful for managing devices across a network.
 
-- Document is coming soon
-- [design diagram](docs/macservice/Class%20Diagram-unfinished.pdf)
+- [MAC Address Services](docs/macservice/mac_services.md)
+- [design diagram](docs/macservice/Class%20Diagram.pdf)
 
 ### Test Cases
 If you're interested in seeing how these modules function in practice, check out the test cases. They provide a great way to understand how the different components work together.
