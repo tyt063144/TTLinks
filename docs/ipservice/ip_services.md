@@ -1,30 +1,34 @@
 ## `ipservice` - Module Overview
 
-### 1. **`ip_configs.py`**
+### 1. **`ip_factory.py`**
+This module introduces a factory pattern for creating IP address configurations, including host, subnet, and wildcard objects. It supports both IPv4 and IPv6 address formats. The `IPFactory` class serves as an abstract base class, with `IPv4Factory` and `IPv6Factory` providing concrete implementations for generating IP configurations. This module also includes batch processing and random IP generation methods for efficient IP management.
+- [IP Factory](/docs/ipservice/ip_factory.md)
+
+### 2. **`ip_configs.py`**
 This module focuses on handling IP address configurations such as network masks and wildcards. It includes classes like `IPv4HostConfig`, `IPv4SubnetConfig`, `IPv4WildCardConfig` and their IPv6 counterparts for managing network configurations. `IPWildCardCalculator` provides static methods for calculating the minimal wildcard configuration that encompasses a given set of IPv4 or IPv6 subnets.
 - [IP Configuration Utilities](/docs/ipservice/ip_configs.md)
 
-### 2. **`ip_address.py`**
+### 3. **`ip_address.py`**
 This module provides abstract and concrete classes for managing IP addresses. The `IPAddr` class serves as the base class, and it includes subclasses like `IPv4Addr` and `IPv6Addr` for handling the validation, conversion, and binary representation of IP addresses.
 - [IP Address Management](/docs/ipservice/ip_address.md)
 
-### 3. **`ip_addr_type_classifiers.py`**
+### 4. **`ip_addr_type_classifiers.py`**
 This module defines enumerations and handlers for classifying IP address types, including both IPv4 and IPv6. The `IPTypeClassifierHandler` uses a Chain of Responsibility (CoR) pattern to allow different handlers to classify IP types.
 - [IP Address Type Classifiers](/docs/ipservice/ip_addr_type_classifiers.md)
 
-### 4. **`ip_converters.py`**
+### 5. **`ip_converters.py`**
 This module facilitates the conversion of IP addresses between different formats (e.g., CIDR, binary, dotted-decimal). It includes classes like `IPConverterHandler`, which handle conversion requests through a Chain of Responsibility (CoR) pattern.
 - [IP Converters](/docs/ipservice/ip_converters.md)
 
-### 5. **`ip_format_standardizer.py`**
+### 6. **`ip_format_standardizer.py`**
 This module standardizes the format of IP addresses, ensuring consistency across different representations. It uses handlers like `CIDRInterfaceIPv4StandardizerHandler` and `ColonInterfaceIPv6StandardizerHandler` to process requests in a Chain of Responsibility (CoR) pattern.
 - [IP Format Standardizer](/docs/ipservice/ip_format_standardizer.md)
 
-### 6. **`ip_type_classifiers.py`**
+### 7. **`ip_type_classifiers.py`**
 This module provides a series of classes designed to classify IP addresses and netmasks either an IPv4 or IPv6. It provides handlers for both IPv4 and IPv6, including the validation of the type through the `IPv4IPTypeClassifierHandler` and `IPv6IPTypeClassifierHandler`.
 - [IP Type Classifiers](/docs/ipservice/ip_type_classifiers.md)
 
-### 7. **`ip_utils.py`**
+### 8. **`ip_utils.py`**
 This utility module provides helper functions and classes that support common IP-related operations. It includes the `IPv4AddrType` and `IPv6AddrType` enumerations to categorize different types of IP addresses.
 
 ---
