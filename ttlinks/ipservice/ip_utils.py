@@ -1,6 +1,5 @@
 from enum import Enum
-from itertools import product
-from typing import List, Dict, Any
+from typing import Dict, Any
 
 
 class IPv4AddrType(Enum):
@@ -19,7 +18,7 @@ class IPv4AddrType(Enum):
     IPV6_TO_IPV4_RELAY = 11  # For 192.88.99.0/24 (formerly used)
     RESERVED = 12  # For 240.0.0.0/4 and 255.255.255.255/32
     LIMITED_BROADCAST = 13  # For 255.255.255.255/32, "limited broadcast" destination address
-    DS_LITE = 14  # For 255.255.255.255/32, "limited broadcast" destination address
+    DS_LITE = 14  # For 192.0.0.0/24,
 
     @classmethod
     def has_value(cls, value: Any) -> bool:

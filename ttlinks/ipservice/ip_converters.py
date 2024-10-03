@@ -249,6 +249,61 @@ class DotIPv4ConverterHandler(IPConverterHandler):
             for octet_decimal in map(int, request.split('.'))
         ]
 
+class DecimalIPv4ConverterHandler(IPConverterHandler):
+    """
+    A concrete handler that processes IPv4 addresses in decimal notation (e.g., 3232235520).
+    It expects the request to be an integer representing an IPv4 address in its 32-bit decimal form.
+
+    This handler is responsible for:
+    - Validating the incoming request to ensure it is a valid integer representing a 32-bit IPv4 address.
+    - If valid, it converts the integer into four octets, each representing one part of the IPv4 address.
+    - The integer is bitwise shifted and masked to extract each octet, which is then converted to its binary representation and
+      encapsulated in an Octet object using the OctetFlyWeightFactory.
+    - If the request is invalid, it passes the request to the next handler in the chain.
+
+    Parameters:
+    request (Any): The incoming request, expected to be an integer representing a 32-bit IPv4 address.
+
+    Returns:
+    A list of Octet objects if the request is valid; otherwise, the request is passed to the next handler.
+    """
+    def handle(self, request: Any):
+        """
+        Handles the request by checking if it's a valid integer representing a 32-bit IPv4 address.
+        If valid, it converts the address to a list of octets using the _to_octets method.
+        Otherwise, the request is passed to the next handler in the chain.
+
+        Parameters:
+        request (Any): The incoming request, expected to be an integer representing a 32-bit IPv4 address.
+
+        Returns:
+        A list of octets representing the binary form of the IPv4 address if valid; otherwise, the result from the next handler.
+        """
+        if isinstance(request, int) and request.bit_length() <= 32:
+            try:
+                return self._to_octets(request)
+            except (ValueError, TypeError):
+                return super().handle(request)
+        else:
+            return super().handle(request)
+
+    def _to_octets(self, request: int) -> List[Octet]:
+        """
+        Converts an integer representing a 32-bit IPv4 address into a list of octets.
+        The integer is split into four octets by bitwise shifting and masking operations.
+        Each octet is then converted from its decimal form into binary and encapsulated in an Octet object.
+
+        Parameters:
+        request (int): An integer representing a 32-bit IPv4 address.
+
+        Returns:
+        A list of Octet objects representing the binary form of the IPv4 address.
+        """
+        return [
+            OctetFlyWeightFactory.get_octet(NumeralConverter.decimal_to_binary((request >> (24 - 8 * i)) & 0xFF))
+            for i in range(4)
+        ]
+
 
 class OctetIPv6ConverterHandler(IPConverterHandler):
     """
@@ -452,6 +507,62 @@ class ColonIPv6ConverterHandler(IPConverterHandler):
         ]
         return address
 
+class DecimalIPv6ConverterHandler(IPConverterHandler):
+    """
+    A concrete handler that processes IPv6 addresses in decimal notation.
+    It expects the request to be an integer representing an IPv6 address in its 128-bit decimal form.
+
+    This handler is responsible for:
+    - Validating the incoming request to ensure it is a valid integer representing a 128-bit IPv6 address.
+    - If valid, it converts the integer into 16 octets, each representing one part of the IPv6 address.
+    - The integer is bitwise shifted and masked to extract each octet, which is then converted to its binary representation and
+      encapsulated in an Octet object using the OctetFlyWeightFactory.
+    - If the request is invalid, it passes the request to the next handler in the chain.
+
+    Parameters:
+    request (Any): The incoming request, expected to be an integer representing a 128-bit IPv6 address.
+
+    Returns:
+    A list of Octet objects if the request is valid; otherwise, the request is passed to the next handler.
+    """
+    def handle(self, request: Any):
+        """
+        Handles the request by checking if it's a valid integer representing a 128-bit IPv6 address.
+        If valid, it converts the address to a list of octets using the _to_octets method.
+        Otherwise, the request is passed to the next handler in the chain.
+
+        Parameters:
+        request (Any): The incoming request, expected to be an integer representing a 128-bit IPv6 address.
+
+        Returns:
+        A list of octets representing the binary form of the IPv6 address if valid; otherwise, the result from the next handler.
+        """
+        if isinstance(request, int) and request.bit_length() <= 128:
+            try:
+                return self._to_octets(request)
+            except (ValueError, TypeError):
+                return super().handle(request)
+        else:
+            return super().handle(request)
+
+    def _to_octets(self, request: int) -> List[Octet]:
+        """
+        Converts an integer representing a 128-bit IPv6 address into a list of octets.
+        The integer is split into 16 octets by bitwise shifting and masking operations.
+        Each octet is then converted from its decimal form into binary and encapsulated in an Octet object.
+
+        Parameters:
+        request (int): An integer representing a 128-bit IPv6 address.
+
+        Returns:
+        A list of Octet objects representing the binary form of the IPv6 address.
+        """
+        return [
+            OctetFlyWeightFactory.get_octet(NumeralConverter.decimal_to_binary((request >> (120 - 8 * i)) & 0xFF))
+            for i in range(16)
+        ]
+
+
 
 class IPConverter:
     """
@@ -484,6 +595,7 @@ class IPConverter:
                 BinaryDigitsIPv4ConverterHandler(),
                 CIDRIPv4ConverterHandler(),
                 DotIPv4ConverterHandler(),
+                DecimalIPv4ConverterHandler(),
             ]
         converter_handler = converters[0]
         for next_handler in converters[1:]:
@@ -511,6 +623,7 @@ class IPConverter:
                 BinaryDigitsIPv6ConverterHandler(),
                 CIDRIPv6ConverterHandler(),
                 ColonIPv6ConverterHandler(),
+                DecimalIPv6ConverterHandler(),
             ]
         converter_handler = converters[0]
         for next_handler in converters[1:]:
@@ -537,6 +650,7 @@ class IPConverter:
                 OctetIPv4ConverterHandler(),
                 BinaryDigitsIPv4ConverterHandler(),
                 DotIPv4ConverterHandler(),
+                DecimalIPv4ConverterHandler(),
                 OctetIPv6ConverterHandler(),
                 BinaryDigitsIPv6ConverterHandler(),
                 ColonIPv6ConverterHandler(),

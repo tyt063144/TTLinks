@@ -922,12 +922,3 @@ class IPAddrTypeClassifier:
             classifier_handler.set_next(next_handler)
             classifier_handler = next_handler
         return classifiers[0].handle(request_format)
-
-
-if __name__ == '__main__':
-    handler = IPv6AddrClassifierIPv4TranslatedHandler()
-
-    # Test with an IPv4-translated IPv6 address (::ffff:0:0:0:192.168.1.1)
-    ipv4_translated_ip = IPv6Addr("::ffff:0:0:192.168.1.1")
-    print(ipv4_translated_ip)
-    result = handler.handle(ipv4_translated_ip)

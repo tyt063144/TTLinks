@@ -9,3 +9,4 @@ venv/
 *.cfg
 *.vsdx
 setup.py
+test.py

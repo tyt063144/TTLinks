@@ -62,7 +62,12 @@ The `IPv4Addr` class is a concrete implementation of the `IPAddr` abstract base 
   Constructs and returns the binary representation of the IPv4 address as a string by concatenating the binary strings of each octet.
   - **Returns**:
     - `str`: A string representation of the IPv4 address in binary form.
-
+    
+- **decimal -> int**:
+    Returns the decimal representation of the IPv4 address as an integer.
+    - **Returns**:
+        - `int`: The IPv4 address as an integer.
+    
 - **__str__() -> str**:
   Provides a human-readable string representation of the IPv4 address using the standard dotted decimal notation.
   - **Returns**:
@@ -83,6 +88,7 @@ print(ipv4)
 print(repr(ipv4))
 print(ipv4.binary_string)
 print(list(ipv4.binary_digits))
+print(ipv4.decimal)
 ```
 Expected Output:
 ```
@@ -90,6 +96,7 @@ Expected Output:
 IPv4Addr('_address=[Octet(_binary_string=11000000), Octet(_binary_string=10101000), Octet(_binary_string=00000001), Octet(_binary_string=00000001)])
 11000000101010000000000100000001
 [1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]
+3232235777
 ```
 
 ### 2. `IPv6Addr`
@@ -118,6 +125,11 @@ The `IPv6Addr` class implements the `IPAddr` abstract base class, focusing on th
   - **Returns**:
     - `str`: The binary string representation of the IPv6 address.
 
+- **decimal -> int**:
+    Returns the decimal representation of the IPv6 address as an integer.
+    - **Returns**:
+        - `int`: The IPv6 address as an integer.
+
 - **__str__() -> str**:
   Converts the IPv6 address into a human-readable string using the standard colon-separated hexadecimal format.
   - **Returns**:
@@ -138,6 +150,7 @@ print(ipv6)
 print(repr(ipv6))
 print(ipv6.binary_string)
 print(list(ipv6.binary_digits))
+print(ipv6.decimal)
 ```
 Expected Output:
 ```
@@ -145,6 +158,7 @@ Expected Output:
 IPv6Addr('_address=[Octet(_binary_string=00100000), Octet(_binary_string=00000001), Octet(_binary_string=00001101), Octet(_binary_string=10111000), Octet(_binary_string=10000101), Octet(_binary_string=10100011), Octet(_binary_string=00000000), Octet(_binary_string=00000000), Octet(_binary_string=00000000), Octet(_binary_string=00000000), Octet(_binary_string=10001010), Octet(_binary_string=00101110), Octet(_binary_string=00000011), Octet(_binary_string=01110000), Octet(_binary_string=01110011), Octet(_binary_string=00110100)])
 00100000000000010000110110111000100001011010001100000000000000000000000000000000100010100010111000000011011100000111001100110100
 [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0]
+42540766452641154071740215577757643572
 ```
 
 ### 3. `IPv4NetMask`

@@ -171,6 +171,17 @@ class IPv4Addr(IPAddr):
         """
         return ''.join([str(octet) for octet in self._address])
 
+    @property
+    def decimal(self) -> int:
+        """
+        Returns the decimal representation of the IPv4 address as an integer.
+
+        Returns:
+        int
+            The IPv4 address as an integer.
+        """
+        return int(self.binary_string, 2)
+
     def __str__(self) -> str:
         """
         Returns the IPv4 address in the standard dotted decimal notation.
@@ -255,6 +266,17 @@ class IPv6Addr(IPAddr):
         """
         return ''.join([str(octet) for octet in self._address])
 
+    @property
+    def decimal(self) -> int:
+        """
+        Returns the decimal representation of the IPv4 address as an integer.
+
+        Returns:
+        int
+            The IPv4 address as an integer.
+        """
+        return int(self.binary_string, 2)
+
     def __str__(self) -> str:
         """
         Returns the IPv6 address in the standard colon-hexadecimal notation. The octets are grouped into
@@ -282,10 +304,10 @@ class IPv6Addr(IPAddr):
         return f"""IPv6Addr('_address={self._address})"""
 
 
-class IPNetMask(IPAddr):
+class IPMask(IPAddr):
 
     """
-    A concrete class that implements network mask functionality for IP addresses.
+    A concrete class that implements mask functionality for IP addresses.
     This class extends the abstract base class IPAddr and provides an additional method
     to retrieve the mask size. It does not directly represent an IP address but
     rather the network mask associated with an IP address.
@@ -322,7 +344,7 @@ class IPNetMask(IPAddr):
         pass
 
 
-class IPv4NetMask(IPNetMask, IPv4Addr):
+class IPv4NetMask(IPMask, IPv4Addr):
 
     """
     A class that represents an IPv4 network mask, inheriting from both IPNetMask and IPv4Addr.
@@ -436,7 +458,7 @@ class IPv4WildCard(IPv4NetMask):
         return f"""IPv4WildCard('_address={self._address})"""
 
 
-class IPv6NetMask(IPNetMask, IPv6Addr):
+class IPv6NetMask(IPMask, IPv6Addr):
     """
     A class that represents an IPv6 network mask, inheriting from both IPNetMask and IPv6Addr.
     This class handles the validation, size calculation, and binary representation of the IPv6 network mask.

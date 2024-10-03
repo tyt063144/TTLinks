@@ -4,7 +4,7 @@ from abc import abstractmethod
 from typing import Tuple, List, Union
 
 from ttlinks.common.design_template.cor import SimpleCoRHandler
-from ttlinks.ipservice.ip_address import IPv4Addr, IPv4NetMask, IPv4WildCard, IPv6Addr, IPv6NetMask, IPv6WildCard, IPAddr, IPNetMask
+from ttlinks.ipservice.ip_address import IPv4Addr, IPv4NetMask, IPv4WildCard, IPv6Addr, IPv6NetMask, IPv6WildCard, IPAddr, IPMask
 
 
 class IPStandardizerHandler(SimpleCoRHandler):
@@ -14,7 +14,7 @@ class IPStandardizerHandler(SimpleCoRHandler):
     handler in the chain.
     """
     @abstractmethod
-    def handle(self, *args) -> Union[Tuple[IPAddr, IPNetMask], IPStandardizerHandler]:
+    def handle(self, *args) -> Union[Tuple[IPAddr, IPMask], IPStandardizerHandler]:
         """
         Processes the standardization request. If the current handler can't process the request, it forwards it
         to the next handler in the chain. If there is no next handler, it returns None.
@@ -30,7 +30,7 @@ class IPStandardizerHandler(SimpleCoRHandler):
         return self._next_handler
 
     @abstractmethod
-    def _standardize(self, *args) -> Tuple[IPAddr, IPNetMask]:
+    def _standardize(self, *args) -> Tuple[IPAddr, IPMask]:
         """
         Abstract method that each subclass must implement to define how it standardizes the IP address.
 
