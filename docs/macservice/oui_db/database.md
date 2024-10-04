@@ -15,6 +15,9 @@ The `database.py` module provides the `LocalOUIDatabase` class, a singleton clas
 
 - **Attributes**:
     - `__instance (LocalOUIDatabase)`: The single instance of the class (singleton pattern).
+  
+    - `_strategy (OUIDBStrategy)`: The current strategy used for loading and searching OUI data. This defaults to `Trie-based` but can be modified via the `set_strategy` method.
+
     - `_loaders (List)`: A list of OUI loaders for each OUI type (IAB, MA-S, MA-M, MA-L, CID).
     - `_updaters (List)`: A list of OUI updaters for each OUI type.
     - `_searchers (List)`: A list of OUI searchers for each OUI type.
@@ -27,7 +30,13 @@ The `database.py` module provides the `LocalOUIDatabase` class, a singleton clas
 
     - `__init__(self, **kwargs)`:  
       Initializes the `LocalOUIDatabase` with loaders, updaters, and searchers for various OUI types. Loads OUI data upon initialization. Optional parameters such as search strategy can be passed.
-
+  
+    - `strategy -> OUIDBStrategy`:
+      Returns the current search strategy being used by the `LocalOUIDatabase`. The strategy determines how MAC addresses are searched in the OUI database (e.g., Trie-based, Simple Iteration).
+  
+    - `set_strategy(strategy: OUIDBStrategy) -> None`:  
+      Sets the search strategy for the `LocalOUIDatabase`. This method re-initializes the loaders, updaters, and searchers based on the new strategy and reloads the OUI data to apply the change.
+  
     - `load() -> None`:  
       Loads the OUI data into memory using the defined loaders for each OUI type. The data is stored in the `_data` attribute.
 

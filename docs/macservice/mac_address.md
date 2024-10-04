@@ -15,6 +15,7 @@ The `mac_address.py` module provides a comprehensive solution for handling, vali
      - `_search_oui()`: Searches the local OUI database to find the OUI associated with the MAC address.
      - `binary_digits`: Returns the binary representation of the MAC address as a list of bits.
      - `binary_string`: Returns the binary representation of the MAC address as a binary string.
+     - `address`: Returns the MAC address as a list of octets.
      - `__str__()`: Returns the MAC address in a human-readable hexadecimal format.
 
 2. **`MACAddr` Class**:
@@ -71,6 +72,3 @@ The module relies on several key components:
 - **`ttlinks.macservice.mac_converters.MACConverter`**: Converts MAC addresses to and from different formats (e.g., hexadecimal, binary).
 - **`ttlinks.macservice.oui_db.database.LocalOUIDatabase`**: Provides access to the local OUI database for retrieving OUI records.
 
-### Conclusion
-
-The `mac_address.py` module offers a robust solution for handling and processing MAC addresses, including classification and OUI lookup. With its clear structure and interface, the module is easily extendable and adaptable for various network applications, ensuring accurate MAC address handling and efficient lookups in the OUI database.

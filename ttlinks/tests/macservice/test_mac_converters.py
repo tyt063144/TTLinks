@@ -4,7 +4,8 @@ from ttlinks.common.binary_utils.binary import Octet
 from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
 from ttlinks.macservice.mac_converters import OctetMAC48ConverterHandler, BinaryDigitsMAC48ConverterHandler, DashedHexMAC48ConverterHandler, \
     ColonHexMAC48ConverterHandler, DotHexMAC48ConverterHandler, OctetEUI64ConverterHandler, OctetOUI24ConverterHandler, \
-    BinaryDigitsOUI24ConverterHandler, DashedHexOUI24ConverterHandler, ColonHexOUI24ConverterHandler, DotHexOUI24ConverterHandler, MACConverter
+    BinaryDigitsOUI24ConverterHandler, DashedHexOUI24ConverterHandler, ColonHexOUI24ConverterHandler, DotHexOUI24ConverterHandler, MACConverter, \
+    DecimalMAC48ConverterHandler
 
 
 # Test valid input case
@@ -700,3 +701,61 @@ def test_mac_converter_convert_to_eui64_invalid_input():
     result = MACConverter.convert_to_eui64(invalid_mac)
 
     assert result is None  # Should return None for invalid input
+
+
+# Test valid decimal MAC48 input (e.g., 48-bit decimal)
+def test_decimal_mac48_valid_input():
+    valid_decimal_mac = 281474976710655  # Decimal representation of FF:FF:FF:FF:FF:FF
+    handler = DecimalMAC48ConverterHandler()
+    result = handler.handle(valid_decimal_mac)
+
+    # Expecting 6 octets in the result
+    assert len(result) == 6
+    assert all(isinstance(octet, Octet) for octet in result)
+    assert result[0].hex == 'FF' and result[-1].hex == 'FF'
+
+
+# Test decimal input with more than 48 bits
+def test_decimal_mac48_too_large():
+    invalid_decimal_mac = 2**50  # Larger than 48 bits
+    handler = DecimalMAC48ConverterHandler()
+    result = handler.handle(invalid_decimal_mac)
+
+    assert result is None  # Should return None for too large input
+
+
+# Test decimal input with fewer than 48 bits (e.g., a valid smaller number)
+def test_decimal_mac48_valid_small_input():
+    valid_decimal_mac = 123456789  # A smaller valid decimal MAC (up to 48 bits)
+    handler = DecimalMAC48ConverterHandler()
+    result = handler.handle(valid_decimal_mac)
+
+    # Expecting 6 octets in the result
+    assert len(result) == 6
+    assert all(isinstance(octet, Octet) for octet in result)
+
+
+# Test decimal input with invalid type (e.g., string instead of integer)
+def test_decimal_mac48_invalid_type():
+    invalid_decimal_mac = "123456789"  # String instead of integer
+    handler = DecimalMAC48ConverterHandler()
+    result = handler.handle(invalid_decimal_mac)
+
+    assert result is None  # Should return None for invalid type
+
+
+# Test empty input
+def test_decimal_mac48_empty_input():
+    handler = DecimalMAC48ConverterHandler()
+    result = handler.handle(None)
+
+    assert result is None  # Should return None for empty input
+
+
+# Test negative decimal input (which is invalid for MAC addresses)
+def test_decimal_mac48_negative_input():
+    invalid_decimal_mac = -123456  # Negative numbers are invalid
+    handler = DecimalMAC48ConverterHandler()
+    result = handler.handle(invalid_decimal_mac)
+
+    assert result is None  # Should return None for negative input

@@ -31,7 +31,7 @@ class MACConverterHandler(SimpleCoRHandler):
 
 class OctetMAC48ConverterHandler(MACConverterHandler):
     def handle(self, request: Any):
-        if len(request) == 6 and all(isinstance(item, Octet) for item in request):
+        if isinstance(request, list) and len(request) == 6 and all(isinstance(item, Octet) for item in request):
             return self._to_octets(request)
         else:
             return super().handle(request)
@@ -101,6 +101,20 @@ class DotHexMAC48ConverterHandler(MACConverterHandler):
         return [
             OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary(raw_mac[octet_i: octet_i + 2]))
             for octet_i in range(0, len(raw_mac), 2)
+        ]
+
+
+class DecimalMAC48ConverterHandler(MACConverterHandler):
+    def handle(self, request: Any):
+        if isinstance(request, int) and request.bit_length() <= 48 and request > 0:
+            return self._to_octets(request)
+        else:
+            return super().handle(request)
+
+    def _to_octets(self, request: int) -> List[Octet]:
+        return [
+            OctetFlyWeightFactory.get_octet(NumeralConverter.decimal_to_binary((request >> (8 * i)) & 0xFF).zfill(8))
+            for i in reversed(range(6))
         ]
 
 
@@ -222,7 +236,8 @@ class MACConverter:
                 BinaryDigitsMAC48ConverterHandler(),
                 DashedHexMAC48ConverterHandler(),
                 ColonHexMAC48ConverterHandler(),
-                DotHexMAC48ConverterHandler()
+                DotHexMAC48ConverterHandler(),
+                DecimalMAC48ConverterHandler(),
             ]
         converter_handler = converters[0]
         for next_handler in converters[1:]:
@@ -239,6 +254,7 @@ class MACConverter:
                 DashedHexMAC48ConverterHandler(),
                 ColonHexMAC48ConverterHandler(),
                 DotHexMAC48ConverterHandler(),
+                DecimalMAC48ConverterHandler(),
                 OctetOUI24ConverterHandler(),
                 BinaryDigitsOUI24ConverterHandler(),
                 DashedHexOUI24ConverterHandler(),

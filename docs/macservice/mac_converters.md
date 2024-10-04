@@ -16,6 +16,7 @@ The `mac_converters.py` module provides a comprehensive solution for converting 
    - **`DashedHexMAC48ConverterHandler`**: Converts MAC addresses in a dashed hexadecimal format (e.g., `AA-BB-CC-DD-EE-FF`).
    - **`ColonHexMAC48ConverterHandler`**: Converts MAC addresses in colon-separated hexadecimal format (e.g., `AA:BB:CC:DD:EE:FF`).
    - **`DotHexMAC48ConverterHandler`**: Converts MAC addresses in dotted hexadecimal format (e.g., `AABB.CCDD.EEFF`).
+   - **`DecimalMAC48ConverterHandler`**: Converts a MAC address represented as a decimal number (up to 48 bits) into 6 octets.
    
    - **`OctetOUI24ConverterHandler`**: Converts OUI addresses represented as 3 octets and pads them to 48 bits if necessary.
    - **`BinaryDigitsOUI24ConverterHandler`**: Converts binary digits (24-bit) representing an OUI into octets, with optional padding to 48 bits.
@@ -91,7 +92,28 @@ Expected Output:
 AA:AA:AA:AA:AA:AA
 ```
 
-### Example 5: Convert a 24-bit OUI Address in Dashed Hexadecimal Format and Pad to 48 bits
+#### Example 5: `DecimalMAC48ConverterHandler` Class
+
+- **Description**:  
+    This handler converts a MAC address provided as a decimal number into 6 octets. It supports any integer value up to 48 bits in length. This handler is part of the chain and works similarly to other handlers in terms of processing.
+
+- **Example Usage**:
+
+```python
+from ttlinks.macservice.mac_converters import MACConverter
+
+# Convert decimal MAC address (up to 48 bits)
+decimal_mac = 281474976710655  # Decimal representation of FF:FF:FF:FF:FF:FF
+converted_mac = MACConverter.convert_mac(decimal_mac)
+print(':'.join([octet.hex for octet in converted_mac]))
+```
+Expected Output:
+```
+FF:FF:FF:FF:FF:FF
+```
+
+
+### Example 6: Convert a 24-bit OUI Address in Dashed Hexadecimal Format and Pad to 48 bits
 ```python
 from ttlinks.macservice.mac_converters import MACConverter
 
@@ -105,7 +127,7 @@ Expected Output:
 AA:BB:CC:00:00:00
 ```
 
-### Example 6: Convert a 24-bit OUI Address from Binary Digits and Pad to 48 bits
+### Example 7: Convert a 24-bit OUI Address from Binary Digits and Pad to 48 bits
 ```python
 from ttlinks.macservice.mac_converters import MACConverter
 
@@ -119,7 +141,7 @@ Expected Output:
 AA:AA:AA:00:00:00
 ```
 
-### Example 7: Convert a MAC Address to EUI-64 Format
+### Example 8: Convert a MAC Address to EUI-64 Format
 ```python
 from ttlinks.macservice.mac_converters import MACConverter
 

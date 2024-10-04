@@ -1,3 +1,4 @@
+import time
 from abc import ABC, abstractmethod
 from typing import List, Union, Any
 
@@ -6,7 +7,7 @@ from ttlinks.common.tools.converters import NumeralConverter
 from ttlinks.macservice import MACType
 from ttlinks.macservice.mac_classifiers import MACAddrClassifier
 from ttlinks.macservice.mac_converters import MACConverter
-from ttlinks.macservice.oui_db.database import LocalOUIDatabase
+from ttlinks.macservice.oui_db import OUI_DATABASE
 from ttlinks.macservice.oui_utils import OUIUnit, OUIDBStrategy
 
 
@@ -25,7 +26,6 @@ class InterfaceMACAddr(ABC):
     - _oui (OUIUnit or None): Stores the corresponding OUI (Organizationally Unique Identifier) information after searching the OUI database.
     - _mac_type (MACType or None): Stores the type of the MAC address (UNICAST, MULTICAST, BROADCAST) after classification.
     - _oui_database (LocalOUIDatabase or None): Reference to the local OUI database for searching OUI information.
-    - _current_strategy (OUIDBStrategy or None): Stores the current OUI database strategy.
 
     Methods:
     - _initialize_oui_database(strategy: OUIDBStrategy): Initializes or updates the OUI database based on the search strategy.
@@ -42,7 +42,6 @@ class InterfaceMACAddr(ABC):
     _oui: Union[OUIUnit, None] = None
     _mac_type: Union[MACType, None] = None
     _oui_database = None
-    _current_strategy = None
 
     def __init__(self, mac: Any, search_strategy: OUIDBStrategy = OUIDBStrategy.TRIE):
         """
@@ -74,9 +73,8 @@ class InterfaceMACAddr(ABC):
         Parameters:
         - strategy (OUIDBStrategy): The search strategy to use for the OUI database.
         """
-        if cls._oui_database is None or cls._current_strategy != strategy:
-            cls._oui_database = LocalOUIDatabase(strategy=strategy)
-            cls._current_strategy = strategy
+        if cls._oui_database is None:
+            cls._oui_database = OUI_DATABASE
 
     @abstractmethod
     def _initialization(self, mac: List[Octet]):
@@ -100,6 +98,16 @@ class InterfaceMACAddr(ABC):
         - List[Octet]: The validated MAC address as a list of Octet objects.
         """
         pass
+
+    @property
+    def address(self) -> List[Octet]:
+        """
+        Property that returns the MAC address as a list of Octet objects.
+
+        Returns:
+        - List[Octet]: The MAC address as a list of Octet objects.
+        """
+        return self._address
 
     @property
     def mac_type(self) -> MACType:

@@ -36,6 +36,15 @@ class OUIDatabase(ABC):
         """
         pass
 
+    @property
+    @abstractmethod
+    def strategy(self) -> OUIDBStrategy:
+        pass
+
+    @abstractmethod
+    def set_strategy(self, strategy: OUIDBStrategy) -> None:
+        pass
+
     @abstractmethod
     def load(self):
         """
@@ -164,8 +173,38 @@ class LocalOUIDatabase(OUIDatabase):
                 LocalMamSearcher(self._kwargs.get('strategy', OUIDBStrategy.TRIE)),
                 LocalMalSearcher(self._kwargs.get('strategy', OUIDBStrategy.TRIE)),
                 LocalCidSearcher(self._kwargs.get('strategy', OUIDBStrategy.TRIE))]
+            self._strategy = self._kwargs.get('strategy', OUIDBStrategy.TRIE)
             self._data: List = []
             self.load()
+
+    @property
+    def strategy(self) -> OUIDBStrategy:
+        """
+        Get the current OUI database strategy.
+        """
+        return self._strategy.value
+
+    def set_strategy(self, strategy: OUIDBStrategy) -> None:
+        """
+        Set the OUI database strategy and update loaders and searchers accordingly.
+        """
+        self._loaders = [
+            LocalIabLoader(strategy),
+            LocalMasLoader(strategy),
+            LocalMamLoader(strategy),
+            LocalMalLoader(strategy),
+            LocalCidLoader(strategy)
+        ]
+        self._updaters = [LocalIabUpdater(), LocalMasUpdater(), LocalMamUpdater(), LocalMalUpdater(), LocalCidUpdater()]
+        self._searchers = [
+            LocalIabSearcher(strategy),
+            LocalMasSearcher(strategy),
+            LocalMamSearcher(strategy),
+            LocalMalSearcher(strategy),
+            LocalCidSearcher(strategy)]
+        self._strategy = strategy
+        self._data: List = []
+        self.load()
 
     def load(self) -> None:
         """
