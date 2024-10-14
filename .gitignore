@@ -10,3 +10,4 @@ venv/
 *.vsdx
 setup.py
 test.py
+test_packets.py

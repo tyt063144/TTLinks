@@ -129,3 +129,21 @@ class NumeralConverter:
         if type(decimal) is not int:
             raise TypeError("decimal must be an int.")
         return hex(decimal)[2:].upper().rjust(r_just, '0')
+
+    @staticmethod
+    def bytes_to_decimal(byte_string: bytes) -> int:
+        """
+        Converts a bytes object to its decimal (base-10) equivalent.
+
+        Parameters:
+        byte_string (bytes): A bytes object to be converted.
+
+        Returns:
+        int: The decimal equivalent of the bytes object.
+
+        Raises:
+        TypeError: If the input is not a bytes object.
+        """
+        if type(byte_string) is not bytes:
+            raise TypeError("byte_string must be a bytes object.")
+        return int.from_bytes(byte_string, byteorder='big')

@@ -1,10 +1,11 @@
 import concurrent.futures
 import random
 from abc import abstractmethod, ABC
-from typing import List
+from typing import List, Any
 
 from ttlinks.macservice import MACType
 from ttlinks.macservice.mac_address import InterfaceMACAddr, MACAddr
+from ttlinks.macservice.mac_converters import MACConverter
 
 
 class InterfaceMACFactory(ABC):
@@ -28,7 +29,7 @@ class InterfaceMACFactory(ABC):
             Abstract method to generate a batch of random MAC addresses, with the number of MACs specified.
     """
     @abstractmethod
-    def mac(self, mac: str) -> InterfaceMACAddr:
+    def mac(self, mac: Any) -> MACAddr:
         """
         Get or create a MAC address from the given string.
 
@@ -41,7 +42,7 @@ class InterfaceMACFactory(ABC):
         pass
 
     @abstractmethod
-    def batch_macs(self, macs: list[str], max_workers:int=10, keep_dup:bool=True) -> List[InterfaceMACAddr]:
+    def batch_macs(self, macs: list[str], max_workers:int=10, keep_dup:bool=True) -> List[MACAddr]:
         """
         Process a batch of MAC addresses with optional parallelism and duplicate handling.
 
@@ -56,7 +57,7 @@ class InterfaceMACFactory(ABC):
         pass
 
     @abstractmethod
-    def random_mac(self, mac_type=None) -> InterfaceMACAddr:
+    def random_mac(self, mac_type=None) -> MACAddr:
         """
         Generate a random MAC address, optionally of a specified type.
 
@@ -69,7 +70,7 @@ class InterfaceMACFactory(ABC):
         pass
 
     @abstractmethod
-    def random_macs_batch(self, mac_type=None, num_macs=10) -> List[InterfaceMACAddr]:
+    def random_macs_batch(self, mac_type=None, num_macs=10) -> List[MACAddr]:
         """
         Generate a batch of random MAC addresses.
 
@@ -111,7 +112,7 @@ class MACFactory(InterfaceMACFactory):
         """
         self.randomizer = MACRandomizer()
 
-    def mac(self, mac) -> InterfaceMACAddr:
+    def mac(self, mac) -> MACAddr:
         """
         Converts a given MAC address string into a MAC address object.
 
@@ -121,9 +122,9 @@ class MACFactory(InterfaceMACFactory):
         Returns:
         InterfaceMACAddr: An object representing the validated or created MAC address.
         """
-        return MACAddr(mac)
+        return MACAddr(MACConverter.convert_mac(mac))
 
-    def batch_macs(self, macs: list[str], max_workers:int=10, keep_dup:bool=True) -> List[InterfaceMACAddr]:
+    def batch_macs(self, macs: list[str], max_workers:int=10, keep_dup:bool=True) -> List[MACAddr]:
         """
         Processes a batch of MAC addresses with optional parallel processing and duplicate removal.
 
@@ -141,7 +142,7 @@ class MACFactory(InterfaceMACFactory):
             results = list(executor.map(self.mac, macs))
         return results
 
-    def random_mac(self, mac_type=None) -> InterfaceMACAddr:
+    def random_mac(self, mac_type=None) -> MACAddr:
         """
         Generates a single random MAC address.
 
@@ -154,7 +155,7 @@ class MACFactory(InterfaceMACFactory):
         generated_mac = self.randomizer.randomize(mac_type)
         return MACAddr(generated_mac)
 
-    def random_macs_batch(self, mac_type=None, num_macs=10) -> List[InterfaceMACAddr]:
+    def random_macs_batch(self, mac_type=None, num_macs=10) -> List[MACAddr]:
         """
         Generates a batch of random MAC addresses.
 

@@ -118,6 +118,20 @@ class DecimalMAC48ConverterHandler(MACConverterHandler):
         ]
 
 
+class BytesMAC48ConverterHandler(MACConverterHandler):
+    def handle(self, request: Any):
+        if isinstance(request, bytes) and len(request) == 6:
+            return self._to_octets(request)
+        else:
+            return super().handle(request)
+
+    def _to_octets(self, request: bytes) -> List[Octet]:
+        return [
+            OctetFlyWeightFactory.get_octet(NumeralConverter.decimal_to_binary(byte).zfill(8))
+            for byte in request
+        ]
+
+
 class OctetOUI24ConverterHandler(MACConverterHandler):
     def handle(self, request: Any):
         if len(request) == 3 and all(isinstance(item, Octet) for item in request):
@@ -205,6 +219,23 @@ class DotHexOUI24ConverterHandler(MACConverterHandler):
         return result
 
 
+class BytesMAC24ConverterHandler(MACConverterHandler):
+    def handle(self, request: Any):
+        if isinstance(request, bytes) and len(request) == 3:
+            return self._to_octets(request)
+        else:
+            return super().handle(request)
+
+    def _to_octets(self, request: bytes) -> List[Octet]:
+        result = [
+            OctetFlyWeightFactory.get_octet(NumeralConverter.decimal_to_binary(byte).zfill(8))
+            for byte in request
+        ]
+        if self._padding:
+            result.extend([OctetFlyWeightFactory.get_octet('00000000')] * 3)
+        return result
+
+
 class OctetEUI64ConverterHandler(MACConverterHandler):
     def handle(self, request: Any):
         if len(request) == 6 and all(isinstance(item, Octet) for item in request):
@@ -238,6 +269,7 @@ class MACConverter:
                 ColonHexMAC48ConverterHandler(),
                 DotHexMAC48ConverterHandler(),
                 DecimalMAC48ConverterHandler(),
+                BytesMAC48ConverterHandler(),
             ]
         converter_handler = converters[0]
         for next_handler in converters[1:]:
@@ -255,11 +287,13 @@ class MACConverter:
                 ColonHexMAC48ConverterHandler(),
                 DotHexMAC48ConverterHandler(),
                 DecimalMAC48ConverterHandler(),
+                BytesMAC48ConverterHandler(),
                 OctetOUI24ConverterHandler(),
                 BinaryDigitsOUI24ConverterHandler(),
                 DashedHexOUI24ConverterHandler(),
                 ColonHexOUI24ConverterHandler(),
                 DotHexOUI24ConverterHandler(),
+                BytesMAC24ConverterHandler(),
             ]
         converter_handler = converters[0]
         for next_handler in converters[1:]:

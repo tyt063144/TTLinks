@@ -495,7 +495,11 @@ class IPv4SubnetConfig(IPv4HostConfig):
         binary_bit_ipv4_converter = BinaryDigitsIPv4ConverterHandler()
         for matched_digits in itertools.product([0, 1], repeat=non_matching_indices):
             network_id_binary_digits[-non_matching_indices:] = matched_digits
-            yield IPv4Addr(binary_bit_ipv4_converter.handle(network_id_binary_digits))
+            if not netmask_binary_digits.count(1) == 32:
+                yield IPv4Addr(binary_bit_ipv4_converter.handle(network_id_binary_digits))
+            else:
+                # Skip the network ID and broadcast IP for /32 subnets
+                yield IPv4Addr(binary_bit_ipv4_converter.handle(list(self.network_id.binary_digits)))
 
     def is_within(self, ip_addr: Any) -> bool:
         """
@@ -1124,7 +1128,11 @@ class IPv6SubnetConfig(IPv6HostConfig):
         binary_bit_ipv6_converter = BinaryDigitsIPv6ConverterHandler()
         for matched_digits in itertools.product([0, 1], repeat=non_matching_indices):
             network_id_binary_digits[-non_matching_indices:] = matched_digits
-            yield IPv6Addr(binary_bit_ipv6_converter.handle(network_id_binary_digits))
+            if not netmask_binary_digits.count(1) == 128:
+                yield IPv6Addr(binary_bit_ipv6_converter.handle(network_id_binary_digits))
+            else:
+                # Skip the network ID and broadcast IP for /128 subnets
+                yield IPv4Addr(binary_bit_ipv6_converter.handle(list(self.network_id.binary_digits)))
 
     def is_within(self, ip_addr: Any) -> bool:
         """

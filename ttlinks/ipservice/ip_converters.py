@@ -22,7 +22,7 @@ class IPConverterHandler(SimpleCoRHandler):
     """
 
     @abstractmethod
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs) -> Any:
         """
         Handles the request. If the current handler cannot process the request,
         it passes the request to the next handler in the chain (if any).
@@ -64,7 +64,7 @@ class OctetIPv4ConverterHandler(IPConverterHandler):
     A list of octets if the request is valid; otherwise passes the request to the next handler in the chain.
     """
 
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs) -> Any:
         """
         Handles the request by checking if it's a valid list of 4 octets for an IPv4 address.
         If valid, it converts the request to a list of octets using the _to_octets method.
@@ -107,7 +107,7 @@ class BinaryDigitsIPv4ConverterHandler(IPConverterHandler):
     A list of Octet objects created from the binary digits if the request is valid; otherwise, the request is passed to the next handler.
     """
 
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         """
         Handles the request by checking if it's a list of 32 integers representing the binary digits of an IPv4 address.
         If valid, it converts the binary digits to octets using the _to_octets method.
@@ -160,7 +160,7 @@ class CIDRIPv4ConverterHandler(IPConverterHandler):
     A list of Octet objects representing the subnet mask if the request is valid; otherwise, the request is passed to the next handler.
     """
 
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         """
         Handles the request by checking if it's a valid CIDR string (e.g., '/24').
         If valid, it converts the CIDR notation into octets using the _to_octets method.
@@ -213,7 +213,7 @@ class DotIPv4ConverterHandler(IPConverterHandler):
     A list of Octet objects if the request is valid; otherwise, the request is passed to the next handler.
     """
 
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         """
         Handles the request by checking if it's a valid IPv4 address in dotted decimal notation.
         If valid, it converts the address to a list of octets using the _to_octets method.
@@ -267,7 +267,7 @@ class DecimalIPv4ConverterHandler(IPConverterHandler):
     Returns:
     A list of Octet objects if the request is valid; otherwise, the request is passed to the next handler.
     """
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         """
         Handles the request by checking if it's a valid integer representing a 32-bit IPv4 address.
         If valid, it converts the address to a list of octets using the _to_octets method.
@@ -317,7 +317,7 @@ class OctetIPv6ConverterHandler(IPConverterHandler):
     The list of octets if the request is valid; otherwise, the request is passed to the next handler in the chain.
     """
 
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         """
         Handles the request by checking if it's a valid list of 16 octets for an IPv6 address.
         If valid, it returns the request directly (assuming it's already in the correct format).
@@ -360,7 +360,7 @@ class BinaryDigitsIPv6ConverterHandler(IPConverterHandler):
     A list of Octet objects created from the binary digits if the request is valid; otherwise, the request is passed to the next handler.
     """
 
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         """
         Handles the request by checking if it's a valid list of 128 integers representing the binary digits of an IPv6 address.
         If valid, it converts the binary digits to octets using the _to_octets method.
@@ -413,7 +413,7 @@ class CIDRIPv6ConverterHandler(IPConverterHandler):
     A list of Octet objects representing the subnet mask if the request is valid; otherwise, the request is passed to the next handler.
     """
 
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         """
         Handles the request by checking if it's a valid CIDR string (e.g., '/64').
         If valid, it converts the CIDR notation into octets using the _to_octets method.
@@ -467,7 +467,7 @@ class ColonIPv6ConverterHandler(IPConverterHandler):
     A list of Octet objects if the request is valid; otherwise, the request is passed to the next handler.
     """
 
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         """
         Handles the request by checking if it's a string representing an IPv6 address.
         If valid, it converts the IPv6 address to octets using the _to_octets method.
@@ -525,7 +525,7 @@ class DecimalIPv6ConverterHandler(IPConverterHandler):
     Returns:
     A list of Octet objects if the request is valid; otherwise, the request is passed to the next handler.
     """
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         """
         Handles the request by checking if it's a valid integer representing a 128-bit IPv6 address.
         If valid, it converts the address to a list of octets using the _to_octets method.
