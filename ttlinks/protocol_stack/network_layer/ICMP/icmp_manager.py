@@ -28,7 +28,7 @@ class ICMPPingResponse:
     - icmp_unit: Returns the ICMP payload unit from the IPv4 packet.
     - icmp_type: Returns the ICMP message type (e.g., Echo Reply).
     - icmp_code: Returns the ICMP code.
-    - is_success: Indicates whether the response was an ICMP Echo Reply.
+    - is_successful: Indicates whether the response was an ICMP Echo Reply.
     - verbose: Returns a textual description of the ping response (for user-friendly output).
 
     Parameters:
@@ -114,7 +114,7 @@ class ICMPPingResponse:
         return self._ipv4_unit.payload.icmp_code if self._ipv4_unit else None
 
     @property
-    def is_success(self):
+    def is_successful(self):
         """
         Returns whether the ICMP response was successful (i.e., an ICMP Echo Reply).
 
@@ -192,13 +192,13 @@ class PingStatistics:
             - total_packets_sent (int): The total number of packets sent.
             - total_packets_received (int): The number of successful ping responses.
             - packet_loss (float): The percentage of packet loss.
-            - is_success (bool): Whether any successful ping responses were received.
+            - is_successful (bool): Whether any successful ping responses were received.
         """
         result = {
             'total_packets_sent': len(responses),
-            'total_packets_received': len([response for response in responses if response.is_success]),
-            'packet_loss': len([response for response in responses if not response.is_success]) / len(responses) * 100,
-            'is_success': any([response.is_success for response in responses]),
+            'total_packets_received': len([response for response in responses if response.is_successful]),
+            'packet_loss': len([response for response in responses if not response.is_successful]) / len(responses) * 100,
+            'is_successful': any([response.is_successful for response in responses]),
         }
         return result
 
@@ -316,7 +316,7 @@ class ICMPPingManager:
         results = await asyncio.gather(*tasks.values(), return_exceptions=True)
         return {str(destination): result for destination, result in zip(tasks.keys(), results)}
 
-    def ping(self, destination: str, timeout: int = 2):
+    def ping(self, destination: str, timeout: int = 2, interval=1, count: int = 5, verbose=True):
         """
         Sends ICMP echo requests to a single destination synchronously.
 
@@ -327,7 +327,7 @@ class ICMPPingManager:
         Returns:
         - dict: A dictionary of ping statistics.
         """
-        return asyncio.run(self.async_ping(destination, timeout))
+        return asyncio.run(self.async_ping(destination, timeout, interval, count, verbose))
 
     def ping_multiple(self, destinations: Union[List[str], Generator[IPv4Addr, None, None]],
                       timeout: int = 2, interval=1, count: int = 2, verbose=True):

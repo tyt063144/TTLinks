@@ -109,6 +109,7 @@ class IPv4PacketUnit(ProtocolUnit):
         return {
             'version': self.version,
             'ihl': self.ihl,
+            'header_length': self.header_length,
             'dscp': self.dscp,
             'ecn': self.ecn,
             'total_length': self.total_length,
@@ -135,15 +136,18 @@ class IPv4PacketUnit(ProtocolUnit):
         return IPType(int.from_bytes(self._version_and_ihl, byteorder='big') >> 4)
 
     @property
-    def ihl(self) -> int:
+    def header_length(self) -> int:
         """
-        Extracts the Internet Header Length (IHL) from the last 4 bits of the 'version_and_ihl' field.
-        The IHL specifies the length of the IPv4 header in 4-byte words.
-
-        Returns:
-            int: The length of the IPv4 header in bytes.
+        Extracts the header length (IHL) from the 'version_and_ihl' field. The header length is
         """
         return (int.from_bytes(self._version_and_ihl, byteorder='big') & 0xF) * 4
+
+    @property
+    def ihl(self) -> int:
+        """
+        Extracts the header length (IHL) from the 'version_and_ihl' field. The header length is
+        """
+        return (int.from_bytes(self._version_and_ihl, byteorder='big') & 0xF)
 
     @property
     def dscp(self) -> DSCP:

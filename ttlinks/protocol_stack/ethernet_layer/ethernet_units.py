@@ -91,7 +91,7 @@ class EthernetII(ProtocolUnit):
             'frame_type': self.frame_type,
             'destination_mac': self.dst,
             'source_mac': self.src,
-            'network_layer': self.type,
+            'next_layer': self.type,
             'next_layer_payload': self.payload,
         }
 
@@ -256,7 +256,7 @@ class IEEE8023(ProtocolUnit):
             'ssap': self.ssap,
             'control': self.control,
             'oui': self.oui,
-            'network_layer': self.pid,
+            'next_layer': self.pid,
             'next_layer_payload': self.payload,
             'padding': self.padding
         }

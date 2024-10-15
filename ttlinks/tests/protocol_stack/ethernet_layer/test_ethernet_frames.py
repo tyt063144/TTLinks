@@ -2,7 +2,7 @@ import pytest
 
 from ttlinks.macservice.mac_address import MACAddr
 from ttlinks.protocol_stack.ethernet_layer.ethernet_parsers import EthernetFrameParser
-from ttlinks.protocol_stack.ethernet_layer.ethernet_units import Ethernet8023, EthernetII, EthernetUnitFactory
+from ttlinks.protocol_stack.ethernet_layer.ethernet_units import IEEE8023 ,EthernetII, EthernetUnitFactory
 from ttlinks.protocol_stack.ethernet_layer.ethernet_utils import LSAP, EthernetTypes, EthernetPayloadProtocolTypes
 
 
@@ -27,7 +27,7 @@ def test_ieee8023_frame_parser1():
     # Assert that the parsed result matches the expected result
     assert ieee8023_frame_result == expected_result
     # Now build the Ethernet8023 frame from the parsed result
-    ethernet8023 = Ethernet8023(**ieee8023_frame_result)
+    ethernet8023 = IEEE8023(**ieee8023_frame_result)
     # Validate frame attributes
     assert str(ethernet8023.dst) == str(MACAddr(b'\x01\x80\xc2\x00\x00\x00'))
     assert str(ethernet8023.src) == str(MACAddr(b'\x04*\xe2\xdaA\x05'))
@@ -46,7 +46,7 @@ def test_ieee8023_frame_parser2():
     frame_parser = EthernetFrameParser()
     ieee8023_frame_result = frame_parser.parse(ieee8023_frame)
 
-    ethernet8023 = Ethernet8023(**ieee8023_frame_result)
+    ethernet8023 = IEEE8023(**ieee8023_frame_result)
 
     assert str(ethernet8023.dst) == str(MACAddr(b'\x01\x00\x0C\xCC\xCC\xCC'))
     assert str(ethernet8023.src) == str(MACAddr(b'\x04\x2A\xE2\xDA\x41\x05'))

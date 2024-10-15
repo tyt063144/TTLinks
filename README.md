@@ -8,6 +8,10 @@ This project is available on PyPI and can be installed using pip:
 pip install ttlinks
 ```
 
+### Common Utilities
+**TTLinks** includes a set of common utilities that provide essential functionality for network management tasks. These utilities are designed to be reusable and extensible, offering a foundation for building more complex network tools.
+For more details, visit:
+- [Common Utilities](docs/common/common_utilities.md)
 
 ### IP Services
 The IP service module in **TTLinks** offers a variety of tools to classify and work with both IPv4 and IPv6 addresses. These services allow you to:
@@ -21,8 +25,16 @@ For more details, visit:
 ### MAC Services
 **TTLinks** includes a powerful MAC service module for validating MAC addresses, converting between various formats, and performing OUI lookups using a local database. This is especially useful for managing devices across a network.
 
+For more details, visit:
 - [MAC Address Services](docs/macservice/mac_services.md)
 - [design diagram](docs/macservice/Class%20Diagram.pdf)
+
+### Protocol Stack
+The protocol stack module in **TTLinks** provides a framework for working with network protocol data units (PDUs) at different layers of the TCP/IP model. This module allows you to create, parse, and manipulate protocol headers, making it easier to analyze network traffic and build custom network tools. The protocol stack currently supports Ethernet, IPv4, and ICMP headers. Example applications include packet crafting, network monitoring, port scanning, and more.
+
+For more details, visit:
+- [Protocol Stack](docs/protocol_stack/protocol_stack.md)
+
 
 ### Test Cases
 If you're interested in seeing how these modules function in practice, check out the test cases. They provide a great way to understand how the different components work together.
