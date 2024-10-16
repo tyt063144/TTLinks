@@ -51,7 +51,7 @@ class ICMPUnits(ProtocolUnit, ABC):
     @property
     def message_type(self) -> ICMPTypes:
         """Returns the ICMP message type as an `ICMPTypes` enum."""
-        return ICMPTypes(int.from_bytes(self._icmp_type))
+        return ICMPTypes(int.from_bytes(self._icmp_type, 'big'))
 
     @property
     def icmp_type(self) -> int:

@@ -212,10 +212,13 @@ class ICMPReceiver(PacketReceiver):
                 reply_matched = ICMPReceiveMonitor.monitor(replied_ipv4_unit, original_icmp_unit=kwargs['icmp_unit'], ip_destination=destination)
                 if reply_matched:
                     kwargs['time_record']['end_time'] = receiving_time
+                    socket_unit.close()
                     return replied_ipv4_unit
                 if remaining_timeout <= 0:
                     kwargs['time_record']['end_time'] = receiving_time
+                    socket_unit.close()
                     raise asyncio.TimeoutError
             except asyncio.TimeoutError:
                 kwargs['time_record']['end_time'] = time.perf_counter()
+                socket_unit.close()
                 return

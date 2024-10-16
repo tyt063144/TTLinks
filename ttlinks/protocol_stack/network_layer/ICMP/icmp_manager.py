@@ -231,11 +231,14 @@ class ICMPPingManager:
         Parameters:
         - semaphore (int): The maximum number of concurrent ping requests. Defaults to 255.
         """
+        self._semaphore_value = semaphore  # Store the semaphore limit as an integer
+
         self._socket_director = SocketBuilderDirector(ICMPSocketBuilder())
         self._icmp_header_build_director = ICMPHeaderBuilderDirector(ICMPEchoRequestHeaderBuilder(ICMPEchoRequestHeader()))
         self._sender = ICMPEchoRequestSender()
         self._receiver = ICMPReceiver()
-        self._semaphore = asyncio.Semaphore(semaphore)
+
+
 
     @staticmethod
     def _validate(timeout, interval, count):
@@ -279,7 +282,7 @@ class ICMPPingManager:
         self._validate(timeout, interval, count)
         responses = []
         socket_unit = self._socket_director.build_icmp_socket()
-        async with self._semaphore:
+        async with asyncio.Semaphore(self._semaphore_value):
             for _ in range(count):
                 icmp_echo_request_header = self._icmp_header_build_director.build_echo_request()
                 icmp_unit = icmp_echo_request_header.unit
