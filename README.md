@@ -35,6 +35,31 @@ The protocol stack module in **TTLinks** provides a framework for working with n
 For more details, visit:
 - [Protocol Stack](docs/protocol_stack/protocol_stack.md)
 
+#### Example: Creating IPv4 TCP Packet
+```python
+from ttlinks.protocol_stack.ip_packets.tcp import IPv4TCP
+from ttlinks.protocol_stack.network_layer.IPv4.flags_utils import IPv4Flags
+from ttlinks.protocol_stack.transport_layer.TCP.tcp_utils import TCPFlags
+
+tcp = IPv4TCP(
+    ipv4_flags=IPv4Flags.DONT_FRAGMENT,
+    ttl=32,
+    destination_address='192.168.1.30',
+    source_port=54156,
+    destination_port=22,
+    sequence_number=1370412840,
+    tcp_flags=[TCPFlags.SYN],
+)
+# check packet in bytes
+print(tcp.packet)  
+# check ip header
+print(tcp.ip_unit.as_bytes)
+print(tcp.ip_unit.summary)
+# check tcp header  
+print(tcp.tcp_unit.as_bytes)
+print(tcp.tcp_unit.summary)
+```
+
 
 ### Test Cases
 If you're interested in seeing how these modules function in practice, check out the test cases. They provide a great way to understand how the different components work together.
