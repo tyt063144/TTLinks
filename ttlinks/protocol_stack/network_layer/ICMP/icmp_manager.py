@@ -1,10 +1,7 @@
 import asyncio
-import traceback
-from inspect import trace
 from typing import Union, List, Generator
 
 from ttlinks.ipservice.ip_address import IPv4Addr
-from ttlinks.ipservice.ip_configs import IPv4SubnetConfig, IPv4WildCardConfig
 from ttlinks.protocol_stack.base_classes.protocol_socket import SocketBuilderDirector, ICMPSocketBuilder
 from ttlinks.protocol_stack.network_layer.ICMP.icmp_builder import ICMPEchoRequestHeader, ICMPEchoRequestHeaderBuilder, ICMPHeaderBuilderDirector
 from ttlinks.protocol_stack.network_layer.ICMP.icmp_receivers import ICMPReceiver
@@ -281,7 +278,7 @@ class ICMPPingManager:
         """
         self._validate(timeout, interval, count)
         responses = []
-        socket_unit = self._socket_director.build_icmp_socket()
+        socket_unit = self._socket_director.build_socket()
         async with asyncio.Semaphore(self._semaphore_value):
             for _ in range(count):
                 icmp_echo_request_header = self._icmp_header_build_director.build_echo_request()

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import random
+import socket
 from itertools import product
 from typing import List, Tuple, Any
 
@@ -82,3 +84,79 @@ class BinaryTools:
             else:
                 adjusted_address += address_bit
         return [OctetFlyWeightFactory.get_octet(adjusted_address[i:i+8]) for i in range(0, len(adjusted_address), 8)]
+
+class NetTools:
+    """
+    NetTools is a utility class providing essential network-related methods for:
+    - Retrieving the outgoing IP address of the local network interface.
+    - Finding an available TCP port on the local machine.
+    - Generating a random 32-bit TCP sequence number.
+    - Generating a random 16-bit IPv4 identification number.
+
+    Each method within this class is static, allowing direct access without instantiating the class.
+    """
+    @staticmethod
+    def get_outgoing_interface_ip(destination="8.8.8.8", port=80, timeout=0.002):
+        """
+        Retrieves the IP address of the local interface used to reach a specified destination.
+
+        Parameters:
+        - destination (str, default="8.8.8.8"): The IP address to simulate a connection to (default is Google's DNS).
+        - port (int, default=80): Port number for the simulated connection.
+        - timeout (float, default=0.002): Timeout duration for the connection attempt.
+
+        Returns:
+        - str: The IP address of the outgoing interface if successful.
+        - None: If there's a timeout or socket error.
+        """
+        try:
+            # Create a socket and set a timeout
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                s.settimeout(timeout)  # Set the timeout in seconds
+                s.connect((destination, port))
+                local_ip = s.getsockname()[0]  # Get the IP address of the outgoing interface
+            return local_ip
+        except (socket.timeout, socket.error) as e:
+            print(f"An error occurred or timeout reached: {e}")
+            return None
+
+    @staticmethod
+    def get_unused_port() -> int:
+        """
+        Finds and returns an available random port between 1025 and 65535 for TCP connections.
+
+        Returns:
+        - int: A free TCP port number.
+        """
+        while True:
+            random_port = random.randint(1025, 65535)
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                try:
+                    s.bind(("localhost", random_port))
+                except OSError:
+                    continue # get next random port that is not in use
+                return random_port  # Port is free
+    @staticmethod
+    def get_tcp_sequence_number() -> int:
+        """
+        Generates a random 32-bit TCP sequence number with a small offset to simulate non-deterministic sequences.
+
+        Returns:
+        - int: A random 32-bit TCP sequence number.
+        """
+        sequence_number = random.getrandbits(32)
+        offset = random.randint(1, 1000)
+        sequence_number = (sequence_number + offset) % (2**32)
+        return sequence_number
+    @staticmethod
+    def get_ipv4_id() -> int:
+        """
+        Generates a random 16-bit IPv4 identification number with a small offset for uniqueness in packet identification.
+
+        Returns:
+        - int: A random 16-bit IPv4 identification number.
+        """
+        identification = random.getrandbits(16)
+        offset = random.randint(1, 1000)
+        identification = (identification + offset) % (2**16)
+        return identification

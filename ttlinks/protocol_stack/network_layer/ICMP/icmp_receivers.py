@@ -10,7 +10,7 @@ from ttlinks.protocol_stack.ethernet_layer.ethernet_payload_unit_factory import 
 from ttlinks.protocol_stack.ethernet_layer.ethernet_utils import EthernetPayloadProtocolTypes
 from ttlinks.protocol_stack.network_layer.ICMP.icmp_utils import ICMPTypes
 from ttlinks.protocol_stack.network_layer.IP.ip_payload_utils import IPPayloadProtocolTypes
-from ttlinks.protocol_stack.network_layer.IPv4.ipv4_packet_units import IPv4PacketUnit
+from ttlinks.protocol_stack.network_layer.IPv4.ipv4_units import IPv4Unit
 
 
 # ----------------- ICMP Echo Request Receiver Monitor Handlers -----------------
@@ -34,9 +34,9 @@ class ICMPSenderEchoReplyMonitorHandler(ICMPSenderReceiveMonitorHandler):
     ICMP Echo Request, based on the protocol, message type, sequence number, identifier, and IP destination.
     If it matches, it returns True. Otherwise, it passes the packet to the next handler.
     """
-    def handle(self, replied_ipv4_unit: IPv4PacketUnit, *args, **kwargs):
+    def handle(self, replied_ipv4_unit: IPv4Unit, *args, **kwargs):
         if (
-                isinstance(replied_ipv4_unit, IPv4PacketUnit)
+                isinstance(replied_ipv4_unit, IPv4Unit)
                 and replied_ipv4_unit.protocol == IPPayloadProtocolTypes.ICMP
                 and replied_ipv4_unit.payload.message_type == ICMPTypes.ECHO_REPLY
                 and kwargs.get('original_icmp_unit').sequence_number == replied_ipv4_unit.payload.sequence_number
@@ -55,9 +55,9 @@ class ICMPSenderDestinationUnreachableMonitorHandler(ICMPSenderReceiveMonitorHan
     that references the original ICMP Echo Request, based on the protocol, message type, payload content,
     and destination address. If it matches, it returns True. Otherwise, it passes the packet to the next handler.
     """
-    def handle(self, replied_ipv4_unit: IPv4PacketUnit, *args, **kwargs):
+    def handle(self, replied_ipv4_unit: IPv4Unit, *args, **kwargs):
         if (
-                isinstance(replied_ipv4_unit, IPv4PacketUnit)
+                isinstance(replied_ipv4_unit, IPv4Unit)
                 and replied_ipv4_unit.protocol == IPPayloadProtocolTypes.ICMP
                 and replied_ipv4_unit.payload.message_type == ICMPTypes.DESTINATION_UNREACHABLE
                 and kwargs.get('original_icmp_unit').as_bytes == replied_ipv4_unit.payload.payload.payload.as_bytes
@@ -75,9 +75,9 @@ class ICMPSenderRedirectMonitorHandler(ICMPSenderReceiveMonitorHandler):
     the original ICMP request. It compares the protocol, message type, payload, and destination address.
     If it matches, it returns True. Otherwise, it passes the packet to the next handler.
     """
-    def handle(self, replied_ipv4_unit: IPv4PacketUnit, *args, **kwargs):
+    def handle(self, replied_ipv4_unit: IPv4Unit, *args, **kwargs):
         if (
-                isinstance(replied_ipv4_unit, IPv4PacketUnit)
+                isinstance(replied_ipv4_unit, IPv4Unit)
                 and replied_ipv4_unit.protocol == IPPayloadProtocolTypes.ICMP
                 and replied_ipv4_unit.payload.message_type == ICMPTypes.REDIRECT
                 and kwargs.get('original_icmp_unit').as_bytes == replied_ipv4_unit.payload.payload.payload.as_bytes
@@ -95,9 +95,9 @@ class ICMPSenderTTLExceededMonitorHandler(ICMPSenderReceiveMonitorHandler):
     the original ICMP request. It compares the protocol, message type, payload, and destination address.
     If it matches, it returns True. Otherwise, it passes the packet to the next handler.
     """
-    def handle(self, replied_ipv4_unit: IPv4PacketUnit, *args, **kwargs):
+    def handle(self, replied_ipv4_unit: IPv4Unit, *args, **kwargs):
         if (
-                isinstance(replied_ipv4_unit, IPv4PacketUnit)
+                isinstance(replied_ipv4_unit, IPv4Unit)
                 and replied_ipv4_unit.protocol == IPPayloadProtocolTypes.ICMP
                 and replied_ipv4_unit.payload.message_type == ICMPTypes.TIME_EXCEEDED
                 and kwargs.get('original_icmp_unit').as_bytes == replied_ipv4_unit.payload.payload.payload.as_bytes
@@ -115,9 +115,9 @@ class ICMPSenderParameterProblemMonitorHandler(ICMPSenderReceiveMonitorHandler):
     the original ICMP request. It compares the protocol, message type, payload, and destination address.
     If it matches, it returns True. Otherwise, it passes the packet to the next handler.
     """
-    def handle(self, replied_ipv4_unit: IPv4PacketUnit, *args, **kwargs):
+    def handle(self, replied_ipv4_unit: IPv4Unit, *args, **kwargs):
         if (
-                isinstance(replied_ipv4_unit, IPv4PacketUnit)
+                isinstance(replied_ipv4_unit, IPv4Unit)
                 and replied_ipv4_unit.protocol == IPPayloadProtocolTypes.ICMP
                 and replied_ipv4_unit.payload.message_type == ICMPTypes.PARAMETER_PROBLEM
                 and kwargs.get('original_icmp_unit').as_bytes == replied_ipv4_unit.payload.payload.payload.as_bytes
@@ -137,7 +137,7 @@ class ICMPReceiveMonitor:
     """
     @staticmethod
     def monitor(
-            ipv4_unit: IPv4PacketUnit,
+            ipv4_unit: IPv4Unit,
             original_icmp_unit: ProtocolUnit,
             ip_destination:str,
             monitors: List[ICMPSenderReceiveMonitorHandler] = None
@@ -146,7 +146,7 @@ class ICMPReceiveMonitor:
         Monitors the received ICMP response by passing it through a chain of handlers.
 
         Parameters:
-        - ipv4_unit (IPv4PacketUnit): The received IPv4 packet containing the ICMP response.
+        - ipv4_unit (IPv4Unit): The received IPv4 packet containing the ICMP response.
         - original_icmp_unit (ProtocolUnit): The original ICMP request that was sent.
         - ip_destination (str): The destination IP address used in the original request.
         - monitors (List[ICMPSenderReceiveMonitorHandler], optional): A list of handlers for different ICMP response types.
@@ -191,7 +191,7 @@ class ICMPReceiver(PacketReceiver):
           - 'time_record' (dict): A record of the start and end times for the request/response.
 
         Returns:
-        - IPv4PacketUnit: The matching ICMP response if found, or None if the operation times out.
+        - IPv4Unit: The matching ICMP response if found, or None if the operation times out.
         """
         start_time = time.perf_counter()
         sock = socket_unit.get_socket

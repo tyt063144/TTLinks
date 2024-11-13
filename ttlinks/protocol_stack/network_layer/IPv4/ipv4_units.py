@@ -1,4 +1,4 @@
-from typing import Union, Any
+from typing import Any
 
 from ttlinks.common.design_template.cor import ProtocolUnitSelectorCoRHandler
 from ttlinks.ipservice.ip_address import IPv4Addr
@@ -12,7 +12,7 @@ from ttlinks.protocol_stack.network_layer.IPv4.ipv4_parsers import IPv4PacketPar
 from ttlinks.protocol_stack.network_layer.IPv4.ipv4_payload_unit_factory import IPv4PayloadUnitFactory
 
 
-class IPv4PacketUnit(ProtocolUnit):
+class IPv4Unit(ProtocolUnit):
     """
     This class represents an IPv4 packet and provides methods to access and manipulate
     the various fields in the packet header. It also allows you to convert the packet
@@ -328,7 +328,7 @@ class IPv4UnitSelectorHandler(ProtocolUnitSelectorCoRHandler):
             'flags_and_fragment_offset', 'ttl', 'protocol', 'header_checksum',
             'source_address', 'destination_address', 'options', 'payload'
         ] == list(self._parsed_data.keys()):
-            return IPv4PacketUnit(**self._parsed_data)
+            return IPv4Unit(**self._parsed_data)
         else:
             return super().handle(packet, *args, **kwargs)
 

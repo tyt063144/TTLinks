@@ -117,6 +117,31 @@ class TrackedCoRHandler(CoRHandler, ABC):
     def handle(self, request: Any, *args, **kwargs) -> Any:
         pass
 
+class ListBasedCoRHandler(CoRHandler, ABC):
+    def __init__(self):
+        self._next_handler = None  # Reference to the next handler in the chain
+        self._items = []  # List to track the request and response
+
+    def _set_items(self, items: list):
+        self._items = items
+
+    def set_next(self, h: ListBasedCoRHandler) -> ListBasedCoRHandler:
+        if not isinstance(h, ListBasedCoRHandler):
+            raise TypeError("The next handler must be an instance of ListBasedCoRHandler.")
+        self._next_handler = h
+        self._next_handler._set_items(self._items)
+        return h
+
+    def get_next(self) -> ListBasedCoRHandler:
+        return self._next_handler
+
+    def get_items(self) -> list:
+        return self._items
+
+    @abstractmethod
+    def handle(self, request: Any, *args, **kwargs) -> Any:
+        pass
+
 class ProtocolUnitSelectorCoRHandler(CoRHandler, ABC):
     def __init__(self, parser: Any = None):
         self._next_handler = None  # Reference to the next handler in the chain

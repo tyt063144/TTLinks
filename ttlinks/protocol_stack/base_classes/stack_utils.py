@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 
 class ProtocolUnit(ABC):
@@ -21,6 +22,19 @@ class ProtocolUnit(ABC):
     - summary: Abstract property that represents a summary of the protocol unit, typically used for logging or debugging.
     - attributes: Abstract property that represents specific protocol attributes (e.g., headers, payload).
     """
+    def get_field(self, field_name: str) -> Any:
+        """
+        Get the value of a field from the protocol unit.
+
+        This method retrieves the value of a specific field from the protocol unit's attributes.
+
+        Args:
+        field_name (str): The name of the field to retrieve.
+
+        Returns:
+        bytes: The value of the specified field.
+        """
+        return self.summary.get(field_name, None)
     @property
     @abstractmethod
     def as_bytes(self) -> bytes:

@@ -120,6 +120,8 @@ class SocketBuilderInterface(ABC):
     def set_fileno(self, fileno: any = None):
         pass
 
+
+# ------------------ICMP Socket Builder------------------
 class ICMPSocketBuilder(SocketBuilderInterface):
     """
     Concrete builder class for creating an ICMP `Socket` using the **Builder** pattern.
@@ -217,6 +219,114 @@ class ICMPSocketBuilder(SocketBuilderInterface):
         """
         self._socket.add_param('fileno', fileno)
 
+# ------------------IP Socket Builder------------------
+class IPRawSocketBuilder(SocketBuilderInterface):
+    """
+    Concrete builder class for creating an IP raw `Socket` using the **Builder** pattern.
+
+    This class provides default settings for creating a raw IP socket, but allows for customization
+    of its parameters. It is responsible for setting the family, type, protocol, and optional file
+    descriptor.
+
+    Methods:
+    - reset: Resets the internal `Socket` object to allow building from scratch.
+    - set_family: Configures the socket's family (default: `socket.AF_INET`).
+    - set_type: Configures the socket's type (default: `socket.SOCK_RAW`).
+    - set_proto: Configures the socket's protocol (default: `socket.IPPROTO_RAW`).
+    - set_fileno: Configures the socket's file descriptor (optional).
+    - build_socket_unit: Builds and returns the configured `Socket` object.
+
+    Parameters:
+    blocking (bool): Specifies whether the socket should be blocking or non-blocking. Defaults to False.
+    """
+
+    def __init__(self, blocking: bool = False):
+        """
+        Initializes the IPRawSocketBuilder with a new Socket object.
+
+        Parameters:
+        - blocking (bool): Determines whether the socket should be blocking or non-blocking. Defaults to False.
+
+        Returns:
+        None
+        """
+        self._socket = Socket(blocking)
+        self._blocking = blocking
+
+    def reset(self):
+        """
+        Resets the internal `Socket` object to its initial state, allowing for a new socket build.
+
+        Parameters:
+        None
+
+        Returns:
+        None
+        """
+        self._socket = Socket(self._blocking)
+
+    @property
+    def build_socket_unit(self) -> Socket:
+        """
+        Builds and returns the configured `Socket` object.
+
+        Resets the builder to allow reusing the same builder instance for new socket creations.
+
+        Returns:
+        Socket: The fully configured socket instance.
+        """
+        socket_unit = self._socket
+        self.reset()
+        return socket_unit
+
+    def set_family(self, family: any = socket.AF_INET):
+        """
+        Sets the socket's address family.
+
+        Parameters:
+        - family (any): The address family to use (default: `socket.AF_INET`).
+
+        Returns:
+        None
+        """
+        self._socket.add_param('family', family)
+
+    def set_type(self, type: any = socket.SOCK_RAW):
+        """
+        Sets the socket's type.
+
+        Parameters:
+        - type (any): The socket type to use (default: `socket.SOCK_RAW`).
+
+        Returns:
+        None
+        """
+        self._socket.add_param('type', type)
+
+    def set_proto(self, proto: any = socket.IPPROTO_RAW):
+        """
+        Sets the socket's protocol.
+
+        Parameters:
+        - proto (any): The protocol to use (default: `socket.IPPROTO_RAW`).
+
+        Returns:
+        None
+        """
+        self._socket.add_param('proto', proto)
+
+    def set_fileno(self, fileno: any = None):
+        """
+        Sets the socket's file descriptor (optional).
+
+        Parameters:
+        - fileno (any): The file descriptor to use (default: None).
+
+        Returns:
+        None
+        """
+        self._socket.add_param('fileno', fileno)
+
 
 # ------------------Socket Builder Director------------------
 class SocketBuilderDirector:
@@ -227,7 +337,7 @@ class SocketBuilderDirector:
     The director ensures the correct sequence of steps for building the desired socket.
 
     Methods:
-    - build_icmp_socket: Directs the builder to create an ICMP socket with the appropriate settings.
+    - build_socket: Directs the builder to create a socket with the appropriate settings.
 
     Parameters:
     builder (SocketBuilderInterface): The socket builder used to configure the socket.
@@ -238,13 +348,7 @@ class SocketBuilderDirector:
     def __init__(self, builder):
         self.builder = builder
 
-    def build_icmp_socket(self):
-        """
-        Directs the builder to construct an ICMP socket by setting family, type, protocol, and file descriptor.
-
-        Returns:
-        Socket: The constructed ICMP socket object.
-        """
+    def build_socket(self):
         self.builder.set_family()
         self.builder.set_type()
         self.builder.set_proto()

@@ -1,7 +1,7 @@
 
 from ttlinks.common.design_template.cor import SimpleCoRHandler
 from ttlinks.protocol_stack.ethernet_layer.ethernet_utils import EthernetPayloadProtocolTypes
-from ttlinks.protocol_stack.network_layer.IPv4.ipv4_packet_units import IPv4UnitFactory
+from ttlinks.protocol_stack.network_layer.IPv4 import ipv4_units
 
 
 class IPv4FactorySelectorHandler(SimpleCoRHandler):
@@ -25,7 +25,7 @@ class IPv4FactorySelectorHandler(SimpleCoRHandler):
     """
     def handle(self, protocol: EthernetPayloadProtocolTypes, *args, **kwargs):
         if protocol == EthernetPayloadProtocolTypes.IPv4:
-            return IPv4UnitFactory
+            return ipv4_units.IPv4UnitFactory
         else:
             return super().handle(protocol)
 

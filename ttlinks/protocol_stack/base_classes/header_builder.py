@@ -1,6 +1,6 @@
 import copy
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import Union, Any
 
 from ttlinks.protocol_stack.base_classes.stack_utils import ProtocolUnit
 
@@ -34,7 +34,7 @@ class Header(ABC):
     def __init__(self):
         self._fields = {}
 
-    def add_field(self, name:str, value:Union[bytes, int]):
+    def add_field(self, name:str, value: Any):
         """
         Adds a field to the header with a specified name and value.
 
@@ -47,7 +47,7 @@ class Header(ABC):
         """
         self._fields[name] = value
 
-    def get_field(self, name:str) -> Union[bytes, int]:
+    def get_field(self, name:str) -> Any:
         """
         Retrieves the value of the specified field.
 

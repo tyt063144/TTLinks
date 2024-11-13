@@ -205,4 +205,11 @@ Expected Output
 ```
 
 #### 2. Other Protocol Units and Parsers 
-In the `protocol_stack` Module, it uses similar methods and properties to parse and construct protocol data units at different layers of the TCP/IP model. You can explore the module to find more examples and use cases for parsing and constructing network protocol data units. The Protocol modules of various layers are placed in their respective folders in the `protocol_stack` module. For example `ICMP` and `IPv4` are placed in the `network_layer` folder. More protocols and layers can be added to the module to extend its functionality, which will be our future work.
+In the `protocol_stack` Module, it uses similar methods and properties to parse and construct protocol data units at different layers of the TCP/IP model. You can explore the module to find more examples and use cases for parsing and constructing network protocol data units. The Protocol modules of various layers are placed in their respective folders in the `protocol_stack` module. For example `ICMP` and `IPv4` are placed in the `network_layer` folder, and `TCP` and `UDP` are placed in `transport_layer` folder. More protocols and layers can be added to the module to extend its functionality, which will be our future work.
+
+- [ICMP Protocol Unit](/docs/protocol_stack/network_layer/ICMP.md)
+- [IPv4 Protocol Unit](/docs/protocol_stack/network_layer/IPv4.md)
+- [TCP Protocol Unit](/docs/protocol_stack/transport_layer/TCP.md)
+
+#### 3. IP packet construction
+- **`tcp.py`**: build TCP packets with IP header and TCP header. [Example](/docs/protocol_stack/transport_layer/TCP.md)

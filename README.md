@@ -45,7 +45,7 @@ For more details, visit:
 
 ### Future Updates
 **TTLinks** will be continuously evolving, with planned updates to include additional features aimed at expanding its utility for network monitoring, diagnostics and automation. Upcoming features will include:
-- **Reachability (Ping) Checks**: Test the reachability of hosts over the network using ICMP ping.
+- **Reachability (Ping) Checks**: Test the reachability of hosts over the network using ICMP ping. (Has been implemented in the protocol stack module as icmp_module.py)
 - **Port Checks**: Check the availability of specific ports on a given host to verify service access.
 - **DNS Lookup**: Query DNS records (A, AAAA, CNAME, MX, etc.) for a domain to assist with DNS-related issues.
 - **WHOIS Check**: Retrieve domain registration and ownership information.
