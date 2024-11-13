@@ -29,6 +29,24 @@ For more details, visit:
 - [MAC Address Services](docs/macservice/mac_services.md)
 - [design diagram](docs/macservice/Class%20Diagram.pdf)
 
+### Ping Check Services
+- **Reachability (Ping) Checks**: Test the reachability of hosts over the network using ICMP ping.
+```python
+from ttlinks.protocol_stack.network_layer.ICMP.icmp_manager import ICMPPingManager
+from ttlinks.ipservice.ip_configs import IPv4SubnetConfig
+
+manager = ICMPPingManager()
+# ping single target
+responses1 = manager.ping('8.8.8.8', timeout=2, interval=1, count=2, verbose=True)
+print(responses1)
+# ping multiple targets
+ips = IPv4SubnetConfig('8.8.8.8/31').get_hosts()
+responses2 = manager.ping_multiple(ips, timeout=2, interval=1, count=2, verbose=True)
+print(responses2)
+```
+For more details, visit:
+- [ICMP] (docs/protocol_stack/network_layer/ICMP.md)
+
 ### Protocol Stack
 The protocol stack module in **TTLinks** provides a framework for working with network protocol data units (PDUs) at different layers of the TCP/IP model. This module allows you to create, parse, and manipulate protocol headers, making it easier to analyze network traffic and build custom network tools. The protocol stack currently supports Ethernet, IPv4, and ICMP headers. Example applications include packet crafting, network monitoring, port scanning, and more.
 
@@ -70,7 +88,6 @@ For more details, visit:
 
 ### Future Updates
 **TTLinks** will be continuously evolving, with planned updates to include additional features aimed at expanding its utility for network monitoring, diagnostics and automation. Upcoming features will include:
-- **Reachability (Ping) Checks**: Test the reachability of hosts over the network using ICMP ping. (Has been implemented in the protocol stack module as icmp_module.py)
 - **Port Checks**: Check the availability of specific ports on a given host to verify service access.
 - **DNS Lookup**: Query DNS records (A, AAAA, CNAME, MX, etc.) for a domain to assist with DNS-related issues.
 - **WHOIS Check**: Retrieve domain registration and ownership information.
