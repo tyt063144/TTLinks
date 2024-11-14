@@ -178,7 +178,7 @@ class ICMPReceiver(PacketReceiver):
     This class listens for incoming ICMP responses and checks if they match the original ICMP request.
     It processes the received packet and uses the ICMPReceiveMonitor to check if the response is valid.
     """
-    async def listen(self, socket_unit: Socket, destination:str, *args, **kwargs):
+    async def listen(self, socket_unit: Socket, *args, **kwargs):
         """
         Listens for ICMP replies on the provided socket and checks if they match the original ICMP request.
 
@@ -209,7 +209,7 @@ class ICMPReceiver(PacketReceiver):
 
                 ethernet_payload_factory = EthernetPayloadUnitFactory
                 replied_ipv4_unit = ethernet_payload_factory.create_unit(reply, EthernetPayloadProtocolTypes.IPv4)
-                reply_matched = ICMPReceiveMonitor.monitor(replied_ipv4_unit, original_icmp_unit=kwargs['icmp_unit'], ip_destination=destination)
+                reply_matched = ICMPReceiveMonitor.monitor(replied_ipv4_unit, original_icmp_unit=kwargs['icmp_unit'], ip_destination=kwargs['destination'])
                 if reply_matched:
                     kwargs['time_record']['end_time'] = receiving_time
                     socket_unit.close()

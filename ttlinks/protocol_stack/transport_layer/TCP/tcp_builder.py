@@ -1,5 +1,4 @@
 from __future__ import annotations
-import random
 import socket
 import struct
 from abc import ABC, abstractmethod
@@ -10,8 +9,7 @@ from ttlinks.common.tools.network import NetTools
 from ttlinks.protocol_stack.base_classes.header_builder import Header, HeaderBuilder
 from ttlinks.protocol_stack.base_classes.stack_utils import ProtocolUnit
 from ttlinks.protocol_stack.transport_layer.TCP import tcp_units
-from ttlinks.protocol_stack.transport_layer.TCP.tcp_options import TCPOptionUnit, TCPOptionHeader, TCPOption1HeaderBuilder, TCPOption2HeaderBuilder, \
-    TCPOption3HeaderBuilder, TCPOption4HeaderBuilder, TCPOptionBuilderDirector
+from ttlinks.protocol_stack.transport_layer.TCP.tcp_options import TCPOptionUnit, TCPOptionHeader, TCPOption1HeaderBuilder
 from ttlinks.protocol_stack.transport_layer.TCP.tcp_utils import TCPFlags
 
 
@@ -86,8 +84,10 @@ class TCPHeader(Header):
     def _calculate_checksum(
             source_ip: bytes, destination_ip: bytes,
             source_port: bytes, destination_port: bytes, sequence_number: bytes, acknowledgment_number: bytes,
-            offset_reserved_flags: bytes, window_size: bytes, checksum: bytes, urgent_pointer: bytes, options: bytes, payload: bytes) -> bytes:
-        tcp_length = (int.from_bytes(offset_reserved_flags, 'big') >> 12) * 4
+            offset_reserved_flags: bytes, window_size: bytes, checksum: bytes, urgent_pointer: bytes, options: bytes,
+            payload: bytes
+    ) -> bytes:
+        tcp_length = (int.from_bytes(offset_reserved_flags, 'big') >> 12) * 4 + len(payload)
         """
         Calculates the checksum of the TCP segment using a pseudo-header, the segment fields, and the payload.
 

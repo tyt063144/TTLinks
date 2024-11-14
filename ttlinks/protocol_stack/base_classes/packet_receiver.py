@@ -28,7 +28,7 @@ class PacketReceiver(ABC):
     Returns:
     None
     """
-    async def listen(self, socket_unit: Socket, destination:str, *args, **kwargs):
+    async def listen(self, socket_unit: Socket, *args, **kwargs):
         """
         Asynchronously listens for incoming packets on the given socket.
 

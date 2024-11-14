@@ -1,18 +1,23 @@
 import socket
+from abc import ABC
 from typing import List
 
 from ttlinks.common.tools.network import NetTools
-from ttlinks.ipservice.ip_type_classifiers import IPType
 from ttlinks.protocol_stack.network_layer.IP.ip_payload_utils import IPPayloadProtocolTypes
 from ttlinks.protocol_stack.network_layer.IPv4.flags_utils import IPv4Flags
 from ttlinks.protocol_stack.network_layer.IPv4.ipv4_builder import IPv4HeaderBuilderDirector, IPv4HeaderBuilder, IPv4Header
+from ttlinks.protocol_stack.network_layer.IPv4.ipv4_parsers import IPv4PacketParser
+from ttlinks.protocol_stack.network_layer.IPv4.ipv4_units import IPv4Unit
 from ttlinks.protocol_stack.transport_layer.TCP.tcp_builder import TCPHeaderBuilder, TCPHeader, TCPBuilderDirector
 from ttlinks.protocol_stack.transport_layer.TCP.tcp_options import TCPOptionUnit, TCPOptionBuilderDirector, TCPOption2HeaderBuilder, \
     TCPOption3HeaderBuilder, TCPOption4HeaderBuilder
 from ttlinks.protocol_stack.transport_layer.TCP.tcp_utils import TCPFlags
 
 
-class IPv4TCP:
+class TCP(ABC):
+    pass
+
+class IPv4TCP(TCP):
     def __init__(
             self,
             ihl: int = 5,
@@ -60,7 +65,7 @@ class IPv4TCP:
         self._acknowledgment_number = acknowledgment_number
         self._reserved = reserved
         self._tcp_flags = tcp_flags
-        self._tcp_option_units = tcp_option_units if tcp_option_units else self.default_tcp_option_units
+        self._tcp_option_units = tcp_option_units if tcp_option_units is not None else self.default_tcp_option_units
         self._window_size = window_size
         self._urgent_pointer = urgent_pointer
         self._payload = payload
@@ -84,6 +89,11 @@ class IPv4TCP:
     @property
     def packet(self):
         return self._packet
+
+    @property
+    def unit(self):
+        ipv4_parser = IPv4PacketParser()
+        return IPv4Unit(**ipv4_parser.parse(self._packet))
 
     @property
     def tcp_unit(self):

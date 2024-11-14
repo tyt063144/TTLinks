@@ -80,6 +80,7 @@ class TCPUnit(ProtocolUnit):
             + self._checksum
             + self._urgent_pointer
             + self._options
+            + self._payload
         )
 
     @property

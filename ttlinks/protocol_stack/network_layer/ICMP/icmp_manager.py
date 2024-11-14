@@ -285,7 +285,7 @@ class ICMPPingManager:
                 icmp_unit = icmp_echo_request_header.unit
                 time_record = {'start_time': 0, 'end_time': 0}
                 await self._sender.send(socket_unit, destination, icmp_unit, time_record=time_record)
-                received_ipv4_unit = await self._receiver.listen(socket_unit, destination, icmp_unit=icmp_unit, timeout=timeout, time_record=time_record)
+                received_ipv4_unit = await self._receiver.listen(socket_unit, destination=destination, icmp_unit=icmp_unit, timeout=timeout, time_record=time_record)
                 responses.append(ICMPPingResponse(destination, time_record['end_time'] - time_record['start_time'], received_ipv4_unit))
                 print(responses[-1].verbose) if verbose else None
                 await asyncio.sleep(interval)

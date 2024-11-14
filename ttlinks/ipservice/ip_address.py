@@ -200,7 +200,7 @@ class IPv4Addr(IPAddr):
         str
             A string showing the internal representation of the IPv4 address.
         """
-        return f"""IPv4Addr('_address={self._address})"""
+        return f"""IPv4Addr('{self.__str__()}')"""
 
 
 class IPv6Addr(IPAddr):
@@ -301,7 +301,8 @@ class IPv6Addr(IPAddr):
         str
             A string showing the internal representation of the IPv6 address.
         """
-        return f"""IPv6Addr('_address={self._address})"""
+        return f"""IPv6Addr('{self.__str__()}')"""
+
 
 
 class IPMask(IPAddr):

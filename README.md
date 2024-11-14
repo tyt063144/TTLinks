@@ -2,6 +2,9 @@
 
 **TTLinks** is a comprehensive toolkit designed for network engineers and administrators. It provides utilities for managing and analyzing IP addresses, MAC addresses, and related network components. The package supports IP and MAC address classification, OUI lookups, and binary data manipulation, streamlining tasks essential to network management.
 
+## Note
+<font color='red'>This library uses raw sockets, which are restricted on Windows OS. Therefore, it is designed specifically for use on Linux-based systems.</font>
+
 ## Installation
 This project is available on PyPI and can be installed using pip:
 ```bash
@@ -53,7 +56,7 @@ The protocol stack module in **TTLinks** provides a framework for working with n
 For more details, visit:
 - [Protocol Stack](docs/protocol_stack/protocol_stack.md)
 
-#### Example: Creating IPv4 TCP Packet
+#### Example1: Creating IPv4 TCP Packet
 ```python
 from ttlinks.protocol_stack.ip_packets.tcp import IPv4TCP
 from ttlinks.protocol_stack.network_layer.IPv4.flags_utils import IPv4Flags
@@ -78,6 +81,31 @@ print(tcp.tcp_unit.as_bytes)
 print(tcp.tcp_unit.summary)
 ```
 
+#### Example2: Creating IPv4 TCP Flow and Completing 3-way Handshake (Asynchronous)
+```python
+import asyncio
+from ttlinks.protocol_stack.traffic_flows.TCP.tcp_flow import IPv4TCPFlowController
+from ttlinks.protocol_stack.ip_packets.tcp import IPv4TCP
+from ttlinks.protocol_stack.network_layer.IPv4.flags_utils import IPv4Flags
+from ttlinks.protocol_stack.transport_layer.TCP.tcp_utils import TCPFlags
+init_tcp_packet = IPv4TCP(
+    ipv4_flags=IPv4Flags.DONT_FRAGMENT,
+    ttl=32,
+    destination_address='192.168.1.30',
+    source_port=54156,
+    destination_port=22,
+    sequence_number=1370412840,
+    tcp_flags=[TCPFlags.SYN],
+)
+
+tcp_flow = IPv4TCPFlowController(init_tcp_packet, timeout=1)
+
+asyncio.run(tcp_flow.handshake())
+asyncio.run(tcp_flow.application_data('SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.7\r\n'.encode()))
+asyncio.run(tcp_flow.close())
+print(tcp_flow.is_handshake_completed)
+```
+![Example output](docs/protocol_stack/traffic_flows/tcp_flow_demo.png)
 
 ### Test Cases
 If you're interested in seeing how these modules function in practice, check out the test cases. They provide a great way to understand how the different components work together.
