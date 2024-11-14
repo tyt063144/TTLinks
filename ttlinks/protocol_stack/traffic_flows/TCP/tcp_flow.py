@@ -63,6 +63,7 @@ class IPv4TCPFlowController:
         self._next_seq_number = self._next_seq_number + payload_len
 
     def _update_acknowledgment_number(self, tcp_unit: TCPUnit):
+        print('tcp_unit.payload:', tcp_unit.payload)
         self._next_ack_number = self._next_ack_number + len(tcp_unit.payload)
 
     async def _start_packet_listener(self):
@@ -74,8 +75,9 @@ class IPv4TCPFlowController:
         # Wait for response packets within the timeout period
         while True:
             if self.received_packets:
-                self._extract_mss_option(self.received_packets[0][1])
-                self._next_ack_number = self.received_packets[0][1].sequence_number + 1
+                packet = self.received_packets.pop(0)
+                self._extract_mss_option(packet[1])
+                self._next_ack_number = packet[1].sequence_number + 1
                 self._increment_ip_identification()
 
                 # Construct and send the second handshake packet
@@ -94,7 +96,7 @@ class IPv4TCPFlowController:
                 )
                 await self._tcp_sender.send(self._socket_unit, str(second_packet.ip_unit.destination_address), second_packet.unit)
                 self._increment_ip_identification()
-                self._check_handshake_completion(self.received_packets[0][1])
+                self._check_handshake_completion(packet[1])
                 break
             await asyncio.sleep(0.1)
 
@@ -113,7 +115,20 @@ class IPv4TCPFlowController:
 
 
     async def application_data(self, data: bytes=b''):
+        await self._start_packet_listener()
         end_time = asyncio.get_event_loop().time() + self._timeout
+
+        while True:
+            current_time = asyncio.get_event_loop().time()
+            if current_time >= end_time:
+                print("Application flow timeout, no packets received within timeout period.")
+                break
+
+            if self.received_packets:
+                packet = self.received_packets.pop(0)
+                self._update_acknowledgment_number(packet[1])
+                end_time = current_time + self._timeout
+            await asyncio.sleep(0.0)
 
         if data:
             data_packet = IPv4TCP(
@@ -132,21 +147,7 @@ class IPv4TCPFlowController:
             )
             await self._tcp_sender.send(self._socket_unit, str(data_packet.ip_unit.destination_address), data_packet.unit)
             self._increment_ip_identification()
-
-
-        while True:
-            current_time = asyncio.get_event_loop().time()
-            if current_time >= end_time:
-                print("Application flow timeout, no packets received within timeout period.")
-                break
-
-            if self.received_packets:
-                packet = self.received_packets.pop(0)
-                self._update_sequence_number(len(data))
-                self._update_acknowledgment_number(packet[1])
-                end_time = current_time + self._timeout
-            await asyncio.sleep(0.1)
-
+            self._update_sequence_number(len(data))
 
     async def close(self):
         fin_packet = IPv4TCP(
@@ -159,7 +160,7 @@ class IPv4TCPFlowController:
             destination_port=self._initial_packet.tcp_unit.destination_port,
             sequence_number=self._next_seq_number,
             acknowledgment_number=self._next_ack_number,
-            tcp_flags=[TCPFlags.PSH, TCPFlags.FIN, TCPFlags.ACK],
+            tcp_flags=[TCPFlags.FIN, TCPFlags.ACK],
             tcp_option_units=[],
         )
         await self._tcp_sender.send(self._socket_unit, str(self._initial_packet.ip_unit.destination_address), fin_packet.unit)
@@ -167,4 +168,3 @@ class IPv4TCPFlowController:
         FirewallTools.unfilter_tcp_rst_by_sport(self._initial_packet.tcp_unit.source_port)
         if self._listener_task:
             self._listener_task.cancel()
-
