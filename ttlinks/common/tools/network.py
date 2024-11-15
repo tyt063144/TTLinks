@@ -129,7 +129,7 @@ class NetTools:
         - int: A free TCP port number.
         """
         while True:
-            random_port = random.randint(1025, 65535)
+            random_port = random.randint(30000, 60000)
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 try:
                     s.bind(("localhost", random_port))

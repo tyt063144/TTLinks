@@ -107,6 +107,32 @@ print(tcp_flow.is_handshake_completed)
 ```
 ![Example output](docs/protocol_stack/traffic_flows/tcp_flow_demo.png)
 
+
+### Port Scan Services
+- **Port Scanning**: Scan a range of TCP ports on target hosts to identify open services.
+```python
+import asyncio
+from ttlinks.ipservice.ip_address import IPAddr, IPv4Addr
+from ttlinks.port_scanning.tcp_scanner import IPv4TCPScanner
+ipv4_destinations = [
+    IPv4Addr('192.168.1.20'),
+    IPv4Addr('192.168.1.30')
+]
+scanner = IPv4TCPScanner(
+    ipv4_destinations,
+    ports=[1, 1024],
+    timeout=10,
+)
+asyncio.run(scanner.complete_scan())
+```
+Example output:
+```
+Scan Report: {
+'192.168.1.20': {22: True, 25: True, 53: True, 80: True, 139: True, 443: True, 445: True, 554: True, 515: True, 631: True, 587: True, 993: True}, 
+'192.168.1.30': {80: True, 22: True, 443: True}
+}
+```
+
 ### Test Cases
 If you're interested in seeing how these modules function in practice, check out the test cases. They provide a great way to understand how the different components work together.
 
