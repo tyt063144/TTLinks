@@ -1,4 +1,13 @@
-# `ip_address` module
+# `ip_address` Module
+
+Create IP address objects for both IPv4 and IPv6 addresses. 
+
+```python
+from ttlinks.ipservice.ip_address import IPv4Addr, IPv6Addr
+
+ipv4_address = IPv4Addr('192.168.1.1')
+ipv6_address = IPv6Addr('2001:db8::1')
+```
 
 <details>
 <summary>Example 1 - Displaying the string representation of an IP address:</summary>
@@ -72,7 +81,24 @@ IPv6 Bytes  : b' \x01\r\xb8\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01'
 </details>
 
 <details>
-<summary>Example 5 - IPMask Objects</summary>
+<summary>Example 5 - Displaying the IP addresses in hex format:</summary>
+
+This format can be used in network programming to send and receive IP addresses.
+```python
+ipv4_hex = ipv4_address.as_hexadecimal
+ipv6_hex = ipv6_address.as_hexadecimal
+print('%-12s: %s' % ('IPv4 Hex', ipv4_hex))
+print('%-12s: %s' % ('IPv6 Hex', ipv6_hex))
+```
+Output:
+```
+IPv4 Hex    : C0A80101
+IPv6 Hex    : 20010DB8000000000000000000000001
+```
+</details>
+
+<details>
+<summary>Example 6 - IPMask Objects</summary>
 
 IPMask objects are distinct from IPAddr objects as they specifically represent network masks and wildcards, including `IPv4NetMask`, `IPv6NetMask`, `IPv4WildCard`, and `IPv6WildCard`. 
 

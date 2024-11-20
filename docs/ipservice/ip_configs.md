@@ -1,729 +1,514 @@
+# `ip_configs` Module
 
-# `ip_configs.py` Module Documentation
 
-## Overview
+<details>
 
-The `ip_configs.py` module offers a comprehensive set of classes and utilities for configuring IP addresses on network interfaces, supporting both IPv4 and IPv6 protocols. It provides abstractions for host configurations, subnet configurations, and wildcard configurations, enabling advanced network management tasks such as subnetting, wildcard masking, and IP address classification. This module facilitates operations like calculating network IDs, broadcast addresses, iterating over hosts in a subnet, and merging or dividing subnets.
+**TTLinks** provides a way to create host interface IP object for IPv4. The following example demonstrates how to create an IPv4 host object and access its properties:
 
-## Features
-
-- **Abstract Base Classes for IP Configurations**: Establishes a unified interface for IP configurations through abstract base classes like `InterfaceIPConfig`, `InterfaceIPv4Config`, and `InterfaceIPv6Config`, promoting consistency and extensibility.
-
-- **IPv4 Host Configuration**: The `IPv4HostConfig` class manages IPv4 host addresses, including calculating network IDs, broadcast addresses, and classifying IP address types (e.g., public, private).
-
-- **IPv4 Subnet Configuration**: The `IPv4SubnetConfig` class extends host configurations to support subnet-specific operations such as host iteration, subnet division, and merging.
-
-- **IPv4 Wildcard Configuration**: The `IPv4WildCardConfig` class handles wildcard configurations for IPv4 addresses, allowing for the matching of IP address ranges using wildcard masks.
-
-- **IPv6 Host Configuration**: Similar to its IPv4 counterpart, the `IPv6HostConfig` class manages IPv6 host addresses, providing methods for network ID calculation and IP address type classification.
-
-- **IPv6 Subnet Configuration**: The `IPv6SubnetConfig` class extends IPv6 host configurations to support subnet operations, including iterating over hosts, subnet division, and merging.
-
-- **IPv6 Wildcard Configuration**: The `IPv6WildCardConfig` class supports wildcard configurations for IPv6 addresses.
-
-- **Wildcard Calculator**: The `IPWildCardCalculator` class offers static methods to compute minimal wildcard configurations that cover a given set of IPv4 or IPv6 subnets, optimizing network policies and ACLs.
-
----
-
-## Class: `IPv4HostConfig`
-
-#### Description
-
-The `IPv4HostConfig` class represents a host configuration for an IPv4 network interface. It extends `InterfaceIPv4Config` and provides methods for calculating the network ID, broadcast address, classifying the IP address type, and determining the number of usable hosts in the network. This class is designed to manage IPv4-specific host configurations, allowing for easy access to network properties and classification of IP addresses.
-
-#### Inherits: `InterfaceIPv4Config`
-
-#### Attributes
-
-- `_ip_type (IPv4AddrType)`: The type of the IPv4 address (e.g., public, private, multicast).
-- `_broadcast_ip (IPv4Addr)`: The broadcast IP address for the configured network.
-- `_network_id (IPv4Addr)`: The network ID calculated from the IPv4 address and netmask.
-
-#### Methods
-
-- **`__init__(*args)`**:
-  Initializes the IPv4 host configuration by setting up the IP address and netmask, and calculating network-specific attributes.
-  - **Parameters**:
-    - `*args`: Variable-length argument list for the IPv4 address and netmask.
-
-- **`_initialize(*args) -> None`**:
-  Internal method that initializes the IPv4 host configuration, validates the inputs, and calculates network properties.
-
-- **`_validate(*args) -> None`**:
-  Validates the provided IPv4 address and netmask using the `IPStandardizer`.
-
-- **`_calculate_network_id() -> None`**:
-  Calculates the network ID by applying the netmask to the IP address.
-
-- **`_calculate_broadcast_ip() -> None`**:
-  Calculates the broadcast IP address for the network.
-
-- **`_classify_ip_address_type() -> None`**:
-  Classifies the IP address type (e.g., private, public) using `IPAddrTypeClassifier`.
-
-- **`ip_addr`** (property):
-  Returns the configured IPv4 address.
-  - **Returns**:
-    - `IPv4Addr`: The IPv4 address assigned to the interface.
-
-- **`netmask`** (property):
-  Returns the netmask associated with the IPv4 address.
-  - **Returns**:
-    - `IPv4NetMask`: The netmask of the IPv4 address.
-
-- **`broadcast_ip`** (property):
-  Returns the broadcast IP address.
-  - **Returns**:
-    - `IPv4Addr`: The broadcast IP address of the network.
-
-- **`network_id`** (property):
-  Returns the network ID of the subnet.
-  - **Returns**:
-    - `IPv4Addr`: The network ID calculated from the IP address and netmask.
-
-- **`host_counts`** (property):
-  Calculates and returns the number of usable host addresses in the network.
-  - **Returns**:
-    - `int`: The number of usable hosts in the subnet.
-
-- **`ip_type`** (property):
-  Returns the classified IP address type.
-  - **Returns**:
-    - `IPv4AddrType`: The type classification of the IP address.
-
-- **`is_unspecified`** (property):
-  Returns `True` if the IP address is unspecified.
-  - **Returns**:
-    - `bool`: `True` if the IP address is unspecified, otherwise `False`.
-
-- **`is_public`** (property):
-  Returns `True` if the IP address is public.
-  - **Returns**:
-    - `bool`: `True` if the IP address is public, otherwise `False`.
-
-- **`is_private`** (property):
-  Returns `True` if the IP address is private.
-  - **Returns**:
-    - `bool`: `True` if the IP address is private, otherwise `False`.
-
-- **`is_multicast`** (property):
-  Returns `True` if the IP address is a multicast address.
-  - **Returns**:
-    - `bool`: `True` if the IP address is multicast, otherwise `False`.
-
-- **`is_link_local`** (property):
-  Returns `True` if the IP address is link-local.
-  - **Returns**:
-    - `bool`: `True` if the IP address is link-local, otherwise `False`.
-
-- **`is_loopback`** (property):
-  Returns `True` if the IP address is a loopback address.
-  - **Returns**:
-    - `bool`: `True` if the IP address is loopback, otherwise `False`.
-
-#### Example Usage
+<summary>(Click to Expand) Example 1: IPv4 Host</summary>
 
 ```python
 from ttlinks.ipservice.ip_configs import IPv4HostConfig
+ipv4_host = IPv4HostConfig('192.168.1.10/24')
 
-# Create an IPv4 host configuration
-ipv4_host_config = IPv4HostConfig('192.168.1.10/24')
+print('Display Address Information'.center(50, '-'))
+address = ipv4_host.addr  # IPv4Addr object
+address_in_bytes = address.as_bytes  # ipv4 address in bytes format, big-endian
+address_in_binary_string = address.binary_string  # ipv4 address in binary string format
+address_in_binary_digits = address.binary_digits  # ipv4 address in binary digits format
+address_in_decimal = address.decimal  # ipv4 address in decimal format
+print('%-8s'%'address:', address)
+print('%-8s'%'bytes:', address_in_bytes)
+print('%-8s'%'binary:', address_in_binary_string)
+print('%-8s'%'digits:', address_in_binary_digits)
+print('%-8s'%'decimal:', address_in_decimal)
 
-# Access various properties
-print("IP Address:", ipv4_host_config.ip_addr)          # Outputs: IP Address: 192.168.1.10
-print("Netmask:", ipv4_host_config.netmask)             # Outputs: Netmask: 255.255.255.0
-print("Network ID:", ipv4_host_config.network_id)       # Outputs: Network ID: 192.168.1.0
-print("Broadcast IP:", ipv4_host_config.broadcast_ip)   # Outputs: Broadcast IP: 192.168.1.255
-print("Host Counts:", ipv4_host_config.host_counts)     # Outputs: Host Counts: 254
-print("IP Type:", ipv4_host_config.ip_type)             # Outputs: IP Type: IPv4AddrType.PRIVATE
-print("Is Private:", ipv4_host_config.is_private)       # Outputs: Is Private: True
-print("Is Public:", ipv4_host_config.is_public)         # Outputs: Is Public: False
+print('Display Mask Information'.center(50, '-'))
+mask = ipv4_host.mask  # IPv4Netmask object
+mask_in_bytes = mask.as_bytes  # mask in bytes format, big-endian
+mask_in_binary_string = mask.binary_string  # mask in binary string format
+mask_in_binary_digits = mask.binary_digits  # mask in binary digits format
+mask_in_decimal = mask.decimal  # mask in decimal format
+print('%-8s'%'mask:', mask)
+print('%-8s'%'bytes:', mask_in_bytes)
+print('%-8s'%'binary:', mask_in_binary_string)
+print('%-8s'%'digits:', mask_in_binary_digits)
+print('%-8s'%'decimal:', mask_in_decimal)
+
+print('Display Host Information'.center(50, '-'))
+ip_address = ipv4_host.addr.address  # Dot-decimal notation of IPv4Addr object
+ip_mask = ipv4_host.mask.address  # Dot-decimal notation of IPv4Netmask object
+ip_type = ipv4_host.ip_type  # Return IPv4AddrType object
+network_id = ipv4_host.network_id  # IPv4Addr object of network ID. Use .address to get the string format
+broadcast_ip = ipv4_host.broadcast_ip  # IPv4Addr object of broadcast IP. Use .address to get the string format
+is_public = ipv4_host.is_public  # Return True if the IP address is public
+is_private = ipv4_host.is_private  # Return True if the IP address is private
+# ...more attributes and methods
+print('%-10s'%'host:', ipv4_host)  # IPv4Host object. Use str() to get the string format
+print('%-10s'%'address:', ip_address)
+print('%-10s'%'mask:', ip_mask)
+print('%-10s'%'type:', ip_type)
+print('%-10s'%'NET ID:', network_id)
+print('%-10s'%'broadcast:', broadcast_ip)
+print('%-10s'%'public?:', is_public)
+print('%-10s'%'private?:', is_private)
 ```
-Expected Output:
+Example output:
 ```
-IP Address: 192.168.1.10
-Netmask: 255.255.255.0
-Network ID: 192.168.1.0
-Broadcast IP: 192.168.1.255
-Host Counts: 254
-IP Type: IPv4AddrType.PRIVATE
-Is Private: True
-Is Public: False
+-----------Display Address Information------------
+address: 192.168.1.10
+bytes:   b'\xc0\xa8\x01\n'
+binary:  11000000101010000000000100001010
+digits:  [1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0]
+decimal: 3232235786
+-------------Display Mask Information-------------
+mask:    255.255.255.0
+bytes:   b'\xff\xff\xff\x00'
+binary:  11111111111111111111111100000000
+digits:  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+decimal: 4294967040
+-------------Display Host Information-------------
+host:      192.168.1.0/24
+address:   192.168.1.10
+mask:      255.255.255.0
+type:      IPv4AddrType.PRIVATE
+NET ID:    192.168.1.0
+broadcast: 192.168.1.255
+public?:   False
+private?:  True
 ```
----
+</details>
 
-## Class: `IPv4SubnetConfig`
+<details>
+<summary>(Click to Expand) Example 2: IPv4 Subnet</summary>
 
-#### Description
-
-The `IPv4SubnetConfig` class represents a subnet configuration for an IPv4 network. It inherits from `IPv4HostConfig` and adds functionality for working with subnet ranges and hosts within a subnet. This includes operations such as retrieving the first and last host, iterating over all hosts, checking if an IP address is within the subnet, dividing the subnet into smaller subnets, and merging subnets.
-
-#### Inherits: `IPv4HostConfig`
-
-#### Attributes
-
-- Inherits all attributes from `IPv4HostConfig`:
-  - `_ip_type (IPv4AddrType)`: The type of the IPv4 address (e.g., public, private).
-  - `_broadcast_ip (IPv4Addr)`: The broadcast IP address for the subnet.
-  - `_network_id (IPv4Addr)`: The network ID for the subnet.
-
-#### Methods
-
-- **`first_host`** (property):
-  Returns the first usable host address within the subnet.
-  - **Returns**:
-    - `IPv4Addr`: The first usable host address.
-
-- **`last_host`** (property):
-  Returns the last usable host address within the subnet.
-  - **Returns**:
-    - `IPv4Addr`: The last usable host address.
-
-- **`subnet_range`** (property):
-  Returns the range of the subnet, from the network ID to the broadcast address.
-  - **Returns**:
-    - `str`: A string representing the subnet range in the format "network_id - broadcast_ip".
-
-- **`get_hosts() -> Generator[IPv4Addr, None, None]`**:
-  Generates all usable hosts within the subnet by iterating over possible host addresses.
-  - **Returns**:
-    - `Generator[IPv4Addr, None, None]`: A generator yielding each host in the subnet.
-
-- **`is_within(ip_addr: Any) -> bool`**:
-  Checks whether a given IP address falls within the subnet.
-  - **Parameters**:
-    - `ip_addr (Any)`: The IP address to check.
-  - **Returns**:
-    - `bool`: `True` if the IP address is within the subnet, otherwise `False`.
-
-- **`subnet_division(mask: int) -> List[IPv4SubnetConfig]`**:
-  Divides the current subnet into smaller subnets based on a new mask size.
-  - **Parameters**:
-    - `mask (int)`: The new mask size for the smaller subnets.
-  - **Returns**:
-    - `List[IPv4SubnetConfig]`: A list of new subnet configurations.
-
-- **`subnet_merge(*subnets: str) -> IPv4SubnetConfig`**:
-  Attempts to merge multiple subnets into a larger subnet.
-  - **Parameters**:
-    - `*subnets (str)`: Variable-length argument list of subnet strings to merge.
-  - **Returns**:
-    - `IPv4SubnetConfig`: A new subnet configuration representing the merged subnet.
-
-#### Example Usage
+Under `.subnet` method, **TTLinks** simplifies address configuration by automatically adjusting an address to match its corresponding network ID, treating it as a subnet rather than a host. Users don’t need to manually calculate the network ID or broadcast IP when creating a subnet object. The following example illustrates how to create an IPv4 subnet object and access its properties: `192.170.50.10/14` -> `192.168.1.0/24`. It also inherits all the properties and methods from the IPv4Host class.
 
 ```python
 from ttlinks.ipservice.ip_configs import IPv4SubnetConfig
 
-# Create an IPv4 subnet configuration
-ipv4_subnet_config = IPv4SubnetConfig('192.168.1.0/29')
+ipv4_subnet = IPv4SubnetConfig('192.170.50.10/14')
 
-# Access various properties
-print("Subnet Range:", ipv4_subnet_config.subnet_range)    
-print("First Host:", ipv4_subnet_config.first_host)        
-print("Last Host:", ipv4_subnet_config.last_host)          
-print("Host Counts:", ipv4_subnet_config.host_counts)      
+print('Display Address Information'.center(50, '-'))
+address = ipv4_subnet.addr  # IPv4Addr object. TTLinks helps to adjust the address to the network ID of given value automatically because it is a subnet instead of a host.
+address_in_bytes = address.as_bytes  # ipv4 address in bytes format, big-endian
+address_in_binary_string = address.binary_string  # ipv4 address in binary string format
+address_in_binary_digits = address.binary_digits  # ipv4 address in binary digits format
+address_in_decimal = address.decimal  # ipv4 address in decimal format
+print('%-8s'%'address:', address)
+print('%-8s'%'bytes:', address_in_bytes)
+print('%-8s'%'binary:', address_in_binary_string)
+print('%-8s'%'digits:', address_in_binary_digits)
+print('%-8s'%'decimal:', address_in_decimal)
 
-# Iterate over hosts in the subnet
-print("Hosts in Subnet:")
-for host in ipv4_subnet_config.get_hosts():
-    print(host)
+print('Display Mask Information'.center(50, '-'))
+mask = ipv4_subnet.mask  # IPv4Netmask object
+mask_in_bytes = mask.as_bytes  # mask in bytes format, big-endian
+mask_in_binary_string = mask.binary_string  # mask in binary string format
+mask_in_binary_digits = mask.binary_digits  # mask in binary digits format
+mask_in_decimal = mask.decimal  # mask in decimal format
+print('%-8s'%'mask:', mask)
+print('%-8s'%'bytes:', mask_in_bytes)
+print('%-8s'%'binary:', mask_in_binary_string)
+print('%-8s'%'digits:', mask_in_binary_digits)
+print('%-8s'%'decimal:', mask_in_decimal)
 
-# Check if an IP address is within the subnet
-print("Is 192.168.1.5 within subnet?", ipv4_subnet_config.is_within('192.168.1.5')) 
+print('Display Subnet Information'.center(50, '-'))
+ip_address = ipv4_subnet.addr.address  # Dot-decimal notation of IPv4Addr object
+ip_mask = ipv4_subnet.mask.address  # Dot-decimal notation of IPv4Netmask object
+ip_type = ipv4_subnet.ip_type  # Return all possible IPv4AddrType objects the subnet may lie in
+network_id = ipv4_subnet.network_id  # IPv4Addr object of network ID. Use .address to get the string format
+broadcast_ip = ipv4_subnet.broadcast_ip  # IPv4Addr object of broadcast IP. Use .address to get the string format
+subnet_range = ipv4_subnet.subnet_range  # Return the range of the subnet. Left is the network ID, right is the broadcast IP
+first_host = ipv4_subnet.first_host  # IPv4Addr object of the first host IP. Use .address to get the string format
+last_host = ipv4_subnet.last_host  # IPv4Addr object of the last host IP. Use .address to get the string format
+hosts = ipv4_subnet.get_hosts()  # Return a generator of all host IPs in the subnet
+is_within1 = ipv4_subnet.is_within('192.168.169.50')  # Check if the given IP address is within the subnet
+is_within2 = ipv4_subnet.is_within('192.172.1.1')  # Check if the given IP address is within the subnet
+print('%-10s'%'subnet:', ipv4_subnet)
+print('%-10s'%'address:', ip_address)
+print('%-10s'%'mask:', ip_mask)
+print('%-10s'%'type:', ip_type)
+print('%-10s'%'NET ID:', network_id)
+print('%-10s'%'broadcast:', broadcast_ip)
+print('%-10s'%'range:', subnet_range)
+print('%-10s'%'first:', first_host)
+print('%-10s'%'last:', last_host)
+print('%-10s'%'hosts:', [next(hosts) for _ in range(5)])
+print('%-10s'%'is within1:', is_within1)
+print('%-10s'%'is within2:', is_within2)
 
-# Divide the subnet into smaller subnets
-smaller_subnets = ipv4_subnet_config.subnet_division(30)
-print("Divided Subnets:")
-for subnet in smaller_subnets:
-    print(subnet)
-
-# Merge subnets (assuming adjacent subnets)
-merged_subnet = ipv4_subnet_config.subnet_merge('192.168.1.8/29')
-print("Merged Subnet:", merged_subnet)  
+print('Display Subnet Operation'.center(50, '-'))  # Exclusive for subnet object
+new_subnet = ipv4_subnet.division(16)  # Divide the subnet into /16 subnets.
+merged_subnet = ipv4_subnet.merge('192.172.0.0/14')  # Merge the subnet with another subnet.
+print('%-14s'%'new subnet:', list(new_subnet))
+print('%-14s'%'merged subnet:', merged_subnet)
 ```
-Expected Output:
+Example output:
 ```
-Subnet Range: 192.168.1.0-192.168.1.7
-First Host: 192.168.1.1
-Last Host: 192.168.1.6
-Host Counts: 6
-Hosts in Subnet:
-192.168.1.0
-192.168.1.1
-192.168.1.2
-192.168.1.3
-192.168.1.4
-192.168.1.5
-192.168.1.6
-192.168.1.7
-Is 192.168.1.5 within subnet? True
-Divided Subnets:
-192.168.1.0/30
-192.168.1.4/30
-Merged Subnet: 192.168.1.0/28
+-----------Display Address Information------------
+address: 192.168.0.0
+bytes:   b'\xc0\xa8\x00\x00'
+binary:  11000000101010000000000000000000
+digits:  [1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+decimal: 3232235520
+-------------Display Mask Information-------------
+mask:    255.252.0.0
+bytes:   b'\xff\xfc\x00\x00'
+binary:  11111111111111000000000000000000
+digits:  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+decimal: 4294705152
+------------Display Subnet Information------------
+subnet:    192.168.0.0/14
+address:   192.168.0.0
+mask:      255.252.0.0
+type:      [<IPv4AddrType.PRIVATE: 4>, <IPv4AddrType.PUBLIC: 3>]
+NET ID:    192.168.0.0
+broadcast: 192.171.255.255
+range:     [IPv4Addr('_address=192.168.0.0'), IPv4Addr('_address=192.171.255.255')]
+first:     192.168.0.1
+last:      192.171.255.254
+hosts:     [
+                IPv4Addr('_address=192.168.0.1'), 
+                IPv4Addr('_address=192.168.0.2'), 
+                IPv4Addr('_address=192.168.0.3'), 
+                IPv4Addr('_address=192.168.0.4'), 
+                IPv4Addr('_address=192.168.0.5')
+            ]
+is within1: True
+is within2: False
+-------------Display Subnet Operation-------------
+new subnet:    [IPv4SubnetConfig(192.168.0.0/16), IPv4SubnetConfig(192.169.0.0/16), IPv4SubnetConfig(192.170.0.0/16), IPv4SubnetConfig(192.171.0.0/16)]
+merged subnet: 192.168.0.0/13
 ```
----
+</details>
 
-## Class: `IPv4WildCardConfig`
+<details>
 
-#### Description
+<summary>(Click to Expand) Example 3: IPv4 WildCard</summary>
 
-The `IPv4WildCardConfig` class handles wildcard configurations for IPv4 addresses, which are used to match ranges of IP addresses by allowing certain bits to "wildcard" or vary. This is particularly useful in network policies and access lists where you need to specify a range of addresses without enumerating each one.
-
-#### Inherits: `InterfaceIPv4Config`
-
-#### Methods
-
-- **`__init__(*args)`**:
-  Initializes the IPv4 wildcard configuration by setting up the wildcard IP address and netmask.
-  - **Parameters**:
-    - `*args`: Variable-length argument list for the IPv4 address and wildcard netmask.
-
-- **`_initialize(*args) -> None`**:
-  Internal method that initializes the wildcard configuration and recalculates the IP address.
-
-- **`_validate(*args) -> None`**:
-  Validates the wildcard IP address and netmask using the `IPStandardizer`.
-
-- **`_recalculate_ip_addr() -> None`**:
-  Recalculates the IP address based on the wildcard netmask.
-
-- **`ip_addr`** (property):
-  Returns the wildcard IP address.
-  - **Returns**:
-    - `IPv4Addr`: The wildcard IP address.
-
-- **`netmask`** (property):
-  Returns the wildcard netmask.
-  - **Returns**:
-    - `IPv4NetMask`: The wildcard netmask.
-
-- **`get_hosts() -> Generator[IPv4Addr, None, None]`**:
-  Generates all possible host IPs that match the wildcard pattern.
-  - **Returns**:
-    - `Generator[IPv4Addr, None, None]`: A generator yielding all matching host addresses.
-
-- **`is_within(ip_addr: Any) -> bool`**:
-  Checks whether a given IP address matches the wildcard range.
-  - **Parameters**:
-    - `ip_addr (Any)`: The IP address to check.
-  - **Returns**:
-    - `bool`: `True` if the IP address matches the wildcard pattern, otherwise `False`.
-
-- **`__str__() -> str`**:
-  Returns a string representation of the wildcard configuration.
-  - **Returns**:
-    - `str`: A string representing the wildcard IP address and netmask (e.g., "192.168.1.50 0.0.0.15").
-
-#### Example Usage
+WildCard is a special type of subnet mask that is typically used in access control lists (ACLs) to define a range of IP addresses. **TTLinks** provides a way to calculate the address automatically based on the wildcard mask provided. The following example demonstrates how to create an IPv4 wildcard object and access its properties:
 
 ```python
+from ttlinks.ipservice.ip_address import IPv4Addr
 from ttlinks.ipservice.ip_configs import IPv4WildCardConfig
 
-# Create an IPv4 wildcard configuration
-ipv4_wildcard_config = IPv4WildCardConfig('192.168.1.50 0.0.0.15')
+wildcard = IPv4WildCardConfig('10.100.65.5 0.255.1.7')
 
-# Access properties
-print("Wildcard IP Address:", ipv4_wildcard_config.ip_addr)    
-print("Wildcard Netmask:", ipv4_wildcard_config.netmask)       
+print('Display WildCard Information'.center(50, '-'))
+address = wildcard.addr  # IPv4Addr object.
+mask = wildcard.mask  # IPv4Wildcard object.
+total_hosts = wildcard.total_hosts  # Total number of hosts covered by the wildcard mask.
+hosts = [host for host in wildcard.get_hosts()]  # List of hosts covered by the wildcard mask. `.get_hosts()` returns a generator, so be careful when using it.
 
-# Generate hosts matching the wildcard pattern
-print("Hosts matching the wildcard:")
-for host in ipv4_wildcard_config.get_hosts():
-    print(host)
 
-# Check if an IP address matches the wildcard
-print("Is 192.168.1.52 within wildcard?", ipv4_wildcard_config.is_within('192.168.1.52'))  
-print("Is 192.168.1.64 within wildcard?", ipv4_wildcard_config.is_within('192.168.1.64'))  
+# WildCard address is automatically adjusted based on the wildcard mask provided. The bit in the address will be set to 0 if the corresponding bit in the wildcard mask is 1.
+print('%-10s'%'wildcard:', wildcard)  
+print('original:', IPv4Addr('10.100.65.5').binary_string)  # Original address in binary string format
+print('%-10s'%'address:', address.binary_string)  # Adjusted address in binary string format
+print('%-10s'%'mask:', mask.binary_string)  # Wildcard mask in binary string format
+print('%-10s'%'total hosts:', total_hosts)  # Total number of hosts covered by the wildcard mask
+print('%-10s'%'hosts:', hosts[:5], '...', hosts[-5:])  # List of hosts covered by the wildcard mask
 ```
-Expected Output:
+Example output:
 ```
-Wildcard IP Address: 192.168.1.48
-Wildcard Netmask: 0.0.0.15
-Hosts matching the wildcard:
-192.168.1.48
-192.168.1.49
-192.168.1.50
-192.168.1.51
-192.168.1.52
-192.168.1.53
-192.168.1.54
-192.168.1.55
-192.168.1.56
-192.168.1.57
-192.168.1.58
-192.168.1.59
-192.168.1.60
-192.168.1.61
-192.168.1.62
-192.168.1.63
-Is 192.168.1.52 within wildcard? True
-Is 192.168.1.64 within wildcard? False
+-----------Display WildCard Information-----------
+wildcard:  10.0.64.0 0.255.1.7
+original:  00001010011001000100000100000101
+address:   00001010000000000100000000000000
+mask:      00000000111111110000000100000111
+total hosts: 4096
+hosts:     [
+                IPv4Addr('_address=10.0.64.0'), 
+                IPv4Addr('_address=10.0.64.1'), 
+                IPv4Addr('_address=10.0.64.2'), 
+                IPv4Addr('_address=10.0.64.3'), 
+                IPv4Addr('_address=10.0.64.4')
+            ] 
+            ... 
+            [
+                IPv4Addr('_address=10.255.65.3'), 
+                IPv4Addr('_address=10.255.65.4'), 
+                IPv4Addr('_address=10.255.65.5'), 
+                IPv4Addr('_address=10.255.65.6'), 
+                IPv4Addr('_address=10.255.65.7')
+            ]
 ```
+</details>
 
----
-
-## Class: `IPv6HostConfig`
-
-#### Description
-
-The `IPv6HostConfig` class represents a host configuration for an IPv6 network interface. It extends `InterfaceIPv6Config` and provides methods for calculating the network ID, classifying the IP address type (e.g., global unicast, link-local), and determining the number of usable hosts in the network. This class is designed to manage IPv6-specific host configurations, allowing for easy access to network properties and classification of IP addresses.
-
-#### Inherits: `InterfaceIPv6Config`
-
-#### Attributes
-
-- `_ip_type (IPv6AddrType)`: The type of the IPv6 address (e.g., global unicast, link-local, multicast).
-- `_network_id (IPv6Addr)`: The network ID calculated from the IPv6 address and netmask.
-
-#### Methods
-
-- **`__init__(*args)`**:
-  Initializes the IPv6 host configuration by setting up the IP address and netmask, and calculating network-specific attributes.
-  - **Parameters**:
-    - `*args`: Variable-length argument list for the IPv6 address and netmask.
-
-- **`_initialize(*args) -> None`**:
-  Internal method that initializes the IPv6 host configuration, validates the inputs, and calculates network properties.
-
-- **`_validate(*args) -> None`**:
-  Validates the provided IPv6 address and netmask using the `IPStandardizer`.
-
-- **`_calculate_network_id() -> None`**:
-  Calculates the network ID by applying the netmask to the IP address.
-
-- **`_classify_ip_address_type() -> None`**:
-  Classifies the IP address type (e.g., global unicast, link-local) using `IPAddrTypeClassifier`.
-
-- **`ip_addr`** (property):
-  Returns the configured IPv6 address.
-  - **Returns**:
-    - `IPv6Addr`: The IPv6 address assigned to the interface.
-
-- **`netmask`** (property):
-  Returns the netmask associated with the IPv6 address.
-  - **Returns**:
-    - `IPv6NetMask`: The netmask of the IPv6 address.
-
-- **`network_id`** (property):
-  Returns the network ID of the subnet.
-  - **Returns**:
-    - `IPv6Addr`: The network ID calculated from the IP address and netmask.
-
-- **`host_counts`** (property):
-  Calculates and returns the number of usable host addresses in the network.
-  - **Returns**:
-    - `int`: The number of usable hosts in the subnet.
-
-- **`ip_type`** (property):
-  Returns the classified IP address type.
-  - **Returns**:
-    - `IPv6AddrType`: The type classification of the IP address.
-
-- **`is_unspecified`** (property):
-  Returns `True` if the IP address is unspecified.
-  - **Returns**:
-    - `bool`: `True` if the IP address is unspecified, otherwise `False`.
-
-- **`is_loopback`** (property):
-  Returns `True` if the IP address is a loopback address.
-  - **Returns**:
-    - `bool`: `True` if the IP address is loopback, otherwise `False`.
-
-- **`is_multicast`** (property):
-  Returns `True` if the IP address is a multicast address.
-  - **Returns**:
-    - `bool`: `True` if the IP address is multicast, otherwise `False`.
-
-- **`is_link_local`** (property):
-  Returns `True` if the IP address is link-local.
-  - **Returns**:
-    - `bool`: `True` if the IP address is link-local, otherwise `False`.
-
-- **`is_global_unicast`** (property):
-  Returns `True` if the IP address is a global unicast address.
-  - **Returns**:
-    - `bool`: `True` if the IP address is global unicast, otherwise `False`.
-
-#### Example Usage
+<details>
+<summary>(Click to Expand) Example 4: IPv6Host</summary>
 
 ```python
+
 from ttlinks.ipservice.ip_configs import IPv6HostConfig
+ipv6_host = IPv6HostConfig('2003:db8:0:1234:0:567:8:1/64')
 
-# Create an IPv6 host configuration
-ipv6_host_config = IPv6HostConfig('2001:db8::1/64')
+print('Display Address Information'.center(50, '-'))
+address = ipv6_host.addr  # IPv6Addr object
+address_in_bytes = address.as_bytes  # ipv6 address in bytes format, big-endian
+address_in_binary_string = address.binary_string  # ipv6 address in binary string format
+address_in_binary_digits = address.binary_digits  # ipv6 address in binary digits format
+address_in_decimal = address.decimal  # ipv6 address in decimal format
+print('%-8s'%'address:', address)
+print('%-8s'%'bytes:', address_in_bytes)
+print('%-8s'%'binary:', address_in_binary_string)
+print('%-8s'%'digits:', address_in_binary_digits)
+print('%-8s'%'decimal:', address_in_decimal)
 
-# Access various properties
-print("IP Address:", ipv6_host_config.ip_addr)          
-print("Netmask:", ipv6_host_config.netmask)             
-print("Network ID:", ipv6_host_config.network_id)       
-print("Host Counts:", ipv6_host_config.host_counts)     
-print("IP Type:", ipv6_host_config.ip_type)             
-print("Is Global Unicast:", ipv6_host_config.is_global_unicast)  
+print('Display Mask Information'.center(50, '-'))
+mask = ipv6_host.mask  # IPv6Netmask object
+mask_in_bytes = mask.as_bytes  # mask in bytes format, big-endian
+mask_in_binary_string = mask.binary_string  # mask in binary string format
+mask_in_binary_digits = mask.binary_digits  # mask in binary digits format
+mask_in_decimal = mask.decimal  # mask in decimal format
+print('%-8s'%'mask:', mask)
+print('%-8s'%'bytes:', mask_in_bytes)
+print('%-8s'%'binary:', mask_in_binary_string)
+print('%-8s'%'digits:', mask_in_binary_digits)
+print('%-8s'%'decimal:', mask_in_decimal)
+
+print('Display Host Information'.center(50, '-'))
+ip_address = ipv6_host.addr.address  # Colon-hexadecimal notation of IPv6Addr object
+ip_mask = ipv6_host.mask.address  # Colon-hexadecimal notation of IPv6Netmask object
+ip_type = ipv6_host.ip_type  # Return IPv6AddrType object
+network_id = ipv6_host.network_id  # IPv6Addr object of network ID (ipv6 prefix). Use .address to get the string format
+is_global_unicast = ipv6_host.is_global_unicast  # Return True if the IP address is a global unicast address
+is_link_local = ipv6_host.is_link_local  # Return True if the IP address is a link-local address
+is_loopback = ipv6_host.is_loopback  # Return True if the IP address is a loopback address
+# ...more attributes and methods
+print('%-10s'%'host:', ipv6_host)  # IPv6Host object. Use str() to get the string format
+print('%-10s'%'address:', ip_address)
+print('%-10s'%'mask:', ip_mask)
+print('%-10s'%'type:', ip_type)
+print('%-10s'%'NET ID:', network_id)
+print('%-10s'%'global unicast:', is_global_unicast)
+print('%-10s'%'link local:', is_link_local)
+print('%-10s'%'loopback:', is_loopback)
 ```
-Expected Output:
+Example output:
 ```
-IP Address: 2001:db8::1
-Netmask: ffff:ffff:ffff:ffff::
-Network ID: 2001:db8::
-Host Counts: 18446744073709551616
-IP Type: IPv6AddrType.DOCUMENTATION
-Is Global Unicast: False
+-----------Display Address Information------------
+address: 2003:DB8:0:1234:0:567:8:1
+bytes:   b' \x03\r\xb8\x00\x00\x124\x00\x00\x05g\x00\x08\x00\x01'
+binary:  00100000000000110000110110111000000000000000000000010010001101000000000000000000000001010110011100000000000010000000000000000001
+digits:  [
+            0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 
+            0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+          ]
+decimal: 42551151004999748473988435370763091969
+-------------Display Mask Information-------------
+mask:    FFFF:FFFF:FFFF:FFFF::
+bytes:   b'\xff\xff\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00'
+binary:  11111111111111111111111111111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000
+digits:  [
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+          ]
+decimal: 340282366920938463444927863358058659840
+-------------Display Host Information-------------
+host:      2003:DB8:0:1234:0:567:8:1/64
+address:   2003:DB8:0:1234:0:567:8:1
+mask:      FFFF:FFFF:FFFF:FFFF::
+type:      IPv6AddrType.GLOBAL_UNICAST
+NET ID:    2003:DB8:0:1234::
+global unicast: True
+link local: False
+loopback:  False
 ```
+</details>
 
----
-
-## Class: `IPv6SubnetConfig`
-
-#### Description
-
-The `IPv6SubnetConfig` class represents a subnet configuration for an IPv6 network. It inherits from `IPv6HostConfig` and adds functionality for working with subnet ranges and hosts within a subnet. This includes operations such as retrieving the first and last host, iterating over all hosts, checking if an IP address is within the subnet, dividing the subnet into smaller subnets, and merging subnets.
-
-#### Inherits: `IPv6HostConfig`
-
-#### Methods
-
-- **`first_host`** (property):
-  Returns the first usable host address within the subnet.
-  - **Returns**:
-    - `IPv6Addr`: The first usable host address.
-
-- **`last_host`** (property):
-  Returns the last usable host address within the subnet.
-  - **Returns**:
-    - `IPv6Addr`: The last usable host address.
-
-- **`subnet_range`** (property):
-  Returns the range of the subnet, from the first host to the last host.
-  - **Returns**:
-    - `str`: A string representing the subnet range in the format "first_host - last_host".
-
-- **`get_hosts() -> Generator[IPv6Addr, None, None]`**:
-  Generates all usable hosts within the subnet by iterating over possible host addresses.
-  - **Returns**:
-    - `Generator[IPv6Addr, None, None]`: A generator yielding each host in the subnet.
-
-- **`is_within(ip_addr: Any) -> bool`**:
-  Checks whether a given IPv6 address falls within the subnet.
-  - **Parameters**:
-    - `ip_addr (Any)`: The IPv6 address to check.
-  - **Returns**:
-    - `bool`: `True` if the IP address is within the subnet, otherwise `False`.
-
-- **`subnet_division(mask: int) -> List[IPv6SubnetConfig]`**:
-  Divides the current subnet into smaller subnets based on a new mask size.
-  - **Parameters**:
-    - `mask (int)`: The new mask size for the smaller subnets.
-  - **Returns**:
-    - `List[IPv6SubnetConfig]`: A list of new subnet configurations.
-
-- **`subnet_merge(*subnets: Any) -> IPv6SubnetConfig`**:
-  Attempts to merge multiple subnets into a larger subnet.
-  - **Parameters**:
-    - `*subnets (Any)`: Variable-length argument list of subnet objects to merge.
-  - **Returns**:
-    - `IPv6SubnetConfig`: A new subnet configuration representing the merged subnet.
-
-#### Example Usage
+<details>
+<summary>(Click to Expand) Example 5: IPv6 Subnet</summary>
+Network ID (IPv6 Prefix) is automatically adjusted based on the subnet mask provided. The bit in the address will be set to 0 if the corresponding bit in the subnet mask is 1. The following example demonstrates how to create an IPv6 subnet object and access its properties:
 
 ```python
 from ttlinks.ipservice.ip_configs import IPv6SubnetConfig
 
-# Create an IPv6 subnet configuration
-ipv6_subnet_config = IPv6SubnetConfig('2001:db8::/64')
+ipv6_subnet = IPv6SubnetConfig('2003:db8:0:1234:0:567:8:1/64')
 
-# Access various properties
-print("Subnet Range:", ipv6_subnet_config.subnet_range)    
-print("First Host:", ipv6_subnet_config.first_host)        
-print("Last Host:", ipv6_subnet_config.last_host)          
-print("Host Counts:", ipv6_subnet_config.host_counts)      
+print('Display Address Information'.center(50, '-'))
+address = ipv6_subnet.addr  # IPv6Addr object. TTLinks helps to adjust the address to the network ID of given value automatically because it is a subnet instead of a host.
+address_in_bytes = address.as_bytes  # ipv6 address in bytes format, big-endian
+address_in_binary_string = address.binary_string  # ipv6 address in binary string format
+address_in_binary_digits = address.binary_digits  # ipv6 address in binary digits format
+address_in_decimal = address.decimal  # ipv6 address in decimal format
+print('%-8s'%'address:', address)
+print('%-8s'%'bytes:', address_in_bytes)
+print('%-8s'%'binary:', address_in_binary_string)
+print('%-8s'%'digits:', address_in_binary_digits)
+print('%-8s'%'decimal:', address_in_decimal)
 
-# Check if an IP address is within the subnet
-print("Is 2001:db8::1 within subnet?", ipv6_subnet_config.is_within('2001:db8::1'))  
+print('Display Mask Information'.center(50, '-'))
+mask = ipv6_subnet.mask  # IPv6Netmask object
+mask_in_bytes = mask.as_bytes  # mask in bytes format, big-endian
+mask_in_binary_string = mask.binary_string  # mask in binary string format
+mask_in_binary_digits = mask.binary_digits  # mask in binary digits format
+mask_in_decimal = mask.decimal  # mask in decimal format
+print('%-8s'%'mask:', mask)
+print('%-8s'%'bytes:', mask_in_bytes)
+print('%-8s'%'binary:', mask_in_binary_string)
+print('%-8s'%'digits:', mask_in_binary_digits)
+print('%-8s'%'decimal:', mask_in_decimal)
 
-# Divide the subnet into smaller subnets
-smaller_subnets = ipv6_subnet_config.subnet_division(65)
-print("Divided Subnets:")
-for subnet in smaller_subnets:
-    print(subnet)
+print('Display Subnet Information'.center(50, '-'))
+ip_address = ipv6_subnet.addr.address  # Colon-hexadecimal notation of IPv6Addr object
+ip_mask = ipv6_subnet.mask.address  # Colon-hexadecimal notation of IPv6Netmask object
+ip_type = ipv6_subnet.ip_type  # Return all possible IPv6AddrType objects the subnet may lie in
+network_id = ipv6_subnet.network_id  # IPv6Addr object of network ID (IPv6 Prefix). Use .address to get the string format
+subnet_range = ipv6_subnet.subnet_range  # Return the range of the subnet. Left is the network ID, right is the broadcast IP
+first_host = ipv6_subnet.first_host  # IPv6Addr object of the first host IP. Use .address to get the string format
+last_host = ipv6_subnet.last_host  # IPv6Addr object of the last host IP. Use .address to get the string format
+hosts = ipv6_subnet.get_hosts()  # Return a generator of all host IPs in the subnet
+is_within1 = ipv6_subnet.is_within('2003:DB8:0:1234::ff:1a')  # Check if the given IP address is within the subnet
+is_within2 = ipv6_subnet.is_within('2003:DB8:0:1235::ff:1a')  # Check if the given IP address is within the subnet
+print('%-10s'%'subnet:', ipv6_subnet)
+print('%-10s'%'address:', ip_address)
+print('%-10s'%'mask:', ip_mask)
+print('%-10s'%'type:', ip_type)
+print('%-10s'%'NET ID:', network_id)
+print('%-10s'%'range:', subnet_range)
+print('%-10s'%'first:', first_host)
+print('%-10s'%'last:', last_host)
+print('%-10s'%'hosts:', [next(hosts) for _ in range(5)])
+print('%-10s'%'is within1:', is_within1)
+print('%-10s'%'is within2:', is_within2)
 
-# Merge subnets (assuming adjacent subnets)
-merged_subnet = ipv6_subnet_config.subnet_merge('2001:db8:0:1::/64')
-print("Merged Subnet:", merged_subnet)  
+print('Display Subnet Operation'.center(50, '-'))  # Exclusive for subnet object
+new_subnet = ipv6_subnet.division(67)  # Divide the subnet into /67 subnets.
+merged_subnet = ipv6_subnet.merge('2003:DB8:0:1235::/64')  # Merge the subnet with another subnet.
+print('%-14s'%'new subnet:', list(new_subnet))
+print('%-14s'%'merged subnet:', merged_subnet)
 ```
-Expected Output:
+Example output:
 ```
-Subnet Range: 2001:db8:: - 2001:db8::ffff:ffff:ffff:ffff
-First Host: 2001:db8::
-Last Host: 2001:db8::ffff:ffff:ffff:ffff
-Host Counts: 18446744073709551616
-Is 2001:db8::1 within subnet? True
-Divided Subnets:
-2001:db8::/65
-2001:db8:0:0:8000::/65
-Merged Subnet: 2001:db8::/63 
+-----------Display Address Information------------
+address: 2003:DB8:0:1234::
+bytes:   b' \x03\r\xb8\x00\x00\x124\x00\x00\x00\x00\x00\x00\x00\x00'
+binary:  00100000000000110000110110111000000000000000000000010010001101000000000000000000000000000000000000000000000000000000000000000000
+digits:  [
+            0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 
+            0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ]
+decimal: 42551151004999748473988429430822797312
+-------------Display Mask Information-------------
+mask:    FFFF:FFFF:FFFF:FFFF::
+bytes:   b'\xff\xff\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00'
+binary:  11111111111111111111111111111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000
+digits:  [
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ]
+decimal: 340282366920938463444927863358058659840
+------------Display Subnet Information------------
+subnet:    2003:DB8:0:1234::/64
+address:   2003:DB8:0:1234::
+mask:      FFFF:FFFF:FFFF:FFFF::
+type:      [<IPv6AddrType.GLOBAL_UNICAST: 3>]
+NET ID:    2003:DB8:0:1234::
+range:     [
+                IPv6Addr('_address=2003:DB8:0:1234::'), 
+                IPv6Addr('_address=2003:DB8:0:1234:FFFF:FFFF:FFFF:FFFF')
+            ]
+first:     2003:DB8:0:1234::
+last:      2003:DB8:0:1234:FFFF:FFFF:FFFF:FFFF
+hosts:     [
+                IPv6Addr('_address=2003:DB8:0:1234::'), 
+                IPv6Addr('_address=2003:DB8:0:1234::1'), 
+                IPv6Addr('_address=2003:DB8:0:1234::2'), 
+                IPv6Addr('_address=2003:DB8:0:1234::3'), 
+                IPv6Addr('_address=2003:DB8:0:1234::4')
+            ]
+is within1: True
+is within2: False
+-------------Display Subnet Operation-------------
+new subnet:    [
+                    IPv6SubnetConfig(2003:DB8:0:1234::/67), 
+                    IPv6SubnetConfig(2003:DB8:0:1234:2000::/67), 
+                    IPv6SubnetConfig(2003:DB8:0:1234:4000::/67), 
+                    IPv6SubnetConfig(2003:DB8:0:1234:6000::/67), 
+                    IPv6SubnetConfig(2003:DB8:0:1234:8000::/67), 
+                    IPv6SubnetConfig(2003:DB8:0:1234:A000::/67), 
+                    IPv6SubnetConfig(2003:DB8:0:1234:C000::/67), 
+                    IPv6SubnetConfig(2003:DB8:0:1234:E000::/67)
+                ]
+merged subnet: 2003:DB8:0:1234::/63
 ```
+</details>
 
----
+<details>
 
-## Class: `IPv6WildCardConfig`
+<summary>(Click to Expand) Example 6: IPv6 WildCard</summary>
 
-#### Description
-
-The `IPv6WildCardConfig` class handles wildcard configurations for IPv6 addresses, which are used to match ranges of IP addresses by allowing certain bits to "wildcard" or vary. This is particularly useful in network policies and access lists where you need to specify a range of addresses without enumerating each one.
-
-#### Inherits: `InterfaceIPv6Config`
-
-#### Methods
-
-- **`__init__(*args)`**:
-  Initializes the IPv6 wildcard configuration by setting up the wildcard IP address and netmask.
-  - **Parameters**:
-    - `*args`: Variable-length argument list for the IPv6 address and wildcard netmask.
-
-- **`_initialize(*args) -> None`**:
-  Internal method that initializes the wildcard configuration and recalculates the IP address.
-
-- **`_validate(*args) -> None`**:
-  Validates the wildcard IP address and netmask using the `IPStandardizer`.
-
-- **`_recalculate_ip_addr() -> None`**:
-  Recalculates the IP address based on the wildcard netmask.
-
-- **`ip_addr`** (property):
-  Returns the wildcard IPv6 address.
-  - **Returns**:
-    - `IPv6Addr`: The wildcard IPv6 address.
-
-- **`netmask`** (property):
-  Returns the wildcard netmask.
-  - **Returns**:
-    - `IPv6NetMask`: The wildcard netmask.
-
-- **`get_hosts() -> Generator[IPv6Addr, None, None]`**:
-  Generates all possible host IPs that match the wildcard pattern.
-  - **Returns**:
-    - `Generator[IPv6Addr, None, None]`: A generator yielding all matching host addresses.
-
-- **`is_within(ip_addr: Any) -> bool`**:
-  Checks whether a given IP address matches the wildcard range.
-  - **Parameters**:
-    - `ip_addr (Any)`: The IP address to check.
-  - **Returns**:
-    - `bool`: `True` if the IP address matches the wildcard pattern, otherwise `False`.
-
-- **`__str__() -> str`**:
-  Returns a string representation of the wildcard configuration.
-  - **Returns**:
-    - `str`: A string representing the wildcard IP address and netmask (e.g., "2001:db8::1 ::00FF").
-
-#### Example Usage
+WildCard is a special type of subnet mask that is typically used in access control lists (ACLs) to define a range of IP addresses. **TTLinks** provides a way to calculate the address automatically based on the wildcard mask provided. The following example demonstrates how to create an IPv6 wildcard object and access its properties:
 
 ```python
+from ttlinks.ipservice.ip_address import IPv6Addr
 from ttlinks.ipservice.ip_configs import IPv6WildCardConfig
 
-# Create an IPv6 wildcard configuration
-ipv6_wildcard_config = IPv6WildCardConfig('2001:db8::1 ::ff')
+wildcard = IPv6WildCardConfig('2001:db8:ffff:1234::abcd ::ff')
 
-# Access properties
-print("Wildcard IP Address:", ipv6_wildcard_config.ip_addr)  
-print("Wildcard Netmask:", ipv6_wildcard_config.netmask)  
+print('Display WildCard Information'.center(50, '-'))
+address = wildcard.addr  # IPv6Addr object.
+mask = wildcard.mask  # IPv6Wildcard object.
+total_hosts = wildcard.total_hosts  # Total number of hosts covered by the wildcard mask.
+hosts = [host for host in wildcard.get_hosts()]  # List of hosts covered by the wildcard mask. `.get_hosts()` returns a generator, so be careful when using it.
 
-# Generate hosts matching the wildcard pattern
-print("Hosts matching the wildcard:")
-index = 0
-for host in ipv6_wildcard_config.get_hosts():
-    print(host)
-    index += 1
-    if index == 5:
-        break
 
-# Check if an IP address matches the wildcard
-print("Is 2001:db8::2 within wildcard?", ipv6_wildcard_config.is_within('2001:db8::2'))  
-print("Is 2001:db8::100 within wildcard?", ipv6_wildcard_config.is_within('2001:db8::100'))  
+# WildCard address is automatically adjusted based on the wildcard mask provided. The bit in the address will be set to 0 if the corresponding bit in the wildcard mask is 1.
+print('%-10s'%'wildcard:', wildcard)
+print('%-10s'%'original:', IPv6Addr('2001:db8:ffff:1234::abcd').binary_string)  # Original address in binary string format
+print('%-10s'%'address:', address.binary_string)  # Adjusted address in binary string format
+print('%-10s'%'mask:', mask.binary_string)  # Wildcard mask in binary string format
+print('%-10s'%'total hosts:', total_hosts)  # Total number of hosts covered by the wildcard mask
+print('%-10s'%'hosts:', hosts[:5], '...', hosts[-5:])  # List of hosts covered by the wildcard mask
 ```
-Expected Output:
+Example output:
 ```
-Wildcard IP Address: 2001:db8::
-Wildcard Netmask: ::ff
-Hosts matching the wildcard:
-2001:db8::
-2001:db8::1
-2001:db8::2
-2001:db8::3
-2001:db8::4
-Is 2001:db8::2 within wildcard? True
-Is 2001:db8::100 within wildcard? False
+-----------Display WildCard Information-----------
+wildcard:  2001:DB8:FFFF:1234::AB00 ::FF
+original:  00100000000000010000110110111000111111111111111100010010001101000000000000000000000000000000000000000000000000001010101111001101
+address:   00100000000000010000110110111000111111111111111100010010001101000000000000000000000000000000000000000000000000001010101100000000
+mask:      00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011111111
+total hosts: 256
+hosts:     [
+                IPv6Addr('_address=2001:DB8:FFFF:1234::AB00'), 
+                IPv6Addr('_address=2001:DB8:FFFF:1234::AB01'), 
+                IPv6Addr('_address=2001:DB8:FFFF:1234::AB02'), 
+                IPv6Addr('_address=2001:DB8:FFFF:1234::AB03'), 
+                IPv6Addr('_address=2001:DB8:FFFF:1234::AB04')
+            ] 
+                ... 
+            [
+                IPv6Addr('_address=2001:DB8:FFFF:1234::ABFB'), 
+                IPv6Addr('_address=2001:DB8:FFFF:1234::ABFC'), 
+                IPv6Addr('_address=2001:DB8:FFFF:1234::ABFD'), 
+                IPv6Addr('_address=2001:DB8:FFFF:1234::ABFE'), 
+                IPv6Addr('_address=2001:DB8:FFFF:1234::ABFF')
+            ]
 ```
----
-
-## Class: `IPWildCardCalculator`
-
-#### Description
-
-The `IPWildCardCalculator` class provides static methods for calculating the minimal wildcard configuration that encompasses a given set of IPv4 or IPv6 subnets. This is particularly useful for creating concise access control lists (ACLs) or routing policies that efficiently cover multiple subnets.
-
-#### Methods
-
-- **`calculate_minimum_ipv4_wildcard(*subnets: Any) -> IPv4WildCardConfig`**:
-  Calculates the minimal IPv4 wildcard configuration that covers the provided IPv4 subnets.
-  - **Parameters**:
-    - `*subnets (Any)`: Variable-length argument list of IPv4 subnet strings (e.g., '192.168.0.0/24').
-  - **Returns**:
-    - `IPv4WildCardConfig`: A wildcard configuration that covers all the provided subnets.
-
-- **`calculate_minimum_ipv6_wildcard(*subnets: Any) -> IPv6WildCardConfig`**:
-  Calculates the minimal IPv6 wildcard configuration that covers the provided IPv6 subnets.
-  - **Parameters**:
-    - `*subnets (Any)`: Variable-length argument list of IPv6 subnet strings (e.g., '2001:db8::/32').
-  - **Returns**:
-    - `IPv6WildCardConfig`: A wildcard configuration that covers all the provided subnets.
-
-#### Example Usage
-
-```python
-from ttlinks.ipservice.ip_configs import IPWildCardCalculator
-
-# Calculate minimal IPv4 wildcard covering multiple subnets
-ipv4_wildcard = IPWildCardCalculator.calculate_minimum_ipv4_wildcard('192.168.0.0/30', '192.168.0.4/30')
-print("IPv4 Wildcard Config:", ipv4_wildcard)
-# Outputs a wildcard configuration covering the provided subnets
-
-# Calculate minimal IPv6 wildcard covering multiple subnets
-ipv6_wildcard = IPWildCardCalculator.calculate_minimum_ipv6_wildcard('2001:db8::/64', '2001:db8:7::/64')
-print("IPv6 Wildcard Config:", ipv6_wildcard)
-# Outputs a wildcard configuration covering the provided subnets
-```
-Expected Output:
-```
-IPv4 Wildcard Config: 192.168.0.0 0.0.0.7
-IPv6 Wildcard Config: 2001:db8:: ::7:0:ffff:ffff:ffff:ffff
-```
-
-
----
-
-## Dependencies
-
-The `ip_configs.py` module depends on the following external libraries and modules:
-
-- **`ttlinks.common.binary_utils.binary_factory`**: Provides the `OctetFlyWeightFactory` class used for efficient handling of binary octets in IP address calculations.
-
-- **`ttlinks.common.tools.network`**: Supplies the `BinaryTools` class, utilized for binary operations such as checking if an IP address falls within a specified range and expanding bits based on netmask.
-
-- **`ttlinks.ipservice.ip_addr_type_classifiers`**: Imports the `IPAddrTypeClassifier` class, which is used to classify IP address types (e.g., public, private, multicast) for both IPv4 and IPv6.
-
-- **`ttlinks.ipservice.ip_converters`**: Provides `BinaryDigitsIPv4ConverterHandler` and `BinaryDigitsIPv6ConverterHandler` for converting lists of binary digits into IPv4 and IPv6 addresses, respectively.
-
-- **`ttlinks.ipservice.ip_address`**: Includes classes like `IPv4Addr`, `IPv4NetMask`, `IPv4WildCard`, `IPv6Addr`, `IPv6NetMask`, and `IPv6WildCard` to represent and manipulate IP addresses and netmasks.
-
-- **`ttlinks.ipservice.ip_format_standardizer`**: Imports the `IPStandardizer` class, used for validating and standardizing IP address formats and configurations.
-
-- **`ttlinks.ipservice.ip_utils`**: Imports `IPv4AddrType` and `IPv6AddrType` to define and categorize different IP address types for classification purposes.
-
-- **`itertools`**: A Python standard library module used for efficient looping and generating combinations of bits, essential for subnet calculations and host iterations.
-
-- **`typing`**: A Python standard library module used for type hints and annotations, including `Generator`, `List`, and `Any`, enhancing code readability and maintenance.
-
----
+</details>

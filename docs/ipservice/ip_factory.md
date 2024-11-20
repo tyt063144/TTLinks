@@ -1,676 +1,364 @@
-# `IPFactory` Module Documentation
+# `ip_factory` Module
 
-## Overview
-
-The `IPFactory` module provides a flexible and extensible framework for generating and managing IP configurations, including host addresses, subnets, and wildcard addresses. This module supports both IPv4 and IPv6 configurations and includes abstractions for handling various IP address types and ranges. With the ability to generate random IPs, batch process IP configurations, and perform subnet operations, this module is essential for network management and simulation tasks.
-
-## Features
-
-- **Abstract Base Class for IP Generation**: The `IPFactory` class defines an abstract interface for generating host, subnet, and wildcard configurations. Concrete implementations like `IPv4Factory` and `IPv6Factory` extend this class to handle specific IP versions.
-
-- **Batch Processing**: The module supports generating multiple host or subnet configurations in parallel, leveraging multi-threading and multi-processing for enhanced performance.
-
-- **Random IP and Subnet Generation**: Generate random IPv4 or IPv6 hosts and subnets based on various IP address blocks, such as public, private, or multicast ranges.
-
-- **IP Address Types**: Enum-based classification of IP address types, including public, private, multicast, loopback, and more, for both IPv4 and IPv6.
-
-- **Caching for Performance**: Subnet configurations are cached to reduce redundant calculations and improve efficiency when generating multiple IP configurations.
-
----
+Contains IPv4Factory and IPv6Factory classes that create IPv4Address and IPv6Address objects, respectively. In this document, we only use the IPv4Factory class as an example. The IPv6Factory class works similarly.
 
 
-## Class: `IPFactory` (Interface)
+<details>
+<summary>(Click to Expand) Example 1: Create IPv4 Host</summary>
 
-#### Description
+```python
+from ttlinks.ipservice.ip_factory import IPv4Factory
+ipv4_factory = IPv4Factory()
+ipv4_host = ipv4_factory.host('192.168.1.10/24')
 
-The `IPFactory` class is an abstract base class (ABC) that defines a framework for generating and managing IP configurations. This includes generating host IP addresses, subnet configurations, and wildcard configurations. The class provides a flexible interface for handling both IPv4 and IPv6 addresses. Subclasses like `IPv4Factory` and `IPv6Factory` extend `IPFactory` to provide concrete implementations for IPv4 and IPv6 address management.
+print('Display Address Information'.center(50, '-'))
+address = ipv4_host.addr  # IPv4Addr object
+address_in_bytes = address.as_bytes  # ipv4 address in bytes format, big-endian
+address_in_binary_string = address.binary_string  # ipv4 address in binary string format
+address_in_binary_digits = address.binary_digits  # ipv4 address in binary digits format
+address_in_decimal = address.decimal  # ipv4 address in decimal format
+print('%-8s'%'address:', address)
+print('%-8s'%'bytes:', address_in_bytes)
+print('%-8s'%'binary:', address_in_binary_string)
+print('%-8s'%'digits:', address_in_binary_digits)
+print('%-8s'%'decimal:', address_in_decimal)
 
-The class also supports batch processing of IP configurations (hosts and subnets) using parallelization techniques such as multi-threading and multi-processing to improve performance, especially when generating large numbers of IP configurations.
+print('Display Mask Information'.center(50, '-'))
+mask = ipv4_host.mask  # IPv4Netmask object
+mask_in_bytes = mask.as_bytes  # mask in bytes format, big-endian
+mask_in_binary_string = mask.binary_string  # mask in binary string format
+mask_in_binary_digits = mask.binary_digits  # mask in binary digits format
+mask_in_decimal = mask.decimal  # mask in decimal format
+print('%-8s'%'mask:', mask)
+print('%-8s'%'bytes:', mask_in_bytes)
+print('%-8s'%'binary:', mask_in_binary_string)
+print('%-8s'%'digits:', mask_in_binary_digits)
+print('%-8s'%'decimal:', mask_in_decimal)
 
-#### Attributes
+print('Display Host Information'.center(50, '-'))
+ip_address = ipv4_host.addr.address  # Dot-decimal notation of IPv4Addr object
+ip_mask = ipv4_host.mask.address  # Dot-decimal notation of IPv4Netmask object
+ip_type = ipv4_host.ip_type  # Return IPv4AddrType object
+network_id = ipv4_host.network_id  # IPv4Addr object of network ID. Use .address to get the string format
+broadcast_ip = ipv4_host.broadcast_ip  # IPv4Addr object of broadcast IP. Use .address to get the string format
+is_public = ipv4_host.is_public  # Return True if the IP address is public
+is_private = ipv4_host.is_private  # Return True if the IP address is private
+# ...more attributes and methods
+print('%-10s'%'host:', ipv4_host)  # IPv4Host object. Use str() to get the string format
+print('%-10s'%'address:', ip_address)
+print('%-10s'%'mask:', ip_mask)
+print('%-10s'%'type:', ip_type)
+print('%-10s'%'NET ID:', network_id)
+print('%-10s'%'broadcast:', broadcast_ip)
+print('%-10s'%'public?:', is_public)
+print('%-10s'%'private?:', is_private)
+```
+Example output:
+```
+-----------Display Address Information------------
+address: 192.168.1.10
+bytes:   b'\xc0\xa8\x01\n'
+binary:  11000000101010000000000100001010
+digits:  [1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0]
+decimal: 3232235786
+-------------Display Mask Information-------------
+mask:    255.255.255.0
+bytes:   b'\xff\xff\xff\x00'
+binary:  11111111111111111111111100000000
+digits:  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+decimal: 4294967040
+-------------Display Host Information-------------
+host:      192.168.1.0/24
+address:   192.168.1.10
+mask:      255.255.255.0
+type:      IPv4AddrType.PRIVATE
+NET ID:    192.168.1.0
+broadcast: 192.168.1.255
+public?:   False
+private?:  True
+```
+</details>
 
-- **_subnet_cache (dict)**:  
-  A cache used to store pre-generated subnet configurations, allowing for reuse and preventing redundant calculations.
+<details>
+<summary>(Click to Expand) Example 2: Create IPv4 Subnet</summary>
 
-#### Methods
+Under `.subnet` method, **TTLinks** simplifies address configuration by automatically adjusting an address to match its corresponding network ID, treating it as a subnet rather than a host. Users don’t need to manually calculate the network ID or broadcast IP when creating a subnet object. The following example illustrates how to create an IPv4 subnet object and access its properties: `192.170.50.10/14` -> `192.168.1.0/24`. It also inherits all the properties and methods from the IPv4Host class.
 
-- **`__init__(self)`**:  
-  Initializes the `IPFactory` object and sets up the subnet cache for improved performance by reusing existing configurations.
-  
-- **`abstractmethod host(self, host: str) -> InterfaceIPConfig`**:  
-  Abstract method for generating a host IP configuration.
-  - **Parameters**:
-    - `host (str)`: The string representation of the host IP.
-  - **Returns**:
-    - `InterfaceIPConfig`: The configuration object representing the host IP.
+```python
+from ttlinks.ipservice.ip_factory import IPv4Factory
+ipv4_factory = IPv4Factory()
+ipv4_subnet = ipv4_factory.subnet('192.170.50.10/14')
 
-- **`abstractmethod subnet(self, subnet: str) -> InterfaceIPConfig`**:  
-  Abstract method for generating a subnet configuration.
-  - **Parameters**:
-    - `subnet (str)`: The string representation of the subnet.
-  - **Returns**:
-    - `InterfaceIPConfig`: The configuration object representing the subnet.
+print('Display Address Information'.center(50, '-'))
+address = ipv4_subnet.addr  # IPv4Addr object. TTLinks helps to adjust the address to the network ID of given value automatically because it is a subnet instead of a host.
+address_in_bytes = address.as_bytes  # ipv4 address in bytes format, big-endian
+address_in_binary_string = address.binary_string  # ipv4 address in binary string format
+address_in_binary_digits = address.binary_digits  # ipv4 address in binary digits format
+address_in_decimal = address.decimal  # ipv4 address in decimal format
+print('%-8s'%'address:', address)
+print('%-8s'%'bytes:', address_in_bytes)
+print('%-8s'%'binary:', address_in_binary_string)
+print('%-8s'%'digits:', address_in_binary_digits)
+print('%-8s'%'decimal:', address_in_decimal)
 
-- **`abstractmethod wildcard(self, wildcard: str) -> InterfaceIPConfig`**:  
-  Abstract method for generating a wildcard configuration.
-  - **Parameters**:
-    - `wildcard (str)`: The string representation of the wildcard.
-  - **Returns**:
-    - `InterfaceIPConfig`: The configuration object representing the wildcard.
+print('Display Mask Information'.center(50, '-'))
+mask = ipv4_subnet.mask  # IPv4Netmask object
+mask_in_bytes = mask.as_bytes  # mask in bytes format, big-endian
+mask_in_binary_string = mask.binary_string  # mask in binary string format
+mask_in_binary_digits = mask.binary_digits  # mask in binary digits format
+mask_in_decimal = mask.decimal  # mask in decimal format
+print('%-8s'%'mask:', mask)
+print('%-8s'%'bytes:', mask_in_bytes)
+print('%-8s'%'binary:', mask_in_binary_string)
+print('%-8s'%'digits:', mask_in_binary_digits)
+print('%-8s'%'decimal:', mask_in_decimal)
 
-- **`abstractmethod batch_hosts(self, hosts: List[str], max_workers: int = 10, keep_dup=True) -> List[InterfaceIPConfig]`**:  
-  Abstract method for generating a batch of host IP configurations in parallel.
-  - **Parameters**:
-    - `hosts (List[str])`: A list of host IP strings.
-    - `max_workers (int)`: Maximum number of workers for parallel processing.
-    - `keep_dup (bool)`: Whether to keep duplicate host IPs.
-  - **Returns**:
-    - `List[InterfaceIPConfig]`: A list of configuration objects representing the host IPs.
+print('Display Subnet Information'.center(50, '-'))
+ip_address = ipv4_subnet.addr.address  # Dot-decimal notation of IPv4Addr object
+ip_mask = ipv4_subnet.mask.address  # Dot-decimal notation of IPv4Netmask object
+ip_type = ipv4_subnet.ip_type  # Return all possible IPv4AddrType objects the subnet may lie in
+network_id = ipv4_subnet.network_id  # IPv4Addr object of network ID. Use .address to get the string format
+broadcast_ip = ipv4_subnet.broadcast_ip  # IPv4Addr object of broadcast IP. Use .address to get the string format
+subnet_range = ipv4_subnet.subnet_range  # Return the range of the subnet. Left is the network ID, right is the broadcast IP
+first_host = ipv4_subnet.first_host  # IPv4Addr object of the first host IP. Use .address to get the string format
+last_host = ipv4_subnet.last_host  # IPv4Addr object of the last host IP. Use .address to get the string format
+hosts = ipv4_subnet.get_hosts()  # Return a generator of all host IPs in the subnet
+is_within1 = ipv4_subnet.is_within('192.168.169.50')  # Check if the given IP address is within the subnet
+is_within2 = ipv4_subnet.is_within('192.172.1.1')  # Check if the given IP address is within the subnet
+print('%-10s'%'subnet:', ipv4_subnet)
+print('%-10s'%'address:', ip_address)
+print('%-10s'%'mask:', ip_mask)
+print('%-10s'%'type:', ip_type)
+print('%-10s'%'NET ID:', network_id)
+print('%-10s'%'broadcast:', broadcast_ip)
+print('%-10s'%'range:', subnet_range)
+print('%-10s'%'first:', first_host)
+print('%-10s'%'last:', last_host)
+print('%-10s'%'hosts:', [next(hosts) for _ in range(5)])
+print('%-10s'%'is within1:', is_within1)
+print('%-10s'%'is within2:', is_within2)
 
-- **`abstractmethod batch_subnets(self, subnets: List[str], max_workers: int = 10, keep_dup=True) -> List[InterfaceIPConfig]`**:  
-  Abstract method for generating a batch of subnet configurations in parallel.
-  - **Parameters**:
-    - `subnets (List[str])`: A list of subnet strings.
-    - `max_workers (int)`: Maximum number of workers for parallel processing.
-    - `keep_dup (bool)`: Whether to keep duplicate subnet IPs.
-  - **Returns**:
-    - `List[InterfaceIPConfig]`: A list of configuration objects representing the subnets.
+print('Display Subnet Operation'.center(50, '-'))  # Exclusive for subnet object
+new_subnet = ipv4_subnet.division(16)  # Divide the subnet into /16 subnets.
+merged_subnet = ipv4_subnet.merge('192.172.0.0/14')  # Merge the subnet with another subnet.
+print('%-14s'%'new subnet:', list(new_subnet))
+print('%-14s'%'merged subnet:', merged_subnet)
+```
+Example output:
+```
+-----------Display Address Information------------
+address: 192.168.0.0
+bytes:   b'\xc0\xa8\x00\x00'
+binary:  11000000101010000000000000000000
+digits:  [1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+decimal: 3232235520
+-------------Display Mask Information-------------
+mask:    255.252.0.0
+bytes:   b'\xff\xfc\x00\x00'
+binary:  11111111111111000000000000000000
+digits:  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+decimal: 4294705152
+------------Display Subnet Information------------
+subnet:    192.168.0.0/14
+address:   192.168.0.0
+mask:      255.252.0.0
+type:      [<IPv4AddrType.PRIVATE: 4>, <IPv4AddrType.PUBLIC: 3>]
+NET ID:    192.168.0.0
+broadcast: 192.171.255.255
+range:     [IPv4Addr('_address=192.168.0.0'), IPv4Addr('_address=192.171.255.255')]
+first:     192.168.0.1
+last:      192.171.255.254
+hosts:     [
+                IPv4Addr('_address=192.168.0.1'), 
+                IPv4Addr('_address=192.168.0.2'), 
+                IPv4Addr('_address=192.168.0.3'), 
+                IPv4Addr('_address=192.168.0.4'), 
+                IPv4Addr('_address=192.168.0.5')
+            ]
+is within1: True
+is within2: False
+-------------Display Subnet Operation-------------
+new subnet:    [IPv4SubnetConfig(192.168.0.0/16), IPv4SubnetConfig(192.169.0.0/16), IPv4SubnetConfig(192.170.0.0/16), IPv4SubnetConfig(192.171.0.0/16)]
+merged subnet: 192.168.0.0/13
+```
+</details>
 
-- **`abstractmethod random_host(self, addr_type=None) -> InterfaceIPConfig`**:  
-  Abstract method for generating a random host IP configuration.
-  - **Parameters**:
-    - `addr_type (Any)`: The type of address block for generating the random host IP.
-  - **Returns**:
-    - `InterfaceIPConfig`: A configuration object representing the random host IP.
+<details>
 
-- **`abstractmethod random_subnet(self, addr_type=None) -> InterfaceIPConfig`**:  
-  Abstract method for generating a random subnet configuration.
-  - **Parameters**:
-    - `addr_type (Any)`: The type of address block for generating the random subnet.
-  - **Returns**:
-    - `InterfaceIPConfig`: A configuration object representing the random subnet.
+<summary>(Click to Expand) Example 3: Create IPv4 WildCard</summary>
 
-- **`abstractmethod random_hosts_batch(self, addr_type=None, num_ips=10) -> List[InterfaceIPConfig]`**:  
-  Abstract method for generating a batch of random host IP configurations in parallel using multi-processing.
-  - **Parameters**:
-    - `addr_type (Any)`: The type of address block for generating the random host IPs.
-    - `num_ips (int)`: Number of random host IPs to generate.
-  - **Returns**:
-    - `List[InterfaceIPConfig]`: A list of configuration objects representing the random host IPs.
+WildCard is a special type of subnet mask that is typically used in access control lists (ACLs) to define a range of IP addresses. **TTLinks** provides a way to calculate the address automatically based on the wildcard mask provided. The following example demonstrates how to create an IPv4 wildcard object and access its properties:
 
-- **`abstractmethod random_subnets_batch(self, addr_type=None, num_ips=10) -> List[InterfaceIPConfig]`**:  
-  Abstract method for generating a batch of random subnet configurations in parallel using multi-processing.
-  - **Parameters**:
-    - `addr_type (Any)`: The type of address block for generating the random subnets.
-    - `num_ips (int)`: Number of random subnets to generate.
-  - **Returns**:
-    - `List[InterfaceIPConfig]`: A list of configuration objects representing the random subnets.
+```python
+from ttlinks.ipservice.ip_address import IPv4Addr
+from ttlinks.ipservice.ip_factory import IPv4Factory
 
-- **`abstractmethod _random_subnet_for_type(self, addr_type) -> InterfaceIPConfig`**:  
-  Abstract method for generating a random subnet configuration for a given address type. This method utilizes caching for performance by storing subnet configurations for reuse.
-  - **Parameters**:
-    - `addr_type (Any)`: The type of address block for generating the random subnet.
-  - **Returns**:
-    - `InterfaceIPConfig`: A configuration object representing the random subnet for the given address type.
+ipv4_factory = IPv4Factory()
+wildcard = ipv4_factory.wildcard('10.100.65.5 0.255.1.7')
 
-Here’s the documentation for the `IPv4Factory` and `IPv6Factory` classes:
+print('Display WildCard Information'.center(50, '-'))
+address = wildcard.addr  # IPv4Addr object.
+mask = wildcard.mask  # IPv4Wildcard object.
+total_hosts = wildcard.total_hosts  # Total number of hosts covered by the wildcard mask.
+hosts = [host for host in wildcard.get_hosts()]  # List of hosts covered by the wildcard mask. `.get_hosts()` returns a generator, so be careful when using it.
 
----
 
-## Class: `IPv4Factory`
+# WildCard address is automatically adjusted based on the wildcard mask provided. The bit in the address will be set to 0 if the corresponding bit in the wildcard mask is 1.
+print('%-10s'%'wildcard:', wildcard)  
+print('original:', IPv4Addr('10.100.65.5').binary_string)  # Original address in binary string format
+print('%-10s'%'address:', address.binary_string)  # Adjusted address in binary string format
+print('%-10s'%'mask:', mask.binary_string)  # Wildcard mask in binary string format
+print('%-10s'%'total hosts:', total_hosts)  # Total number of hosts covered by the wildcard mask
+print('%-10s'%'hosts:', hosts[:5], '...', hosts[-5:])  # List of hosts covered by the wildcard mask
+```
+Example output:
+```
+-----------Display WildCard Information-----------
+wildcard:  10.0.64.0 0.255.1.7
+original:  00001010011001000100000100000101
+address:   00001010000000000100000000000000
+mask:      00000000111111110000000100000111
+total hosts: 4096
+hosts:     [
+                IPv4Addr('_address=10.0.64.0'), 
+                IPv4Addr('_address=10.0.64.1'), 
+                IPv4Addr('_address=10.0.64.2'), 
+                IPv4Addr('_address=10.0.64.3'), 
+                IPv4Addr('_address=10.0.64.4')
+            ] 
+            ... 
+            [
+                IPv4Addr('_address=10.255.65.3'), 
+                IPv4Addr('_address=10.255.65.4'), 
+                IPv4Addr('_address=10.255.65.5'), 
+                IPv4Addr('_address=10.255.65.6'), 
+                IPv4Addr('_address=10.255.65.7')
+            ]
+```
+</details>
 
-#### Description
+<details>
+<summary>(Click to Expand) Example 4: Create Batch IPv4 Hosts</summary>
 
-The `IPv4Factory` class is a concrete implementation of the `IPFactory` abstract base class, designed specifically for handling IPv4 addresses. It provides methods for generating and managing IPv4 host, subnet, and wildcard configurations. The class also supports batch processing of IPv4 configurations, parallelized using multi-threading or multi-processing, as well as generating random IPv4 addresses from specific address blocks such as public or private IP ranges.
-
-#### Inherits: `IPFactory`
-
-#### Methods
-
-- **`host(self, host: str) -> IPv4HostConfig`**:  
-  Generates an IPv4 host configuration.
-  - **Parameters**:
-    - `host (str)`: The string representation of the host IP.
-  - **Returns**:
-    - `IPv4HostConfig`: The configuration object representing the host IP.
+`batch_hosts` method creates a batch of IPv4 host objects. The following example demonstrates how to create a batch of IPv4 host objects and access their properties:
 
 ```python
 from ttlinks.ipservice.ip_factory import IPv4Factory
 
 ipv4_factory = IPv4Factory()
-ipv4 = ipv4_factory.host("192.168.1.1/30")
-print(ipv4)
-print(ipv4.mask)
-print(ipv4.ip_type)
-print(ipv4.network_id)
-print(ipv4.broadcast_ip)
+ipv4_hosts = ipv4_factory.batch_hosts('192.168.1.10/24', '192.168.1.20/24')
+print(ipv4_hosts)  # List of IPv4HostConfig objects
+``` 
+Example output:
 ```
-Example Output:
+[IPv4HostConfig(192.168.1.10/24), IPv4HostConfig(192.168.1.20/24)]
 ```
-192.168.1.1/30
-255.255.255.252
-IPv4AddrType.PRIVATE
-192.168.1.0
-192.168.1.3
-```
+</details>
 
-- **`subnet(self, subnet: str) -> IPv4SubnetConfig`**:  
-  Generates an IPv4 subnet configuration. If a host IP is provided, it will be converted to a subnet configuration.
-  - **Parameters**:
-    - `subnet (str)`: The string representation of the subnet.
-  - **Returns**:
-    - `IPv4SubnetConfig`: The configuration object representing the subnet.
+<details>
+<summary>(Click to Expand) Example 5: Create Batch IPv4 Subnets</summary>
+
+`batch_subnets` method creates a batch of IPv4 subnet objects. The following example demonstrates how to create a batch of IPv4 subnet objects and access their properties:
 
 ```python
 from ttlinks.ipservice.ip_factory import IPv4Factory
 
 ipv4_factory = IPv4Factory()
-ipv4 = ipv4_factory.subnet("192.168.1.213/25")
-print(ipv4)
-print(ipv4.mask)
-print(ipv4.ip_type)
-print(ipv4.network_id)
-print(ipv4.broadcast_ip)
-print(ipv4.subnet_range)
-print(ipv4.first_host)
-print(ipv4.last_host)
+ipv4_subnets = ipv4_factory.batch_subnets('192.168.1.10/24', '192.168.20.20/24')
+print(ipv4_subnets)  # List of IPv4SubnetConfig objects
 ```
-Example Output:
+Example output:
 ```
-192.168.1.128/25
-255.255.255.128
-IPv4AddrType.PRIVATE
-192.168.1.128
-192.168.1.255
-192.168.1.128-192.168.1.255
-192.168.1.129
-192.168.1.254
+[IPv4SubnetConfig(192.168.1.0/24), IPv4SubnetConfig(192.168.20.0/24)]
 ```
+</details>
 
-- **`wildcard(self, wildcard: str) -> IPv4WildCardConfig`**:  
-  Generates an IPv4 wildcard configuration. This method will convert any bits of the IP address to 0 where the corresponding bits in the wildcard mask are 1, as those bits are not relevant.
-  - **Parameters**:
-    - `wildcard (str)`: The string representation of the wildcard IP.
-  - **Returns**:
-    - `IPv4WildCardConfig`: The configuration object representing the wildcard IP.
-```python
-from ttlinks.ipservice.ip_factory import IPv4Factory
-import random
+<details>
+<summary>(Click to Expand) Example 6: Create Random IPv4 Host</summary>
 
-ipv4_factory = IPv4Factory()
-ipv4 = ipv4_factory.wildcard("10.15.80.25 0.255.0.255")
-print(ipv4)
-print(ipv4.mask)
-hosts = list(ipv4.get_hosts())  # use list() carefully. The generator can be very large.
-random_ipv4s = random.choices(hosts, k=2)
-for ip in random_ipv4s:
-    print(ip)
-print(ipv4.is_within("10.80.80.2"))
-print(ipv4.is_within("10.80.81.2"))
-```
-Example Output:
-```
-10.0.80.0 0.255.0.255
-0.255.0.255
-10.243.80.70
-10.154.80.104
-True
-False
-```
-
-- **`batch_hosts(self, hosts: List[str], max_workers: int = 10, keep_dup = True) -> List[IPv4HostConfig]`**:  
-  Generates a batch of IPv4 host configurations using multi-threading.
-  - **Parameters**:
-    - `hosts (List[str])`: A list of host IP strings.
-    - `max_workers (int)`: Maximum number of threads to use for parallel processing.
-    - `keep_dup (bool)`: Whether to keep duplicate host IPs.
-  - **Returns**:
-    - `List[IPv4HostConfig]`: A list of configuration objects representing the host IPs.
-```python
-from ttlinks.ipservice.ip_factory import IPv4Factory
-
-ipv4_factory = IPv4Factory()
-ipv4s = ipv4_factory.batch_hosts(["192.168.1.213/25", "192.168.100.10/24"])
-for ipv4 in ipv4s:
-    print(ipv4)
-```
-Example Output:
-```
-192.168.1.213/25
-192.168.100.10/24
-```
-
-- **`batch_subnets(self, subnets: List[str], max_workers: int = 10, keep_dup = True) -> List[IPv4SubnetConfig]`**:  
-  Generates a batch of IPv4 subnet configurations using multi-threading.
-  - **Parameters**:
-    - `subnets (List[str])`: A list of subnet IP strings.
-    - `max_workers (int)`: Maximum number of threads to use for parallel processing.
-    - `keep_dup (bool)`: Whether to keep duplicate subnet IPs.
-  - **Returns**:
-    - `List[IPv4SubnetConfig]`: A list of configuration objects representing the subnets.
-```python
-from ttlinks.ipservice.ip_factory import IPv4Factory
-
-ipv4_factory = IPv4Factory()
-ipv4s = ipv4_factory.batch_subnets(["192.168.1.213/25", "192.168.100.10/24"])
-for ipv4 in ipv4s:
-    print(ipv4)
-```
-Example Output:
-```
-192.168.1.128/25
-192.168.100.0/24
-```
-
-- **`random_host(self, addr_type: IPv4TypeAddrBlocks = None) -> IPv4HostConfig`**:  
-  Generates a random IPv4 host configuration based on the specified address type (e.g., public, private).
-  - **Parameters**:
-    - `addr_type (IPv4TypeAddrBlocks)`: The type of address block for generating the random host IP. If not specified, the host will be randomly generated from all IPv4 ranges.
-  - **Returns**:
-    - `IPv4HostConfig`: A randomly generated IPv4 host configuration.
-```python
-from ttlinks.ipservice.ip_factory import IPv4Factory
-from ttlinks.ipservice.ip_factory import IPv4TypeAddrBlocks
-
-ipv4_factory = IPv4Factory()
-ipv4 = ipv4_factory.random_host()
-print(ipv4)
-
-ipv4_private = ipv4_factory.random_host(IPv4TypeAddrBlocks.PRIVATE)
-print(ipv4_private)
-```
-Example Output:
-```
-230.63.179.95/19
-10.58.156.224/15
-```
-
-- **`random_subnet(self, addr_type: IPv4TypeAddrBlocks = None) -> IPv4SubnetConfig`**:  
-  Generates a random IPv4 subnet configuration based on the specified address type.
-  - **Parameters**:
-    - `addr_type (IPv4TypeAddrBlocks)`: The type of address block for generating the random subnet. If not specified, the subnet will be randomly generated from all IPv4 ranges.
-  - **Returns**:
-    - `IPv4SubnetConfig`: A randomly generated IPv4 subnet configuration.
+`random_host` method creates a random IPv4 host object. `addr_type` parameter can be used to specify the type of IP address to generate. The following example demonstrates how to create a random IPv4 host object and access its properties:
 
 ```python
 from ttlinks.ipservice.ip_factory import IPv4Factory
-from ttlinks.ipservice.ip_factory import IPv4TypeAddrBlocks
+from ttlinks.ipservice.ip_utils import IPv4TypeAddrBlocks
 
 ipv4_factory = IPv4Factory()
-ipv4 = ipv4_factory.random_subnet()
-print(ipv4)
+ipv4_host = ipv4_factory.random_host(addr_type=IPv4TypeAddrBlocks.PRIVATE)
+print(ipv4_host)
+```
+Example output:
+```
+172.20.42.162/21
+```
+</details>
 
-ipv4_private = ipv4_factory.random_subnet(IPv4TypeAddrBlocks.MULTICAST)
-print(ipv4_private)
-```
-Example Output:
-```
-40.0.0.0/5
-239.135.232.0/21
-```
+<details>
+<summary>(Click to Expand) Example 7: Create Random IPv4 Hosts In Batch</summary>
 
-- **`random_hosts_batch(self, addr_type: IPv4TypeAddrBlocks = None, num_ips: int = 10) -> List[IPv4HostConfig]`**:  
-  Generates a batch of random IPv4 host configurations using multi-processing.
-  - **Parameters**:
-    - `addr_type (IPv4TypeAddrBlocks)`: The type of address block for generating the random hosts. If not specified, hosts will be randomly generated from all IPv4 ranges.
-    - `num_ips (int)`: The number of random IPs to generate in the batch. Default is 10.
-  - **Returns**:
-    - `List[IPv4HostConfig]`: A list of randomly generated host configurations.
+`random_hosts_batch` method creates a batch of random IPv4 host objects. `addr_type` parameter can be used to specify the type of IP address to generate. The following example demonstrates how to create a batch of random IPv4 host objects and access their properties:
 
 ```python
 from ttlinks.ipservice.ip_factory import IPv4Factory
-from ttlinks.ipservice.ip_factory import IPv4TypeAddrBlocks
+from ttlinks.ipservice.ip_utils import IPv4TypeAddrBlocks
 
 ipv4_factory = IPv4Factory()
-ipv4s = ipv4_factory.random_hosts_batch(num_ips=5)
-for ipv4 in ipv4s:
-    print(ipv4)
-print('-' * 50)
-ipv4s_private = ipv4_factory.random_hosts_batch(IPv4TypeAddrBlocks.PRIVATE, num_ips=5)
-for ipv4_private in ipv4s_private:
-    print(ipv4_private)
+ipv4_hosts = ipv4_factory.random_hosts_batch(IPv4TypeAddrBlocks.PUBLIC, num_ips=5)
+print(ipv4_hosts)
 ```
-Example Output:
+Example output:
 ```
-14.143.130.237/14
-192.243.229.109/10
-94.247.197.13/31
-103.81.166.163/10
-220.79.122.80/23
---------------------------------------------------
-192.168.122.196/25
-172.18.188.124/26
-10.47.151.42/26
-192.168.243.166/20
-192.168.89.0/19
+[
+    IPv4HostConfig(215.41.10.87/19), 
+    IPv4HostConfig(221.120.47.35/23), 
+    IPv4HostConfig(215.104.187.253/7), 
+    IPv4HostConfig(17.89.101.52/10), 
+    IPv4HostConfig(130.36.1.98/2)
+]
 ```
+</details>
 
-- **`random_subnets_batch(self, addr_type: IPv4TypeAddrBlocks = None, num_ips: int = 10) -> List[IPv4SubnetConfig]`**:  
-  Generates a batch of random IPv4 subnet configurations using multi-processing.
-  - **Parameters**:
-    - `addr_type (IPv4TypeAddrBlocks)`: The type of address block for generating the random subnets. If not specified, subnets will be randomly generated from all IPv4 ranges.
-    - `num_ips (int)`: The number of random subnets to generate in the batch. Default is 10.
-  - **Returns**:
-    - `List[IPv4SubnetConfig]`: A list of randomly generated subnet configurations.
+<details>
+<summary>(Click to Expand) Example 8: Create Random IPv4 Subnet</summary>
+
+`random_subnet` method creates a random IPv4 subnet object. `addr_type` parameter can be used to specify the type of IP address to generate. The following example demonstrates how to create a random IPv4 subnet object and access its properties:
 
 ```python
 from ttlinks.ipservice.ip_factory import IPv4Factory
-from ttlinks.ipservice.ip_factory import IPv4TypeAddrBlocks
+from ttlinks.ipservice.ip_utils import IPv4TypeAddrBlocks
 
 ipv4_factory = IPv4Factory()
-ipv4s = ipv4_factory.random_subnets_batch(num_ips=5)
-for ipv4 in ipv4s:
-    print(ipv4)
-print('-' * 50)
-ipv4s_private = ipv4_factory.random_subnets_batch(IPv4TypeAddrBlocks.LOOPBACK, num_ips=5)
-for ipv4_private in ipv4s_private:
-    print(ipv4_private)
+ipv4_subnet = ipv4_factory.random_subnet(IPv4TypeAddrBlocks.PRIVATE)
+print(ipv4_subnet)
 ```
-Example Output:
+Example output:
 ```
-0.0.0.0/1
-244.199.228.0/22
-133.18.0.0/15
-101.88.148.0/23
-51.226.64.0/18
---------------------------------------------------
-127.251.45.216/30
-127.96.0.0/11
-127.176.88.0/21
-127.30.0.0/15
-127.0.0.0/8
+192.168.49.0/24
 ```
+</details>
 
-- **`_random_subnet_for_type(self, addr_type: IPv4TypeAddrBlocks) -> IPv4SubnetConfig`**:  
-  Generates a random subnet configuration for a given address type, utilizing a cache for improved performance. This method is a private helper function used by the `random_subnet` and `random_host` method.
-  - **Parameters**:
-    - `addr_type (IPv4TypeAddrBlocks)`: The type of address block for generating the random subnet.
-  - **Returns**:
-    - `IPv4SubnetConfig`: A random subnet configuration for the given address type.
+<details>
+<summary>(Click to Expand) Example 9: Create Random IPv4 Hosts In Batch</summary>
 
----
-
-## Class: `IPv6Factory`
-
-#### Description
-
-The `IPv6Factory` class is a concrete implementation of the `IPFactory` abstract base class, designed specifically for handling IPv6 addresses. It provides methods for generating and managing IPv6 host, subnet, and wildcard configurations. The class also supports batch processing of IPv6 configurations and random IPv6 address generation from specific address types, such as link-local, global unicast, or multicast.
-
-#### Inherits: `IPFactory`
-
-#### Methods
-
-- **`host(self, host: str) -> IPv6HostConfig`**:  
-  Generates an IPv6 host configuration.
-  - **Parameters**:
-    - `host (str)`: The string representation of the host IPv6 address.
-  - **Returns**:
-    - `IPv6HostConfig`: The configuration object representing the host IPv6 address.
-```python
-from ttlinks.ipservice.ip_factory import IPv6Factory
-
-ipv6_factory = IPv6Factory()
-ipv6 = ipv6_factory.host("fe80::1/64")
-print(ipv6)
-print(ipv6.mask)
-print(ipv6.ip_type)
-print(ipv6.network_id)
-```
-Example Output:
-```
-fe80::1/64
-ffff:ffff:ffff:ffff::
-IPv6AddrType.LINK_LOCAL
-fe80::
-```
-
-- **`subnet(self, subnet: str) -> IPv6SubnetConfig`**:  
-  Generates an IPv6 subnet configuration. If a host IP is provided, it will be converted to a subnet configuration.
-  - **Parameters**:
-    - `subnet (str)`: The string representation of the IPv6 subnet.
-  - **Returns**:
-    - `IPv6SubnetConfig`: The configuration object representing the IPv6 subnet.
-```python
-from ttlinks.ipservice.ip_factory import IPv6Factory
-
-ipv6_factory = IPv6Factory()
-ipv6 = ipv6_factory.subnet("fe80::1/64")
-print(ipv6)
-print(ipv6.mask)
-print(ipv6.ip_type)
-print(ipv6.network_id)
-print(ipv6.subnet_range)
-print(ipv6.first_host)
-print(ipv6.last_host)
-```
-Example Output:
-```
-fe80::/64
-ffff:ffff:ffff:ffff::
-IPv6AddrType.LINK_LOCAL
-fe80::
-fe80:: - fe80::ffff:ffff:ffff:ffff
-fe80::
-fe80::ffff:ffff:ffff:ffff
-```
-
-- **`wildcard(self, wildcard: str) -> IPv6WildCardConfig`**:  
-  Generates an IPv6 wildcard configuration.
-  - **Parameters**:
-    - `wildcard (str)`: The string representation of the wildcard IPv6 address. This method will convert any bits of the IP address to 0 where the corresponding bits in the wildcard mask are 1, as those bits are not relevant.
-  - **Returns**:
-    - `IPv6WildCardConfig`: The configuration object representing the wildcard IPv6 address.
+`random_subnets_batch` method creates a batch of random IPv4 subnet objects. `addr_type` parameter can be used to specify the type of IP address to generate. The following example demonstrates how to create a batch of random IPv4 subnet objects and access their properties:
 
 ```python
-from ttlinks.ipservice.ip_factory import IPv6Factory
-import random
+from ttlinks.ipservice.ip_factory import IPv4Factory
+from ttlinks.ipservice.ip_utils import IPv4TypeAddrBlocks
 
-ipv6_factory = IPv6Factory()
-ipv6 = ipv6_factory.wildcard("fe80::1 ::ff:0")
-print(ipv6)
-print(ipv6.mask)
-hosts = list(ipv6.get_hosts())  # use list() carefully. The generator can be very large.
-random_ipv6s = random.choices(hosts, k=2)
-for ip in random_ipv6s:
-    print(ip)
-print(len(hosts))
+ipv4_factory = IPv4Factory()
+ipv4_subnets = ipv4_factory.random_subnets_batch(IPv4TypeAddrBlocks.LOOPBACK, num_ips=5)
+print(ipv4_subnets)
 ```
-Example Output:
+Example output:
 ```
-fe80::1 ::ff:0
-::ff:0
-fe80::f3:1
-fe80::4f:1
-256
+[
+    IPv4SubnetConfig(127.246.0.0/16), 
+    IPv4SubnetConfig(127.4.0.0/17), 
+    IPv4SubnetConfig(127.64.0.0/14), 
+    IPv4SubnetConfig(127.210.103.64/26), 
+    IPv4SubnetConfig(127.162.154.168/29)
+]
 ```
+</details>
 
-- **`batch_hosts(self, hosts: List[str], max_workers: int = 10, keep_dup = True) -> List[IPv6HostConfig]`**:  
-  Generates a batch of IPv6 host configurations using multi-threading.
-  - **Parameters**:
-    - `hosts (List[str])`: A list of IPv6 host strings.
-    - `max_workers (int)`: Maximum number of threads to use for parallel processing.
-    - `keep_dup (bool)`: Whether to keep duplicate IPv6 host addresses.
-  - **Returns**:
-    - `List[IPv6HostConfig]`: A list of configuration objects representing the IPv6 hosts.
-```python
-from ttlinks.ipservice.ip_factory import IPv6Factory
-
-ipv6_factory = IPv6Factory()
-ipv6s = ipv6_factory.batch_hosts(["fe80::1/64", "2001:db8::1/96"])
-for ipv6 in ipv6s:
-    print(ipv6)
-```
-Example Output:
-```
-fe80::1/64
-2001:db8::1/96
-```
-
-- **`batch_subnets(self, subnets: List[str], max_workers: int = 10, keep_dup = True) -> List[IPv6SubnetConfig]`**:  
-  Generates a batch of IPv6 subnet configurations using multi-threading.
-  - **Parameters**:
-    - `subnets (List[str])`: A list of IPv6 subnet strings.
-    - `max_workers (int)`: Maximum number of threads to use for parallel processing.
-    - `keep_dup (bool)`: Whether to keep duplicate IPv6 subnets.
-  - **Returns**:
-    - `List[IPv6SubnetConfig]`: A list of configuration objects representing the IPv6 subnets.
-
-```python
-from ttlinks.ipservice.ip_factory import IPv6Factory
-
-ipv6_factory = IPv6Factory()
-ipv6s = ipv6_factory.batch_subnets(["fe80::1/64", "2001:db8::1/96"])
-for ipv6 in ipv6s:
-    print(ipv6)
-```
-Example Output:
-```
-fe80::/64
-2001:db8::/96
-```
-
-- **`random_host(self, addr_type: IPv6TypeAddrBlocks = None) -> IPv6HostConfig`**:  
-  Generates a random IPv6 host configuration based on the specified address type.
-  - **Parameters**:
-    - `addr_type (IPv6TypeAddrBlocks)`: The address block type to use for generating the random IPv6 host. If not specified, the host will be randomly generated from all IPv6 ranges.
-  - **Returns**:
-    - `IPv6HostConfig`: A randomly generated IPv6 host configuration.
-```python
-from ttlinks.ipservice.ip_factory import IPv6Factory
-from ttlinks.ipservice.ip_factory import IPv6TypeAddrBlocks
-
-ipv6_factory = IPv6Factory()
-ipv6 = ipv6_factory.random_host()
-print(ipv6)
-
-ipv6_global_unicast = ipv6_factory.random_host(IPv6TypeAddrBlocks.GLOBAL_UNICAST)
-print(ipv6_global_unicast)
-```
-Example Output:
-```
-21ba:44a5:e9b:2f1b:965b:ce41:8fc1:dec3/74
-35d5:76fd:f630:fb16:df1a:f33f:90cf:9385/67
-```
-
-- **`random_subnet(self, addr_type: IPv6TypeAddrBlocks = None) -> IPv6SubnetConfig`**:  
-  Generates a random IPv6 subnet configuration based on the specified address type.
-  - **Parameters**:
-    - `addr_type (IPv6TypeAddrBlocks)`: The address block type to use for generating the random IPv6 subnet. If not specified, the subnet will be randomly generated from all IPv6 ranges.
-  - **Returns**:
-    - `IPv6SubnetConfig`: A randomly generated IPv6 subnet configuration.
-
-```python
-from ttlinks.ipservice.ip_factory import IPv6Factory
-from ttlinks.ipservice.ip_factory import IPv6TypeAddrBlocks
-
-ipv6_factory = IPv6Factory()
-ipv6 = ipv6_factory.random_subnet()
-print(ipv6)
-
-ipv6_loopback = ipv6_factory.random_subnet(IPv6TypeAddrBlocks.LINK_LOCAL)
-print(ipv6_loopback)
-```
-Example Output:
-```
-ab9:c0c8:3180::/41
-fe80::f6f0:76a2:8000:0/98
-```
-
-- **`random_hosts_batch(self, addr_type: IPv6TypeAddrBlocks = None, num_ips: int = 10) -> List[IPv6HostConfig]`**:  
-  Generates a batch of random IPv6 host configurations using multi-processing.
-  - **Parameters**:
-    - `addr_type (IPv6TypeAddrBlocks)`: The address block type to use for generating the random IPv6 hosts. If not specified, hosts will be randomly generated from all IPv6 ranges.
-    - `num_ips (int)`: The number of random IPv6 hosts to generate in the batch.
-  - **Returns**:
-    - `List[IPv6HostConfig]`: A list of randomly generated IPv6 host configurations.
-
-```python
-from ttlinks.ipservice.ip_factory import IPv6Factory
-from ttlinks.ipservice.ip_factory import IPv6TypeAddrBlocks
-
-ipv6_factory = IPv6Factory()
-ipv6s = ipv6_factory.random_hosts_batch(num_ips=5)
-for ipv6 in ipv6s:
-    print(ipv6)
-print('-' * 50)
-ipv6s_link_local = ipv6_factory.random_hosts_batch(IPv6TypeAddrBlocks.LINK_LOCAL, num_ips=5)
-for ipv6_link_local in ipv6s_link_local:
-    print(ipv6_link_local)
-```
-Example Output:
-```
-3c0c:87b6:7276:a799:76fa:fdf2:a80d:53c5/49
-a4bf:fb97:25e8:78ec:90d7:478b:4bcf:6b94/87
-ff22:f13d:c4d6:e453:ac40:d322:a5c0:38f6/95
-b42d:a8e:b9f3:e9ae:c363:598d:5c1f:3ba1/105
-3609:47a9:bec3:44e8:3ca4:be52:e503:b0a6/5
---------------------------------------------------
-fe80::f55b:c77c:ad0c:58be/103
-fe80::1f1d:89b:4e6a:dd9b/68
-fe80::6fe4:e395:c7de:4fdc/111
-fe80::601b:8d02:fb13:5ff8/77
-fe80::9e18:49f9:3b45:3d26/110
-```
-
-
-- **`random_subnets_batch(self, addr_type: IPv6TypeAddrBlocks = None, num_ips: int = 10) -> List[IPv6SubnetConfig]`**:  
-  Generates a batch of random IPv6 subnet configurations using multi-processing.
-  - **Parameters**:
-    - `addr_type (IPv6TypeAddrBlocks)`: The address block type to use for generating the random IPv6 subnets. If not specified, subnets will be randomly generated from all IPv6 ranges.
-    - `num_ips (int)`: The number of random IPv6 subnets to generate in the batch.
-  - **Returns**:
-    - `List[IPv6SubnetConfig]`: A list of randomly generated IPv6 subnet configurations.
-```python
-from ttlinks.ipservice.ip_factory import IPv6Factory
-from ttlinks.ipservice.ip_factory import IPv6TypeAddrBlocks
-
-ipv6_factory = IPv6Factory()
-ipv6s = ipv6_factory.random_subnets_batch(num_ips=5)
-for ipv6 in ipv6s:
-    print(ipv6)
-print('-' * 50)
-ipv6s_link_local = ipv6_factory.random_subnets_batch(IPv6TypeAddrBlocks.LINK_LOCAL, num_ips=5)
-for ipv6_link_local in ipv6s_link_local:
-    print(ipv6_link_local)
-```
-Example Output:
-```
-2aaf:cf36:27f3:2fcd:5010:3000::/86
-637c:d7a0::/32
-a7ef:d3f2:2c1b:a060::/60
-66f4:6000::/21
-9e6a:ca3e:e136:faeb:179d:300::/88
---------------------------------------------------
-fe80::e438:c045:5400:0/102
-fe80::2b0d:5e1:e7e8:0/109
-fe80::a000:0:0:0/67
-fe80::f22d:c6bf:4c1c:8000/113
-fe80::ea51:cef5:7e00:0/103
-```
-
-- **`_random_subnet_for_type(self, addr_type: IPv6TypeAddrBlocks) -> IPv6SubnetConfig`**:  
-  Generates a random subnet configuration for a given address type, utilizing a cache for improved performance.
-  - **Parameters**:
-    - `addr_type (IPv6TypeAddrBlocks)`: The address block type to use for generating the random IPv6 subnet.
-  - **Returns**:
-    - `IPv6SubnetConfig`: A random subnet configuration for the given address type.
-
----
-## Dependencies
-
-The `IPFactory` module relies on the following internal and external dependencies:
-
-- **`concurrent.futures`**: Used for multi-threading and multi-processing to handle parallel IP configuration generation.
-  
-- **`random`**: Used to generate random IP addresses and subnets.
-
-- **`abc`**: Provides the `ABC` class for defining abstract base classes.
-
-- **`enum`**: Used for defining enumerations of IP address types.
-
-- **`ttlinks.ipservice`**: Several classes and handlers are imported from the `ttlinks.ipservice` package, such as:
-  - `IPv4Addr`, `IPv4NetMask`, `IPv6Addr`, `IPv6NetMask`
-  - `IPv4HostConfig`, `IPv4SubnetConfig`, `IPv4WildCardConfig`, `IPv6HostConfig`, `IPv6SubnetConfig`, `IPv6WildCardConfig`
-  - `IPv4AddrClassifierPublicHandler` for classifying public IPv4 addresses.
-  - `DecimalIPv4ConverterHandler`, `DecimalIPv6ConverterHandler` for handling decimal to binary conversions of IPs.
-  - `IPv4AddrType` for defining types of IPv4 addresses.
+**Note**: The examples above demonstrate how to create IPv4 host, subnet, wildcard, and batch objects using the `IPv4Factory` class. The `IPv6Factory` class works similarly. `IPv6TypeAddrBlocks` can be used to specify the type of IPv6 address when generating random addresses.

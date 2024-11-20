@@ -22,7 +22,7 @@ The IP service module in **TTLinks** offers a variety of tools to classify and w
 
 **TTLinks** provides a way to create host interface IP object for IPv4. The following example demonstrates how to create an IPv4 host object and access its properties:
 
-<summary>Example1: IPv4 Host</summary>
+<summary>(Click to Expand) Example1: IPv4 Host</summary>
 
 ```python
 from ttlinks.ipservice.ip_factory import IPv4Factory
@@ -98,7 +98,7 @@ private?:  True
 </details>
 
 <details>
-<summary>Example2: IPv4 Subnet</summary>
+<summary>(Click to Expand) Example2: IPv4 Subnet</summary>
 
 Under `.subnet` method, **TTLinks** simplifies address configuration by automatically adjusting an address to match its corresponding network ID, treating it as a subnet rather than a host. Users don’t need to manually calculate the network ID or broadcast IP when creating a subnet object. The following example illustrates how to create an IPv4 subnet object and access its properties: `192.170.50.10/14` -> `192.168.1.0/24`. It also inherits all the properties and methods from the IPv4Host class.
 
@@ -203,7 +203,7 @@ merged subnet: 192.168.0.0/13
 
 <details>
 
-<summary>Example3: IPv4 WildCard</summary>
+<summary>(Click to Expand) Example3: IPv4 WildCard</summary>
 
 WildCard is a special type of subnet mask that is typically used in access control lists (ACLs) to define a range of IP addresses. **TTLinks** provides a way to calculate the address automatically based on the wildcard mask provided. The following example demonstrates how to create an IPv4 wildcard object and access its properties:
 
@@ -255,11 +255,9 @@ hosts:     [
 ```
 </details>
 
-
-
 <details>
 
-<summary>Example4: Minimum IPv4 WildCard Calculation</summary>
+<summary>(Click to Expand) Example4: Minimum IPv4 WildCard Calculation</summary>
 
 **TTLinks** provides a tool to calculate the minimum wildcard mask for a list of subnets. This is useful for identifying the smallest possible wildcard mask that can cover all the subnets in the list. The following example demonstrates how to calculate the minimum wildcard mask for a list of IPv4 subnets:
 
@@ -315,6 +313,11 @@ hosts:     [
             ]
 ```
 </details>
+
+Above only shows very basic examples. **TTLinks** provides more functionalities and tools for working with IPv4 and IPv6 addresses.
+
+For more details, visit:
+- [IP Address Service](docs/ipservice/ip_service.md)
 
 ---
 <details>
