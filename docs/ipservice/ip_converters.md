@@ -126,3 +126,43 @@ Supported handlers are:
 - `DecimalIPv6ConverterHandler` - Expects an integer.
 
 </details>
+
+<details>
+<summary>Example 4 - Define a custom converter chain:</summary>
+
+The chain processes the input based on the handlers included in it. As demonstrated in the example, the chain initially converts the input to bytes according to the specified formats: Colon-Hex, Dot-Decimal, and Decimal. However, it fails to recognize IPv6's CIDR notation, which is why the conversion process for `example4` failed. After adding the `CIDRIPv6ConverterHandler` to the chain, the conversion process for `example4` succeeded.
+
+
+```python
+from ttlinks.ipservice.ip_converters import DotIPv4ConverterHandler, ColonIPv6ConverterHandler, DecimalIPv6ConverterHandler, CIDRIPv6ConverterHandler
+
+handler = DotIPv4ConverterHandler()
+last_in_chain = handler.set_next(ColonIPv6ConverterHandler()).set_next(DecimalIPv6ConverterHandler())
+example1 = '192.168.1.0'
+example2 = '2001:0db8:85a3::'
+example3 = 885511225
+example4 = '/96'
+print('Input1:', '%-25s'%example1, '->', 'Output1:', handler.handle(example1))
+print('Input2:', '%-25s'%example2, '->', 'Output2:', handler.handle(example2))
+print('Input3:', '%-25s'%example3, '->', 'Output3:', handler.handle(example3))
+print('Input4:', '%-25s'%example4, '->', 'Output4:', handler.handle(example4))
+
+
+print('\nPut CIDRIPv6ConverterHandler in the chain..')
+last_in_chain.set_next(CIDRIPv6ConverterHandler())
+print('Input4:', '%-25s'%example4, '->', 'Output4:', handler.handle(example4))
+```
+Example output:
+```
+Input1: 192.168.1.0               -> Output1: b'\xc0\xa8\x01\x00'
+Input2: 2001:0db8:85a3::          -> Output2: b' \x01\r\xb8\x85\xa3\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+Input3: 885511225                 -> Output3: b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x004\xc7\xd49'
+Input4: /96                       -> Output4: None
+
+Put CIDRIPv6ConverterHandler in the chain..
+Input4: /96                       -> Output4: b'\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00'
+```
+
+<font color='orange'>**Note:** The process follows the order of the handlers in the chain. If the input is not recognized by a handler, it is passed to the next handler. However, once the input is processed by a handler, it will not proceed to subsequent handlers. Therefore, it is crucial to carefully define the order of handlers in the chain. A poor example is including both `CIDRIPv4NetmaskClassifierHandler` and `CIDRIPv6NetmaskClassifierHandler` in the same chain. If `CIDRIPv4NetmaskClassifierHandler` is placed first, it will process inputs like `/24`, even if the input is intended for IPv6. This prevents the input from being correctly handled by `CIDRIPv6NetmaskClassifierHandler`, causing inaccurate results.</font>
+
+</details>

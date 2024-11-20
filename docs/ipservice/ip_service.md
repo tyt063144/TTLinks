@@ -363,3 +363,83 @@ IPv4 bytes 5:  ->  b'\xff\xff\x00\x00'   ->  [255, 255, 0, 0]
 
 For more examples, refer to
 - [IP Converter Examples](ip_converters.md)
+
+## 6. `ip_type_classifiers` - IP Type Classifiers for IPv4 and IPv6
+
+The `ip_type_classifiers` module provides functions to classify IP address types. It uses the Chain of Responsibility (CoR) design pattern to implement a set of classifier handlers, which determine whether an input is an IPv4 or IPv6 address. This module is primarily used to verify if an input belongs to a specific IP type. If the input does not match any handler, the module returns `None`. If the input matches a handler, the module returns the corresponding IP type.
+
+<details>
+<summary>(Click to Expand) Example: Verify IP Types</summary>
+
+```python
+from ttlinks.ipservice.ip_type_classifiers import IPTypeClassifier
+ip_type_classifier = IPTypeClassifier
+
+print('Verify IPv4 Addresses'.center(80, '-'))
+ipv4_address1 = '192.168.1.10'
+ipv4_address2 = '192.168.1.256'
+ipv4_address3 = b'\xc0\xa8\x012'
+ipv4_address4 = b'\xc0\xa8\xff\xff\xff'
+
+print('Input1:', '%-25s'%ipv4_address1, '->', 'Output1:', ip_type_classifier.classify_ipv4_address(ipv4_address1))
+print('Input2:', '%-25s'%ipv4_address2, '->', 'Output2:', ip_type_classifier.classify_ipv4_address(ipv4_address2))
+print('Input3:', '%-25s'%ipv4_address3, '->', 'Output3:', ip_type_classifier.classify_ipv4_address(ipv4_address3))
+print('Input4:', '%-25s'%ipv4_address4, '->', 'Output4:', ip_type_classifier.classify_ipv4_address(ipv4_address4))
+
+print('Verify IPv4 Netmasks'.center(80, '-'))
+ipv4_netmask1 = '192.168.1.0'
+ipv4_netmask2 = '255.255.255.0'
+ipv4_netmask3 = '/33'
+ipv4_netmask4 = '/24'
+
+print('Input1:', '%-25s'%ipv4_netmask1, '->', 'Output1:', ip_type_classifier.classify_ipv4_netmask(ipv4_netmask1))
+print('Input2:', '%-25s'%ipv4_netmask2, '->', 'Output2:', ip_type_classifier.classify_ipv4_netmask(ipv4_netmask2))
+print('Input3:', '%-25s'%ipv4_netmask3, '->', 'Output3:', ip_type_classifier.classify_ipv4_netmask(ipv4_netmask3))
+print('Input4:', '%-25s'%ipv4_netmask4, '->', 'Output4:', ip_type_classifier.classify_ipv4_netmask(ipv4_netmask4))
+
+
+print('Verify IPv6 Addresses'.center(80, '-'))
+ipv6_address1 = '2001:0db8:85a3::'
+ipv6_address2 = '2001:0db8:85a3::1111::'
+print('Input1:', '%-25s'%ipv6_address1, '->', 'Output1:', ip_type_classifier.classify_ipv6_address(ipv6_address1))
+print('Input2:', '%-25s'%ipv6_address2, '->', 'Output2:', ip_type_classifier.classify_ipv6_address(ipv6_address2))
+
+print('Verify IPv6 Netmasks'.center(80, '-'))
+ipv6_netmask1 = '2001:0db8:85a3::'
+ipv6_netmask2 = '/96'
+ipv6_netmask3 = '/129'
+print('Input1:', '%-25s'%ipv6_netmask1, '->', 'Output1:', ip_type_classifier.classify_ipv6_netmask(ipv6_netmask1))
+print('Input2:', '%-25s'%ipv6_netmask2, '->', 'Output2:', ip_type_classifier.classify_ipv6_netmask(ipv6_netmask2))
+print('Input3:', '%-25s'%ipv6_netmask3, '->', 'Output3:', ip_type_classifier.classify_ipv6_netmask(ipv6_netmask3))
+```
+Example output:
+```
+-----------------------------Verify IPv4 Addresses------------------------------
+Input1: 192.168.1.10              -> Output1: IPType.IPv4
+Input2: 192.168.1.256             -> Output2: None
+Input3: b'\xc0\xa8\x012'          -> Output3: IPType.IPv4
+Input4: b'\xc0\xa8\xff\xff\xff'   -> Output4: None
+------------------------------Verify IPv4 Netmasks------------------------------
+Input1: 192.168.1.0               -> Output1: None
+Input2: 255.255.255.0             -> Output2: IPType.IPv4
+Input3: /33                       -> Output3: None
+Input4: /24                       -> Output4: IPType.IPv4
+-----------------------------Verify IPv6 Addresses------------------------------
+Input1: 2001:0db8:85a3::          -> Output1: IPType.IPv6
+Input2: 2001:0db8:85a3::1111::    -> Output2: None
+------------------------------Verify IPv6 Netmasks------------------------------
+Input1: 2001:0db8:85a3::          -> Output1: None
+Input2: /96                       -> Output2: IPType.IPv6
+Input3: /129                      -> Output3: None
+```
+
+There are more specific handlers under `ip_type_classifiers` that can be used to classify IP addresses based on specific criteria. You can use them individually or in combination to classify IP addresses based on your requirements. Supported handlers include:
+
+- `DotIPv4IPTypeClassifierHandler`
+- `CIDRIPv4NetmaskClassifierHandler`
+- `BytesIPv4IPTypeClassifierHandler`
+- `ColonIPv6IPTypeClassifierHandler`
+- `CIDRIPv6NetmaskClassifierHandler`
+- `BytesIPv6IPTypeClassifierHandler`
+
+</details>
