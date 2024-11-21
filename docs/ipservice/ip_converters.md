@@ -163,11 +163,7 @@ Put CIDRIPv6ConverterHandler in the chain..
 Input4: /96                       -> Output4: b'\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00'
 ```
 
-> [!IMPORTANT]  The process follows the order of the handlers in the chain. If the input is not recognized by a handler, it is passed to the next handler. However, once the input is processed by a handler, it will not proceed to subsequent handlers. Therefore, it is crucial to carefully define the order of handlers in the chain. A poor example is including both `CIDRIPv4NetmaskClassifierHandler` and `CIDRIPv6NetmaskClassifierHandler` in the same chain. If `CIDRIPv4NetmaskClassifierHandler` is placed first, it will process inputs like `/24`, even if the input is intended for IPv6. This prevents the input from being correctly handled by `CIDRIPv6NetmaskClassifierHandler`, causing inaccurate results.
+> [!IMPORTANT]\
+> The process follows the order of the handlers in the chain. If the input is not recognized by a handler, it is passed to the next handler. However, once the input is processed by a handler, it will not proceed to subsequent handlers. Therefore, it is crucial to carefully define the order of handlers in the chain. A poor example is including both `CIDRIPv4NetmaskClassifierHandler` and `CIDRIPv6NetmaskClassifierHandler` in the same chain. If `CIDRIPv4NetmaskClassifierHandler` is placed first, it will process inputs like `/24`, even if the input is intended for IPv6. This prevents the input from being correctly handled by `CIDRIPv6NetmaskClassifierHandler`, causing inaccurate results.
 
 </details>
-
-> [!TIP]  test
-
-> [!WARNING]\
-> The process follows the order of the handlers in the chain. If the input is not recognized by a handler, it is passed to the next handler. However, once the input is processed by a handler, it will not proceed to subsequent handlers. Therefore, it is crucial to carefully define the order of handlers in the chain. A poor example is including both `CIDRIPv4NetmaskClassifierHandler` and `CIDRIPv6NetmaskClassifierHandler` in the same chain. If `CIDRIPv4NetmaskClassifierHandler` is placed first, it will process inputs like `/24`, even if the input is intended for IPv6. This prevents the input from being correctly handled by `CIDRIPv6NetmaskClassifierHandler`, causing inaccurate results.
