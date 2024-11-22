@@ -361,4 +361,5 @@ Example output:
 ```
 </details>
 
-**Note**: The examples above demonstrate how to create IPv4 host, subnet, wildcard, and batch objects using the `IPv4Factory` class. The `IPv6Factory` class works similarly. `IPv6TypeAddrBlocks` can be used to specify the type of IPv6 address when generating random addresses.
+> [!NOTE]\
+> The examples above demonstrate how to create IPv4 host, subnet, wildcard, and batch objects using the `IPv4Factory` class. The `IPv6Factory` class works similarly. `IPv6TypeAddrBlocks` can be used to specify the type of IPv6 address when generating random addresses.
