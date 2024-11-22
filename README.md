@@ -3,8 +3,8 @@
 It includes the following major modules:
 - `ipservice`: [IP Address Service](docs/ipservice/ip_service.md)
 
-## Note
-<font color="red">This library utilizes raw sockets, which are restricted on Windows OS. As a result, it is specifically designed for use on Linux-based systems.</font>
+> [!NOTE]\
+> This library utilizes raw sockets, which are restricted on Windows OS. As a result, it is specifically designed for use on Linux-based systems.
 
 ## Installation
 This project is available on PyPI and can be installed using pip:

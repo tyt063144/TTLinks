@@ -5,71 +5,76 @@ from abc import ABC, abstractmethod
 from typing import Iterable, Any
 from typing import List
 
-from ttlinks.common.binary_utils.binary import Octet
+from ttlinks.common.tools.converters import NumeralConverter
 from ttlinks.ipservice.ip_converters import IPConverter
-from ttlinks.ipservice.ip_type_classifiers import IPTypeClassifier, IPType
+from ttlinks.ipservice.ip_type_classifiers import IPTypeClassifier
+from ttlinks.ipservice.ip_utils import IPType
 
 
 class IPAddr(ABC):
     """
-    Abstract base class for representing an IP address. This class defines the structure
-    for IP address-related functionality, including validation, conversion to binary formats,
-    and string representations.
+    An abstract base class (ABC) representing an IP address.
+    This class provides a blueprint for implementing IP address functionalities, such as validation,
+    initialization, and representation in various formats.
 
     Attributes:
-    _address : Any
-        The internal representation of the IP address, set through the initialization.
+        _address: Internal storage for the IP address representation.
     """
-    _address = None
+    _address:bytes = None
 
     def __init__(self, address: Any) -> None:
         """
-        Initializes the IP address by calling the _initialize method, which in turn validates
-        the provided address.
+        Initializes an IP address by validating and initializing the provided input.
 
         Parameters:
-        address : Any
-            The IP address to be initialized, provided in any format (e.g., string, number).
+        address (Any): The input address to initialize.
+
+        Raises:
+        Implemented in subclasses: Subclasses must implement `_validate` and `_initialize` methods.
         """
+        self._validate(address)
         self._initialize(address)
 
     @abstractmethod
-    def _validate(self, address: Any) -> List[Octet]:
+    def _validate(self, address: Any):
         """
-        Abstract method that validates the provided IP address. This method should be implemented
-        by subclasses to ensure the given address adheres to the format of a valid IP address.
+        Validates the provided address format.
 
         Parameters:
-        address : Any
-            The IP address to be validated.
+        address (Any): The address to validate.
 
         Returns:
-        List[Octet]
-            A list of octets representing the validated address.
+        List[Octet]: A list of octets representing the address.
+
+        Raises:
+        Implemented in subclasses: Subclasses must provide specific validation logic.
         """
         pass
 
+    @abstractmethod
     def _initialize(self, address: Any) -> None:
         """
-        Private method to initialize the IP address by validating the provided address.
+        Initializes internal structures based on the validated address.
 
         Parameters:
-        address : Any
-            The IP address to be validated and set.
-        """
-        self._validate(address)
+        address (Any): The address to initialize.
 
+        Raises:
+        Implemented in subclasses: Subclasses must provide specific initialization logic.
+        """
+        pass
 
     @property
     @abstractmethod
-    def binary_digits(self) -> Iterable[int]:
+    def address(self) -> str:
         """
-        Abstract property that returns the binary digits of the IP address. Subclasses
-        must implement this to provide the address in binary form as a sequence of integers.
+        Returns the original string representation of the IP address.
 
         Returns:
-        Iterable[int]
-            A sequence of integers representing the binary digits of the IP address.
+        str: The string representation of the IP address.
+
+        Raises:
+        Implemented in subclasses: Subclasses must provide the string address representation.
         """
         pass
 
@@ -77,499 +82,403 @@ class IPAddr(ABC):
     @abstractmethod
     def binary_string(self) -> str:
         """
-        Abstract property that returns the binary representation of the IP address as a string.
+        Returns the binary representation of the IP address as a string.
 
         Returns:
-        str
-            A string representing the binary form of the IP address.
+        str: Binary representation of the IP address.
+
+        Raises:
+        Implemented in subclasses: Subclasses must provide the binary string representation.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def binary_digits(self) -> Iterable[int]:
+        """
+        Returns the binary representation of the IP address as an iterable of digits.
+
+        Returns:
+        Iterable[int]: An iterable containing the binary digits of the IP address.
+
+        Raises:
+        Implemented in subclasses: Subclasses must provide the binary digits.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def as_decimal(self) -> int:
+        """
+        Returns the decimal representation of the IP address.
+
+        Returns:
+        int: The decimal representation of the IP address.
+
+        Raises:
+        Implemented in subclasses: Subclasses must provide the decimal representation.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def as_bytes(self) -> bytes:
+        """
+        Returns the byte representation of the IP address. It's useful for network operations. The format is big-endian.
+
+        Returns:
+        bytes: The byte representation of the IP address.
+
+        Raises:
+        Implemented in subclasses: Subclasses must provide the byte representation.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def as_hexadecimal(self) -> str:
+        """
+        Returns the hexadecimal representation of the IP address.
+
+        Returns:
+        str: The hexadecimal representation of the IP address.
+
+        Raises:
+        Implemented in subclasses: Subclasses must provide the hexadecimal representation.
         """
         pass
 
     @abstractmethod
     def __str__(self) -> str:
         """
-        Abstract method to return a user-friendly string representation of the IP address.
+        Returns the string representation of the IP address for display purposes.
 
         Returns:
-        str
-            The string representation of the IP address.
+        str: The string representation of the IP address.
+
+        Raises:
+        Implemented in subclasses: Subclasses must provide the string conversion logic.
         """
         pass
 
     @abstractmethod
     def __repr__(self) -> str:
         """
-        Abstract method to return the official string representation of the IP address, useful for debugging.
+        Returns the string representation of the IP address for debugging purposes.
 
         Returns:
-        str
-            The official string representation of the IP address.
+        str: The string representation of the IP address.
+
+        Raises:
+        Implemented in subclasses: Subclasses must provide the debug representation logic.
         """
         pass
 
 
 class IPv4Addr(IPAddr):
     """
-    A concrete class that implements the abstract base class IPAddr for IPv4 addresses. This class
-    handles the validation, conversion, and binary representation of an IPv4 address.
-
-    Methods:
-    _validate(address: Any) -> None:
-        Validates the given address to ensure it's a valid IPv4 address.
-
-    binary_digits -> Iterable[int]:
-        Returns the binary digits of the IPv4 address as a sequence of integers.
-
-    binary_string -> str:
-        Returns the binary representation of the IPv4 address as a string.
-
-    __str__() -> str:
-        Returns a string representation of the IPv4 address in the standard dotted decimal format.
-
-    __repr__() -> str:
-        Returns the official string representation of the IPv4 address, used for debugging.
+    A concrete implementation of the IPAddr abstract base class for IPv4 addresses.
+    Provides validation, initialization, and representation functionalities specific to IPv4.
     """
     def _validate(self, address: Any) -> None:
         """
-        Validates the given address to ensure it is a valid IPv4 address. If valid, the address
-        is converted into a list of octets; otherwise, raises a ValueError.
-
-        Parameters:
-        address : Any
-            The IP address to be validated, in string or other format.
-
-        Raises:
-        ValueError:
-            If the provided address is not a valid IPv4 address.
+        Validates the provided address format to ensure it is a valid IPv4 address.
         """
-        if IPTypeClassifier.classify_ipv4_address(address) == IPType.IPv4:
-            self._address = IPConverter.convert_to_ipv4_octets(address)
-        else:
+        if IPTypeClassifier.classify_ipv4_address(address) != IPType.IPv4:
             raise ValueError(str(address) + " is not a valid IPv4 address.")
 
-    @property
-    def binary_digits(self) -> Iterable[int]:
+    def _initialize(self, address: Any) -> None:
         """
-        Generates the binary digits of the IPv4 address by iterating over each octet and converting it to binary.
-
-        Returns:
-        Iterable[int]
-            A generator yielding the binary digits of the IP address.
+        Initializes internal structures based on the validated IPv4 address. The address is stored as bytes.
         """
-        for octet in self._address:
-            for bit in str(octet):
-                yield int(bit)
+        self._address = IPConverter.convert_to_ipv4_bytes(address)
 
     @property
     def binary_string(self) -> str:
         """
-        Returns the binary representation of the IPv4 address as a concatenated string of all octets.
-
-        Returns:
-        str
-            A string of binary digits representing the entire IPv4 address.
+        Returns the binary representation of the IPv4 address as a string.
+        For example, the binary representation of the IPv4 address '192.168.1.1' is '11000000101010000000000100000001'.
         """
-        return ''.join([str(octet) for octet in self._address])
+        return ''.join([NumeralConverter.decimal_to_binary(octet) for octet in self._address])
 
     @property
-    def decimal(self) -> int:
+    def binary_digits(self) -> List[int]:
         """
-        Returns the decimal representation of the IPv4 address as an integer.
+        Returns the binary representation of the IPv4 address as a list of digits.
+        For example, the binary representation of the IPv4 address '192.168.1.1' is
+        [1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1].
+        """
+        result = []
+        for octet in self.binary_string:
+            for bit in str(octet):
+                result.append(int(bit))
+        return result
 
-        Returns:
-        int
-            The IPv4 address as an integer.
+    @property
+    def as_decimal(self) -> int:
         """
-        return int(self.binary_string, 2)
+        Returns the decimal representation of the IPv4 address.
+        For example, the decimal representation of the IPv4 address '192.168.1.1' is 3232235777.
+        """
+        return NumeralConverter.binary_to_decimal(self.binary_string)
+
+    @property
+    def address(self) -> str:
+        """
+        Returns the dotted-decimal string representation of the IPv4 address.
+        """
+        return self.__str__()
+
+    @property
+    def as_bytes(self) -> bytes:
+        """
+        Returns the byte representation of the IPv4 address. It's useful for network operations. The format is big-endian.
+        For example, the byte representation of the IPv4 address '192.168.1.1' is b'\xc0\xa8\x01\x01'.
+        """
+        return self._address
+
+    @property
+    def as_hexadecimal(self) -> str:
+        """
+        Returns the hexadecimal representation of the IPv4 address.
+        For example, the hexadecimal representation of the IPv4 address '
+        """
+        return ''.join([NumeralConverter.decimal_to_hexadecimal(octet) for octet in self._address])
 
     def __str__(self) -> str:
         """
-        Returns the IPv4 address in the standard dotted decimal notation.
-
-        Returns:
-        str
-            The IPv4 address as a string in dotted decimal format.
+        Returns the string representation of the IPv4 address for display purposes.
         """
-        return '.'.join([str(octet.decimal) for octet in self._address])
+        return '.'.join([str(octet) for octet in self._address])
 
     def __repr__(self) -> str:
         """
-        Returns the official string representation of the IPv4 address object for debugging.
-
-        Returns:
-        str
-            A string showing the internal representation of the IPv4 address.
+        Returns the string representation of the IPv4 address for debugging purposes.
         """
-        return f"""IPv4Addr('{self.__str__()}')"""
+        return f"""IPv4Addr('_address={self.__str__()}')"""
 
 
 class IPv6Addr(IPAddr):
     """
-    A concrete class that implements the abstract base class IPAddr for IPv6 addresses. This class
-    handles the validation, conversion, and binary representation of an IPv6 address.
-
-    Methods:
-    _validate(address: Any) -> None:
-        Validates the given address to ensure it's a valid IPv6 address.
-
-    binary_digits -> Iterable[int]:
-        Returns the binary digits of the IPv6 address as a sequence of integers.
-
-    binary_string -> str:
-        Returns the binary representation of the IPv6 address as a string.
-
-    __str__() -> str:
-        Returns a string representation of the IPv6 address in the standard colon-hexadecimal format.
-
-    __repr__() -> str:
-        Returns the official string representation of the IPv6 address, used for debugging.
+    A concrete implementation of the IPAddr abstract base class for IPv6 addresses.
+    Provides validation, initialization, and representation functionalities specific to IPv6.
     """
     def _validate(self, address: Any) -> None:
         """
-        Validates the given address to ensure it is a valid IPv6 address. If valid, the address
-        is converted into a list of octets; otherwise, raises a ValueError.
-
-        Parameters:
-        address : Any
-            The IP address to be validated, in string or other format.
-
-        Raises:
-        ValueError:
-            If the provided address is not a valid IPv6 address.
+        Validates the provided address format to ensure it is a valid IPv6 address.
         """
-        if IPTypeClassifier.classify_ipv6_address(address) == IPType.IPv6:
-            self._address = IPConverter.convert_to_ipv6_octets(address)
-        else:
+        if IPTypeClassifier.classify_ipv6_address(address) != IPType.IPv6:
             raise ValueError(str(address) + " is not a valid IPv6 address.")
 
-    @property
-    def binary_digits(self) -> Iterable[int]:
+    def _initialize(self, address: Any) -> None:
         """
-        Generates the binary digits of the IPv6 address by iterating over each octet and converting it to binary.
+        Initializes internal structures based on the validated IPv6 address. The address is stored as bytes.
+        """
+        self._address = IPConverter.convert_to_ipv6_bytes(address)
 
-        Returns:
-        Iterable[int]
-            A generator yielding the binary digits of the IPv6 address.
+    @property
+    def address(self) -> str:
         """
-        for octet in self._address:
-            for bit in str(octet):
-                yield int(bit)
+        Returns the colon-separated string representation of the IPv6 address.
+        """
+        return self.__str__()
 
     @property
     def binary_string(self) -> str:
         """
-        Returns the binary representation of the IPv6 address as a concatenated string of all octets.
-
-        Returns:
-        str
-            A string of binary digits representing the entire IPv6 address.
+        Returns the binary representation of the IPv6 address as a string.
+        For example, the binary representation of the IPv6 address '2001:0db8:85a3:0000:0000:8a2e:0370:7334' is
+        '00100000000000010000110110111000100001011010001100000000000000000000000000000000100010100010111000000011011100000111001100110100
         """
-        return ''.join([str(octet) for octet in self._address])
+        return ''.join([NumeralConverter.decimal_to_binary(octet) for octet in self._address])
 
     @property
-    def decimal(self) -> int:
+    def binary_digits(self) -> List[int]:
         """
-        Returns the decimal representation of the IPv4 address as an integer.
+        Returns the binary representation of the IPv6 address as a list of digits.
+        For example, the binary representation of the IPv6 address '2001:0db8:85a3:0000:0000:8a2e:0370:7334' is
+        [
+            0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+            0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0,
+            1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0,
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0,
+            0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0
+        ]
+        """
+        result = []
+        for octet in self.binary_string:
+            for bit in str(octet):
+                result.append(int(bit))
+        return result
 
-        Returns:
-        int
-            The IPv4 address as an integer.
+    @property
+    def as_decimal(self) -> int:
         """
-        return int(self.binary_string, 2)
+        Returns the decimal representation of the IPv6 address.
+        For example, the decimal representation of the IPv6 address '2001:0db8:85a3:0000:0000:8a2e:0370:7334' is
+        42540766452641154071740215577757643572.
+        """
+        return NumeralConverter.binary_to_decimal(self.binary_string)
+
+    @property
+    def as_bytes(self) -> bytes:
+        """
+        Returns the byte representation of the IPv6 address. It's useful for network operations. The format is big-endian.
+        For example, the byte representation of the IPv6 address '2001:0db8:85a3:0000:0000:8a2e:0370:7334' is
+        b' \x01\r\xb8\x85\xa3\x00\x00\x00\x00\x8a.\x03ps4'.
+        """
+        return self._address
+
+    @property
+    def as_hexadecimal(self) -> str:
+        """
+        Returns the hexadecimal representation of the IPv6 address.
+        For example, the hexadecimal representation of the IPv6 address '2001:0db8:85a3:0000:0000:8a2e:0370:7334' is
+        '20010DB885A3000000008A2E03707334'.
+        """
+        raw_ipv6_bytes = [NumeralConverter.bytes_to_hexadecimal(self._address[octet: octet + 2]) for octet in range(0, len(self._address), 2)]
+        return ''.join(raw_ipv6_bytes).upper()
 
     def __str__(self) -> str:
         """
-        Returns the IPv6 address in the standard colon-hexadecimal notation. The octets are grouped into
-        colon-separated segments in hexadecimal format.
-
-        Returns:
-        str
-            The IPv6 address as a string in colon-hexadecimal format.
+        Returns the string representation of the IPv6 address for display purposes.
         """
-        ipv6_string = ''.join([
-            octet.hex.rjust(2, '0')
-            for octet in self._address
-        ])
-        colon_ipv6 = ':'.join([ipv6_string[index: index + 4] for index in range(0, len(ipv6_string), 4)])
-        return str(ipaddress.IPv6Address(colon_ipv6))
+        raw_ipv6_bytes = [NumeralConverter.bytes_to_hexadecimal(self._address[octet: octet + 2]) for octet in range(0, len(self._address), 2)]
+        return ipaddress.IPv6Address(':'.join(raw_ipv6_bytes)).compressed.upper()
 
     def __repr__(self) -> str:
         """
-        Returns the official string representation of the IPv6 address object for debugging.
+        Returns the string representation of the IPv6 address for debugging purposes.
+        """
+        return f"""IPv6Addr('_address={self.__str__()}')"""
+
+
+class IPMask(IPAddr, ABC):
+    """
+    An abstract base class (ABC) representing an IP address mask.
+    Inherits from IPAddr and provides an additional abstract property for the mask size.
+
+    This class serves as a blueprint for IP mask implementations, including validation and mask size retrieval.
+    """
+
+    @property
+    @abstractmethod
+    def mask_size(self) -> str:
+        """
+        Abstract property to return the size of the mask as a string.
+        This typically represents the number of bits in the mask (e.g., '/24' for IPv4 or '/64' for IPv6).
 
         Returns:
-        str
-            A string showing the internal representation of the IPv6 address.
-        """
-        return f"""IPv6Addr('{self.__str__()}')"""
+        str: The size of the mask in CIDR notation.
 
-
-
-class IPMask(IPAddr):
-
-    """
-    A concrete class that implements mask functionality for IP addresses.
-    This class extends the abstract base class IPAddr and provides an additional method
-    to retrieve the mask size. It does not directly represent an IP address but
-    rather the network mask associated with an IP address.
-
-    Methods:
-    _validate(address: Any) -> None:
-        Abstract method to validate if the given address is a valid network mask.
-
-    get_mask_size() -> str:
-        Abstract method to return the size of the network mask in the form of a string.
-    """
-    @abstractmethod
-    def _validate(self, address: Any) -> None:
-        """
-        Abstract method to validate the provided network mask.
-        Subclasses should implement this to ensure the network mask is valid.
-
-        Parameters:
-        address : Any
-            The network mask to be validated, provided in any format (e.g., CIDR or dotted decimal).
-        """
-        pass
-
-    @abstractmethod
-    def get_mask_size(self) -> str:
-        """
-        Abstract method to return the size of the network mask in bits.
-        Subclasses should implement this to return the mask size (e.g., "24" for a /24 mask).
-
-        Returns:
-        str:
-            A string representing the size of the network mask in bits.
+        Raises:
+        Implemented in subclasses: Subclasses must provide specific logic to calculate or retrieve the mask size.
         """
         pass
 
 
 class IPv4NetMask(IPMask, IPv4Addr):
-
     """
-    A class that represents an IPv4 network mask, inheriting from both IPNetMask and IPv4Addr.
-    This class implements the validation, size calculation, and binary representation of the IPv4 network mask.
-
-    Methods:
-    _validate(address: Any) -> None:
-        Validates the given network mask to ensure it is a valid IPv4 netmask.
-
-    get_mask_size() -> int:
-        Returns the size of the network mask by counting the number of '1' bits in its binary representation.
-
-    __repr__() -> str:
-        Returns the official string representation of the IPv4 network mask, used for debugging.
+    A concrete implementation of the IPMask and IPv4Addr classes for IPv4 network masks.
+    This class provides validation and representation functionalities specific to IPv4 netmasks.
     """
     def _validate(self, address: Any) -> None:
         """
-        Validates the provided IPv4 netmask. If valid, the netmask is converted into a list of octets;
-        otherwise, raises a ValueError.
-
-        Parameters:
-        address : Any
-            The network mask to be validated, in string or other format (e.g., "255.255.255.0" or CIDR notation).
-
-        Raises:
-        ValueError:
-            If the provided address is not a valid IPv4 netmask.
+        Validates the provided address format to ensure it is a valid IPv4 netmask.
         """
-        if IPTypeClassifier.classify_ipv4_netmask(address) == IPType.IPv4:
-            self._address = IPConverter.convert_to_ipv4_octets(address)
-        else:
+        if IPTypeClassifier.classify_ipv4_netmask(address) != IPType.IPv4:
             raise ValueError(str(address) + " is not a valid IPv4 netmask.")
 
-    def get_mask_size(self) -> int:
+    @property
+    def mask_size(self) -> int:
         """
-        Returns the size of the IPv4 network mask by counting the number of '1' bits in its binary string representation.
-
-        Returns:
-        int:
-            The number of '1' bits in the binary representation of the netmask, which corresponds to the network size.
+        Returns the size of the IPv4 netmask as an integer.
+        This represents the number of bits set to '1' in the netmask.
         """
         return self.binary_string.count('1')
 
     def __repr__(self) -> str:
         """
-        Returns the official string representation of the IPv4 network mask object for debugging.
-
-        Returns:
-        str:
-            A string showing the internal representation of the IPv4 network mask.
+        Returns the string representation of the IPv4 netmask for debugging purposes.
         """
-        return f"""IPv4NetMask('_address={self._address})"""
+        return f"""IPv4NetMask('_address={self.__str__()}')"""
 
 
 class IPv4WildCard(IPv4NetMask):
     """
-    A class that represents an IPv4 wildcard mask, inheriting from both IPv4NetMask and IPAddr.
-    A wildcard mask is used in networking to define ranges in IP addresses. This class implements
-    the validation, size calculation, and string representation of the wildcard mask.
-
-    Methods:
-    _validate(address: Any) -> None:
-        Validates the given wildcard mask to ensure it is a valid IPv4 wildcard mask.
-
-    get_mask_size() -> int:
-        Returns the wildcard mask size by calculating the number of possible IPs based on
-        the count of '1' bits in its binary string.
-
-    __repr__() -> str:
-        Returns the official string representation of the IPv4 wildcard mask, used for debugging.
+    A concrete implementation of IPv4NetMask for wildcard masks.
+    Wildcard masks are the inverse of subnet masks and are often used in access control lists (ACLs).
     """
     def _validate(self, address: Any) -> None:
-        """
-        Validates the provided IPv4 wildcard mask. If valid, the mask is converted into
-        a list of octets; otherwise, raises a ValueError.
-
-        Parameters:
-        address : Any
-            The wildcard mask to be validated, in string or other format.
-
-        Raises:
-        ValueError:
-            If the provided address is not a valid IPv4 wildcard mask.
-        """
-        if IPTypeClassifier.classify_ipv4_address(address) == IPType.IPv4:
-            self._address = IPConverter.convert_to_ipv4_octets(address)
-        else:
+        if IPTypeClassifier.classify_ipv4_address(address) != IPType.IPv4:
             raise ValueError(str(address) + " is not a valid IPv4 wildcard mask.")
 
-    def get_mask_size(self) -> int:
+    @property
+    def mask_size(self) -> int:
         """
-        Returns the size of the wildcard mask by counting the number of '1' bits in the binary
-        string and calculating the number of possible IP addresses. The number of IP addresses
-        is 2 raised to the power of the count of '1' bits.
-
-        Returns:
-        int:
-            The number of possible IP addresses the wildcard mask covers.
+        Returns the size of the IPv4 wildcard mask as an integer. This represents the number of bits set to '1' in the mask.
         """
         count_of_ones = self.binary_string.count('1')
-        return 2 ** count_of_ones
+        return count_of_ones
 
     def __repr__(self) -> str:
         """
-        Returns the official string representation of the IPv4 wildcard mask object for debugging.
-
-        Returns:
-        str:
-            A string showing the internal representation of the IPv4 wildcard mask.
+        Returns the string representation of the IPv4 wildcard mask for debugging purposes.
         """
-        return f"""IPv4WildCard('_address={self._address})"""
+        return f"""IPv4WildCard('_address={self.__str__()}')"""
 
 
 class IPv6NetMask(IPMask, IPv6Addr):
     """
-    A class that represents an IPv6 network mask, inheriting from both IPNetMask and IPv6Addr.
-    This class handles the validation, size calculation, and binary representation of the IPv6 network mask.
-
-    Methods:
-    _validate(address: Any) -> None:
-        Validates the given network mask to ensure it's a valid IPv6 netmask.
-
-    get_mask_size() -> int:
-        Returns the size of the network mask by counting the number of '1' bits in its binary representation.
-
-    __repr__() -> str:
-        Returns the official string representation of the IPv6 network mask, used for debugging.
+    A concrete implementation of the IPMask and IPv6Addr classes for IPv6 network masks.
+    This class provides validation and representation functionalities specific to IPv6 netmasks.
     """
     def _validate(self, address: Any) -> None:
         """
-        Validates the provided IPv6 netmask. If valid, the netmask is converted into a list of octets;
-        otherwise, raises a ValueError.
-
-        Parameters:
-        address : Any
-            The network mask to be validated, in string or other format (e.g., in hexadecimal or CIDR notation).
-
-        Raises:
-        ValueError:
-            If the provided address is not a valid IPv6 netmask.
+        Validates the provided address format to ensure it is a valid IPv6 netmask.
         """
-        if IPTypeClassifier.classify_ipv6_netmask(address) == IPType.IPv6:
-            self._address = IPConverter.convert_to_ipv6_octets(address)
-        else:
+        if IPTypeClassifier.classify_ipv6_netmask(address) != IPType.IPv6:
             raise ValueError(str(address) + " is not a valid IPv6 netmask.")
 
-    def get_mask_size(self) -> int:
+    @property
+    def mask_size(self) -> int:
         """
-        Returns the size of the IPv6 network mask by counting the number of '1' bits in its binary representation.
-        The size of the mask determines the number of bits used for the network portion of the address.
-
-        Returns:
-        int:
-            The number of '1' bits in the binary representation of the netmask, which corresponds to the network size.
+        Returns the size of the IPv6 netmask as an integer. This represents the number of bits set to '1' in the netmask.
         """
         return self.binary_string.count('1')
 
     def __repr__(self) -> str:
         """
-        Returns the official string representation of the IPv6 network mask object for debugging.
-
-        Returns:
-        str:
-            A string showing the internal representation of the IPv6 network mask.
+        Returns the string representation of the IPv6 netmask for debugging purposes.
         """
-        return f"""IPv6NetMask('_address={self._address})"""
+        return f"""IPv6NetMask('_address={self.__str__()}')"""
 
 
 class IPv6WildCard(IPv6NetMask):
-
     """
-    A class that represents an IPv6 wildcard mask, inheriting from both IPv6NetMask and IPAddr.
-    A wildcard mask is used to specify ranges of IP addresses for matching purposes in networking,
-    where '1' bits represent "don't care" positions. This class handles validation, size calculation,
-    and binary representation of the IPv6 wildcard mask.
-
-    Methods:
-    _validate(address: Any) -> None:
-        Validates the given wildcard mask to ensure it is a valid IPv6 wildcard mask.
-
-    get_mask_size() -> int:
-        Returns the wildcard mask size by calculating the number of possible IPs based on
-        the count of '1' bits in its binary string.
-
-    __repr__() -> str:
-        Returns the official string representation of the IPv6 wildcard mask, used for debugging.
+    A concrete implementation of IPv6NetMask for wildcard masks.
+    Wildcard masks are the inverse of subnet masks and are often used in access control lists (ACLs).
     """
     def _validate(self, address: Any) -> None:
         """
-        Validates the provided IPv6 wildcard mask. If valid, the mask is converted into
-        a list of octets; otherwise, raises a ValueError.
-
-        Parameters:
-        address : Any
-            The wildcard mask to be validated, in string or other format.
-
-        Raises:
-        ValueError:
-            If the provided address is not a valid IPv6 wildcard mask.
+        Validates the provided address format to ensure it is a valid IPv6 wildcard mask.
         """
-        if IPTypeClassifier.classify_ipv6_address(address) == IPType.IPv6:
-            self._address = IPConverter.convert_to_ipv6_octets(address)
-        else:
+        if IPTypeClassifier.classify_ipv6_address(address) != IPType.IPv6:
             raise ValueError(str(address) + " is not a valid IPv6 wildcard mask.")
 
-    def get_mask_size(self) -> int:
+    @property
+    def mask_size(self) -> int:
         """
-        Returns the size of the wildcard mask by counting the number of '1' bits in the binary
-        string and calculating the number of possible IP addresses. The number of IP addresses
-        is 2 raised to the power of the count of '1' bits.
-
-        Returns:
-        int:
-            The number of possible IP addresses the wildcard mask covers.
+        Returns the size of the IPv6 wildcard mask as an integer. This represents the number of bits set to '1' in the mask.
         """
         count_of_ones = self.binary_string.count('1')
-        return 2 ** count_of_ones
+        return count_of_ones
 
     def __repr__(self) -> str:
         """
-        Returns the official string representation of the IPv6 wildcard mask object for debugging.
-
-        Returns:
-        str:
-            A string showing the internal representation of the IPv6 wildcard mask.
+        Returns the string representation of the IPv6 wildcard mask for debugging purposes.
         """
-        return f"""IPv6WildCard('_address={self._address})"""
+        return f"""IPv6WildCard('_address={self.__str__()}')"""

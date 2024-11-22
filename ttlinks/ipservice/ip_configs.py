@@ -5,331 +5,214 @@ import itertools
 from abc import ABC, abstractmethod
 from typing import Generator, List, Any, Union
 
-from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
 from ttlinks.common.tools.network import BinaryTools
+from ttlinks.ipservice import ip_subnet_type_classifiers
 from ttlinks.ipservice.ip_addr_type_classifiers import IPAddrTypeClassifier
-from ttlinks.ipservice.ip_converters import BinaryDigitsIPv4ConverterHandler, BinaryDigitsIPv6ConverterHandler
-from ttlinks.ipservice.ip_address import IPv4Addr, IPv4NetMask, IPv4WildCard, IPv6Addr, IPv6NetMask, IPv6WildCard
-from ttlinks.ipservice.ip_format_standardizer import IPStandardizer
 from ttlinks.ipservice.ip_utils import IPv4AddrType, IPv6AddrType
+from ttlinks.ipservice.ip_address import IPv4Addr, IPv4NetMask, IPv6Addr, IPv6NetMask
+from ttlinks.ipservice.ip_converters import BinaryDigitsIPv4ConverterHandler, BinaryDigitsIPv6ConverterHandler, DecimalIPv4ConverterHandler, \
+    DecimalIPv6ConverterHandler
+from ttlinks.ipservice.ip_format_standardizer import IPStandardizer
 
 
 class InterfaceIPConfig(ABC):
     """
-    InterfaceIPConfig is an abstract base class (ABC) that defines the structure for configuring IP interfaces.
-    It requires any subclass to implement methods for initialization, validation, and string representation.
-    This class serves as a blueprint for configuring IP interfaces in both IPv4 and IPv6 formats.
+    Abstract base class for IP configuration. It defines the structure for storing and managing
+    an IP address and its associated mask, supporting both IPv4 and IPv6.
+
+    Attributes:
+    _addr: Union[IPv4Addr, IPv6Addr, None]
+        - The IP address (IPv4 or IPv6) associated with the interface.
+    _mask: Union[IPv4NetMask, IPv6NetMask, None]
+        - The subnet mask (IPv4 or IPv6) associated with the interface.
 
     Methods:
-    - _initialize(*args): Initializes the configuration of the interface.
-    - _validate(*args): Validates the configuration parameters provided.
-    - __str__(): Returns a string representation of the IP configuration.
-
-    Parameters:
-    *args: A variable-length argument list that can include specific configuration parameters like IP address and mask.
-
-    Returns:
-    None (for abstract methods, implementation is left to subclasses).
+    - _initialize: Abstract method to initialize the IP configuration.
+    - _validate: Abstract method to validate the provided IP and mask.
+    - __str__: Abstract method to represent the configuration as a string.
+    - __repr__: Abstract method for a detailed string representation of the configuration.
     """
+    _addr: Union[IPv4Addr, IPv6Addr, None] = None
+    _mask: Union[IPv4NetMask, IPv6NetMask, None] = None
+
     @abstractmethod
     def _initialize(self, *args) -> None:
         """
-        Initializes the IP interface configuration. This method is abstract and must be implemented by subclasses.
-        It sets up the required parameters such as IP address and mask.
+        Abstract method to initialize the IP configuration.
 
         Parameters:
-        *args: Variable-length argument list that contains configuration parameters like IP address, subnet mask, etc.
-
-        Returns:
-        None
+        *args: Positional arguments required to set up the IP configuration.
         """
         pass
 
     @abstractmethod
     def _validate(self, *args) -> None:
         """
-        Validates the provided IP configuration parameters. This method is abstract and must be implemented by subclasses.
-        The method checks whether the IP address and mask are correctly formatted and valid.
+        Abstract method to validate the IP address and mask.
 
         Parameters:
-        *args: Variable-length argument list that contains IP configuration values to be validated.
-
-        Returns:
-        None
+        *args: Positional arguments containing the IP address and mask to validate.
         """
         pass
 
     @abstractmethod
     def __str__(self) -> str:
         """
-        Provides a string representation of the IP configuration. This method is abstract and must be implemented by subclasses.
-        It typically returns a formatted string combining IP address and mask/subnet.
+        Abstract method to provide a string representation of the IP configuration.
 
         Returns:
-        str: A string representation of the IP address and mask, formatted such as "IP/mask" in IPv4 host or subnet
-        or "IP Wildcard" for wildcard configuration.
+        str: A human-readable representation of the IP configuration.
+        """
+        pass
+
+    @abstractmethod
+    def __repr__(self):
+        """
+        Abstract method to provide a detailed string representation of the IP configuration.
+
+        Returns:
+        str: A detailed representation of the IP configuration.
         """
         pass
 
 
-class InterfaceIPv4Config(InterfaceIPConfig):
-
+class InterfaceIPv4Config(InterfaceIPConfig, ABC):
     """
-    InterfaceIPv4Config provides an abstract structure for configuring IPv4 interfaces. It inherits from InterfaceIPConfig
-    and requires subclasses to implement initialization and validation methods. This class stores the IPv4 address and netmask
-    and provides access to them through properties.
+    Abstract class for IPv4 interface configuration. It extends `InterfaceIPConfig` to
+    manage IPv4-specific configurations, including the IPv4 address and subnet mask.
 
-    Attributes:
-    _ip_addr (IPv4Addr): Stores the IPv4 address of the interface.
-    _mask (IPv4NetMask): Stores the netmask or wildcard mask associated with the IPv4 address.
+    Properties:
+    - addr: Returns the IPv4 address associated with the interface.
+    - mask: Returns the IPv4 subnet mask associated with the interface.
 
     Methods:
-    - _initialize(*args): Initializes the IPv4 configuration, requiring subclasses to validate the provided IP address and netmask.
-    - _validate(*args): Abstract method for validating the provided IPv4 configuration.
-    - ip_addr: Property method that returns the current IPv4 address.
-    - mask: Property method that returns the current netmask.
-    - __str__(): Returns a string representation of the IPv4 configuration as "IP/Netmask size".
-
-    Parameters:
-    *args: Variable-length argument list to provide the necessary configuration parameters (e.g., IPv4 address and netmask).
-
-    Returns:
-    None
+    - __str__: Provides a string representation of the IPv4 configuration in CIDR notation.
+    - __repr__: Provides a detailed string representation of the IPv4 configuration.
     """
-    def __init__(self, *args):
-        """
-        Initializes the InterfaceIPv4Config by setting up the IPv4 address and netmask.
-        Calls the _initialize method with the provided arguments.
-
-        Parameters:
-        *args: Variable-length argument list to initialize the IP address and netmask.
-
-        Returns:
-        None
-        """
-        self._ip_addr: Union[IPv4Addr, None] = None
-        self._mask: Union[IPv4NetMask, None] = None
-        self._initialize(*args)
-
-    @abstractmethod
-    def _initialize(self, *args) -> None:
-        """
-        Initializes the IPv4 interface configuration. This method is abstract and must be implemented by subclasses.
-        It also calls the _validate method to ensure the provided parameters are valid.
-
-        Parameters:
-        *args: A variable-length argument list that includes the IP address and netmask for initialization.
-
-        Returns:
-        None
-        """
-        self._validate(*args)
-
-    @abstractmethod
-    def _validate(self, *args) -> None:
-        """
-        Validates the provided IPv4 address and netmask. This method is abstract and must be implemented by subclasses
-        to ensure that the input parameters are in the correct format.
-
-        Parameters:
-        *args: A variable-length argument list that includes the IP address and netmask for validation.
-
-        Returns:
-        None
-        """
-        pass
 
     @property
-    def ip_addr(self) -> IPv4Addr:
+    def addr(self) -> IPv4Addr:
         """
-        Returns the currently configured IPv4 address.
+        Returns the IPv4 address of the interface.
 
         Returns:
-        IPv4Addr: The IPv4 address assigned to the interface.
+        IPv4Addr: The IPv4 address associated with the interface.
         """
-        return self._ip_addr
+        return self._addr
 
     @property
     def mask(self) -> IPv4NetMask:
         """
-        Returns the currently configured IPv4 netmask.
+        Returns the IPv4 subnet mask of the interface.
 
         Returns:
-        IPv4NetMask: The netmask associated with the IPv4 address.
+        IPv4NetMask: The IPv4 subnet mask associated with the interface.
         """
         return self._mask
 
     def __str__(self) -> str:
         """
-        Returns a string representation of the IPv4 configuration.
-        The format is "IP/Netmask size", showing the IP address and the length of the netmask.
+        Provides a string representation of the IPv4 configuration in CIDR notation.
 
         Returns:
-        str: A string formatted as "IP/Netmask size" (e.g., "192.168.0.1/24").
+        str: The IPv4 address and subnet mask in CIDR format (e.g., "192.168.1.1/24").
         """
-        return f"{str(self.ip_addr)}/{str(self.mask.get_mask_size())}"
+        return f"{self.addr.address}/{self.mask.mask_size}"
+
+    def __repr__(self):
+        """
+        Provides a detailed string representation of the IPv4 configuration.
+
+        Returns:
+        str: The detailed IPv4 configuration in the format
+             "InterfaceIPv4Config(<address>/<mask_size>)".
+        """
+        return f"InterfaceIPv4Config({self.addr.address}/{self.mask.mask_size})"
 
 
 class IPv4HostConfig(InterfaceIPv4Config):
     """
-    IPv4HostConfig is a subclass of InterfaceIPv4Config that represents a host configuration for an IPv4 network.
-    It includes additional methods for calculating the network ID, broadcast address, and classifying the IP address type.
-    This class is used to handle IPv4-specific host configurations, including determining the network range and broadcast address.
-
-    Attributes:
-    _ip_type (IPv4AddrType): The type of the IPv4 address (e.g., public, private, multicast).
-    _broadcast_ip (IPv4Addr): The broadcast IP address for the configured network.
-    _network_id (IPv4Addr): The network ID calculated from the IPv4 address and netmask.
-
-    Methods:
-    - _initialize(*args): Initializes the IPv4 host configuration and calculates the network ID, broadcast IP, and IP type.
-    - _validate(*args): Validates the provided IPv4 address and netmask.
-    - _calculate_network_id(): Calculates the network ID based on the IP address and netmask.
-    - _calculate_broadcast_ip(): Calculates the broadcast IP address for the network.
-    - _classify_ip_address_type(): Classifies the IP address type (e.g., private, public).
-    - broadcast_ip: Returns the broadcast IP address.
-    - network_id: Returns the network ID.
-    - host_counts: Calculates and returns the number of usable host addresses in the network.
-    - ip_type: Returns the classified IP address type.
-    - is_unspecified: Checks if the IP type is unspecified.
-    - is_public: Checks if the IP type is public.
-    - is_private: Checks if the IP type is private.
-    - is_multicast: Checks if the IP type is multicast.
-    - is_link_local: Checks if the IP type is link-local.
-    - is_loopback: Checks if the IP type is a loopback address.
+    Represents an IPv4 host configuration, including attributes such as network ID,
+    broadcast IP, and host type classification. Extends `InterfaceIPv4Config`.
     """
     _ip_type: IPv4AddrType = IPv4AddrType.UNDEFINED_TYPE
+    _broadcast_ip: IPv4Addr = None
+    _network_id: IPv4Addr = None
 
     def __init__(self, *args):
-        """
-        Initializes the IPv4HostConfig class by calling the parent class's initialization and setting up the network-specific
-        attributes such as broadcast IP and network ID.
+        self._validate(*args)
+        self._initialize(*args)
 
-        Parameters:
-        *args: Variable-length argument list for the IPv4 address and netmask.
-
-        Returns:
-        None
-        """
-        self._broadcast_ip = None
-        self._network_id = None
-        super().__init__(*args)
+    def _validate(self, *args) -> None:
+        validation_result = IPStandardizer.ipv4_interface(*args)
+        if validation_result:
+            self._addr = validation_result[0]
+            self._mask = validation_result[1]
+        else:
+            raise ValueError(f"{str(args)} is not a valid IPv4 Interface object")
 
     def _initialize(self, *args) -> None:
-        """
-        Initializes the IPv4 host configuration by validating the input and calculating
-        the network ID, broadcast IP, and IP address type.
-
-        Parameters:
-        *args: A variable-length argument list containing the IP address and netmask.
-
-        Returns:
-        None
-        """
-        self._validate(*args)
         self._calculate_network_id()
         self._calculate_broadcast_ip()
         self._classify_ip_address_type()
 
-    def _validate(self, *args) -> None:
-        """
-        Validates the provided IPv4 address and netmask by using an external standardizer.
-        Raises a ValueError if the inputs are not valid.
-
-        Parameters:
-        *args: A variable-length argument list containing the IPv4 address and netmask for validation.
-
-        Returns:
-        None
-
-        Raises:
-        ValueError: If the IPv4 address or netmask is invalid.
-        """
-        validation_result = IPStandardizer.ipv4_interface(*args)
-        if validation_result:
-            self._ip_addr = validation_result[0]
-            self._mask = validation_result[1]
-        else:
-            raise ValueError(f"{str(args)} is not a valid IPv4 object")
-
     def _calculate_network_id(self) -> None:
         """
-        Calculates the network ID for the given IPv4 address and netmask.
-        The network ID is derived by applying the netmask to the IP address.
-
-        Returns:
-        None
+        Calculates the network ID by applying the subnet mask to the IP address.
         """
-        ip_addr_binary_digits = list(self.ip_addr.binary_digits)
-        network_id_binary_digits = []
-        index = 0
-        for netmask_bit in self.mask.binary_digits:
-            if netmask_bit == 1:
-                network_id_binary_digits.append(ip_addr_binary_digits[index])
-            elif netmask_bit == 0:
-                network_id_binary_digits.append(0)
-            index += 1
-        binary_bit_ipv4_converter = BinaryDigitsIPv4ConverterHandler()
-        self._network_id = IPv4Addr(binary_bit_ipv4_converter.handle(network_id_binary_digits))
+        decimal_network_id = self._addr.as_decimal & self._mask.as_decimal
+        self._network_id = IPv4Addr(DecimalIPv4ConverterHandler().handle(decimal_network_id))
 
     def _calculate_broadcast_ip(self) -> None:
         """
-        Calculates the broadcast IP address for the network.
-        The broadcast address is derived by setting the host bits to 1 in the IP address.
-
-        Returns:
-        None
+        Calculates the broadcast IP by reversing the subnet mask and applying it to the IP address.
         """
-        ip_addr_binary_digits = list(self.ip_addr.binary_digits)
-        broadcast_binary_digits = []
-        index = 0
-        for netmask_bit in self.mask.binary_digits:
-            if netmask_bit == 1:
-                broadcast_binary_digits.append(ip_addr_binary_digits[index])
-            elif netmask_bit == 0:
-                broadcast_binary_digits.append(1)
-            index += 1
-        binary_bit_ipv4_converter = BinaryDigitsIPv4ConverterHandler()
-        self._broadcast_ip = IPv4Addr(binary_bit_ipv4_converter.handle(broadcast_binary_digits))
+        reversed_mask = ~self._mask.as_decimal & 0xFFFFFFFF
+        self._broadcast_ip = IPv4Addr(DecimalIPv4ConverterHandler().handle(self._addr.as_decimal | reversed_mask))
 
     def _classify_ip_address_type(self) -> None:
         """
-        Classifies the IP address type (e.g., private, public, multicast, etc.)
-        by using the IPAddrTypeClassifier.
-
-        Returns:
-        None
+        Classifies the type of the IP address (e.g., PRIVATE, PUBLIC, MULTICAST).
         """
-        self._ip_type = IPAddrTypeClassifier.classify_ipv4_type(self.network_id)
-
-    @property
-    def broadcast_ip(self) -> IPv4Addr:
-        """
-        Returns the broadcast IP address for the configured network.
-
-        Returns:
-        IPv4Addr: The broadcast IP address.
-        """
-        return self._broadcast_ip
+        self._ip_type = IPAddrTypeClassifier.classify_ipv4_host_type(self.network_id)
 
     @property
     def network_id(self) -> IPv4Addr:
         """
-        Returns the network ID for the configured network.
+        Returns the calculated network ID.
 
         Returns:
-        IPv4Addr: The network ID.
+        IPv4Addr: The network ID of the configuration.
         """
         return self._network_id
 
     @property
-    def host_counts(self) -> int:
+    def broadcast_ip(self) -> IPv4Addr:
         """
-        Calculates the number of usable hosts in the network.
-        The number is derived from the netmask, by counting the number of host bits.
+        Returns the calculated broadcast IP.
 
         Returns:
-        int: The number of usable hosts in the network.
+        IPv4Addr: The broadcast IP of the configuration.
+        """
+        return self._broadcast_ip
+
+    @property
+    def ip_type(self) -> IPv4AddrType:
+        """
+        Returns the classified type of the IP address.
+
+        Returns:
+        IPv4AddrType: The type of the IP address (e.g., PUBLIC, PRIVATE).
+        """
+        return self._ip_type
+
+    @property
+    def total_hosts(self) -> int:
+        """
+        Calculates the total number of usable hosts in the network.
+
+        Returns:
+        int: The number of usable hosts, or 0 for networks with no usable hosts.
         """
         netmask_host_bit_count = list(self.mask.binary_digits).count(0)
         host_count = (2 ** netmask_host_bit_count) - 2
@@ -337,16 +220,6 @@ class IPv4HostConfig(InterfaceIPv4Config):
             return host_count
         else:
             return 0
-
-    @property
-    def ip_type(self) -> IPv4AddrType:
-        """
-        Returns the type of the IP address (e.g., public, private, multicast).
-
-        Returns:
-        IPv4AddrType: The type of the IP address.
-        """
-        return self._ip_type
 
     @property
     def is_unspecified(self) -> bool:
@@ -408,328 +281,327 @@ class IPv4HostConfig(InterfaceIPv4Config):
         """
         return self.ip_type == IPv4AddrType.LOOPBACK
 
+    def __repr__(self):
+        """
+        Provides a detailed string representation of the IPv4 host configuration.
+
+        Returns:
+        str: The IPv4 configuration in the format "IPv4HostConfig(<address>/<mask_size>)".
+        """
+        return f"IPv4HostConfig({self.addr.address}/{self.mask.mask_size})"
+
 
 class IPv4SubnetConfig(IPv4HostConfig):
     """
-    IPv4SubnetConfig is a subclass of IPv4HostConfig that represents a subnet configuration for an IPv4 network.
-    It adds functionality for working with subnet ranges and hosts within a subnet, allowing operations such as retrieving
-    the first and last host, iterating over all hosts, and performing subnetting tasks like division and merging.
-
-    Attributes:
-    Inherits all attributes from IPv4HostConfig, including:
-    - _ip_type (IPv4AddrType): The type of the IPv4 address (e.g., public, private).
-    - _broadcast_ip (IPv4Addr): The broadcast IP address for the subnet.
-    - _network_id (IPv4Addr): The network ID for the subnet.
+    Represents an IPv4 subnet configuration, extending `IPv4HostConfig` to provide additional
+    subnet-specific properties and methods, such as host range, subnet division, and merging.
 
     Methods:
-    - first_host: Returns the first usable host address within the subnet.
-    - last_host: Returns the last usable host address within the subnet.
-    - subnet_range: Returns the range of the subnet, from the network ID to the broadcast address.
-    - get_hosts: Generator function that yields each host within the subnet.
-    - is_within(ip_addr): Checks whether a given IP address falls within the subnet.
-    - subnet_division(mask): Divides the current subnet into smaller subnets based on a new mask size.
-    - subnet_merge(*subnets): Attempts to merge multiple subnets into a larger subnet.
-
-    Parameters:
-    Inherits the parameters from IPv4HostConfig, which include the IPv4 address and netmask.
+    - first_host: Returns the first usable host in the subnet.
+    - last_host: Returns the last usable host in the subnet.
+    - subnet_range: Returns the range of the subnet (network ID and broadcast IP).
+    - ip_type: Returns the classifications of the subnet's IP types.
+    - get_hosts: Generates all usable host addresses within the subnet.
+    - is_within: Checks if a given IP address belongs to the subnet.
+    - division: Splits the subnet into smaller subnets with a given mask size.
+    - merge: Merges the current subnet with other compatible subnets into a larger subnet.
     """
+    def _calculate_network_id(self) -> None:
+        """
+        Calculates the network ID and sets the address (`_addr`) to the network ID.
+
+        Overrides:
+        IPv4HostConfig._calculate_network_id
+        """
+        super()._calculate_network_id()
+        self._addr = self.network_id
+
     @property
     def first_host(self) -> IPv4Addr:
         """
-        Returns the first usable host address within the subnet by skipping the network ID.
+        Returns the first usable host in the subnet.
+
+        Special Cases:
+        - /32: Raises a ValueError because there are no usable hosts.
+        - /31: Returns the network ID as the first host.
 
         Returns:
-        IPv4Addr: The first usable host address.
+        IPv4Addr: The first usable host in the subnet.
         """
-        host_iterator = self.get_hosts()
-        next(host_iterator)
-        return next(host_iterator)
+        if self.mask.mask_size == 32:
+            raise ValueError('No hosts available for a /32 subnet')
+        if self.mask.mask_size == 31:
+            return self.network_id
+        else:
+            host_iterator = self.get_hosts()
+            return next(host_iterator)
 
     @property
     def last_host(self) -> IPv4Addr:
         """
-        Returns the last usable host address within the subnet. The last host is derived
-        by setting all host bits to 1 except for the least significant bit.
+        Returns the last usable host in the subnet.
+
+        Special Cases:
+        - /32: Raises a ValueError because there are no usable hosts.
+        - /31: Returns the broadcast IP as the last host.
 
         Returns:
-        IPv4Addr: The last usable host address.
+        IPv4Addr: The last usable host in the subnet.
         """
-        network_id_binary_digits = list(self.network_id.binary_digits)
-        netmask_binary_digits = list(self.mask.binary_digits)
-        non_matching_indices = netmask_binary_digits.count(0)
-        network_id_binary_digits[-non_matching_indices:] = ([1] * (non_matching_indices - 1)) + [0]
-        binary_bit_ipv4_converter = BinaryDigitsIPv4ConverterHandler()
-        return IPv4Addr(binary_bit_ipv4_converter.handle(network_id_binary_digits))
+        if self.mask.mask_size == 32:
+            raise ValueError('No hosts available for a /32 subnet')
+        if self.mask.mask_size == 31:
+            return self.broadcast_ip
+        else:
+            return IPv4Addr(DecimalIPv4ConverterHandler().handle(self.broadcast_ip.as_decimal - 1))
 
     @property
-    def subnet_range(self) -> str:
+    def subnet_range(self) -> List[IPv4Addr]:
         """
-        Returns the range of the subnet, from the network ID to the broadcast IP address.
+        Returns the range of the subnet, including the network ID and broadcast IP.
 
         Returns:
-        str: A string representing the subnet range in the format "network_id-broadcast_ip".
+        List[IPv4Addr]: A list containing the network ID and broadcast IP.
         """
-        return f"{self.network_id}-{self.broadcast_ip}"
+        return [self.network_id, self.broadcast_ip]
 
-    def _calculate_network_id(self) -> None:
+    @property
+    def ip_type(self) -> List[IPv4AddrType]:
         """
-        Overrides the parent class method to also set the IP address to the network ID.
-        This ensures that the network ID is used for further subnet operations.
+        Returns the classifications of the subnet's IP types.
 
         Returns:
-        None
+        List[IPv4AddrType]: A list of classifications for all possible IP types in the subnet.
         """
-        super()._calculate_network_id()
-        self._ip_addr = self.network_id
+        return ip_subnet_type_classifiers.IPSubnetTypeClassifier.classify_ipv4_subnet_types(self)
 
     def get_hosts(self) -> Generator[IPv4Addr, None, None]:
         """
-        Generates all usable hosts within the subnet by iterating over the possible combinations of host bits.
+        Generates all usable host addresses within the subnet.
 
         Returns:
-        Generator[IPv4Addr, None, None]: A generator yielding all host addresses in the subnet.
+        Generator[IPv4Addr, None, None]: A generator yielding IPv4 host addresses.
         """
-        network_id_binary_digits = list(self.network_id.binary_digits)
-        netmask_binary_digits = list(self.mask.binary_digits)
-        non_matching_indices = netmask_binary_digits.count(0)
-        binary_bit_ipv4_converter = BinaryDigitsIPv4ConverterHandler()
-        for matched_digits in itertools.product([0, 1], repeat=non_matching_indices):
-            network_id_binary_digits[-non_matching_indices:] = matched_digits
-            if not netmask_binary_digits.count(1) == 32:
-                yield IPv4Addr(binary_bit_ipv4_converter.handle(network_id_binary_digits))
-            else:
-                # Skip the network ID and broadcast IP for /32 subnets
-                yield IPv4Addr(binary_bit_ipv4_converter.handle(list(self.network_id.binary_digits)))
+        ip_decimal_range = range(self.network_id.as_decimal + 1, self.broadcast_ip.as_decimal)
+        for ip_decimal in ip_decimal_range:
+            yield IPv4Addr(DecimalIPv4ConverterHandler().handle(ip_decimal))
 
     def is_within(self, ip_addr: Any) -> bool:
         """
-        Checks whether a given IP address is within the current subnet by comparing
-        the binary representations of the network ID, netmask, and the target IP address.
+        Checks if a given IP address belongs to the subnet.
 
         Parameters:
-        ip_addr (Any): The IP address to check.
+        ip_addr: Any
+            - The IP address to check.
 
         Returns:
         bool: True if the IP address is within the subnet, otherwise False.
         """
-        ip_addr = IPv4Addr(ip_addr)
-        if type(ip_addr) is not IPv4Addr:
-            raise TypeError('ip_addr must be of type IPv4Addr')
-        return BinaryTools.is_binary_in_range(
-            list(self.network_id.binary_digits),
-            list(self.mask.binary_digits),
-            list(ip_addr.binary_digits)
+        compared_addr = IPv4Addr(ip_addr)
+        return BinaryTools.is_bytes_in_range(
+            self.network_id.as_bytes,
+            self.mask.as_bytes,
+            compared_addr.as_bytes
         )
 
-    def subnet_division(self, mask: int) -> List[IPv4SubnetConfig]:
+    def division(self, target_mask_size: int) -> List[IPv4SubnetConfig]:
         """
-        Divides the current subnet into smaller subnets based on the provided mask size.
-        It generates new subnets that fit within the current subnet's range.
+        Divides the subnet into smaller subnets of the specified mask size.
 
         Parameters:
-        mask (int): The new mask size for the smaller subnets.
+        target_mask_size: int
+            - The mask size for the new subnets.
 
         Returns:
-        List[IPv4SubnetConfig]: A list of newly created IPv4SubnetConfig objects.
+        List[IPv4SubnetConfig]: A list of smaller subnets.
 
         Raises:
-        TypeError: If the mask is not an integer.
-        ValueError: If the mask is not valid (i.e., too large or too small).
+        TypeError: If the target mask size is not an integer.
+        ValueError: If the target mask size is not larger than the current mask size or exceeds 32.
         """
-        subnet_mask_size = self.mask.get_mask_size()
-        if type(mask) is not int:
-            raise TypeError('mask must be of type int')
-        if mask <= subnet_mask_size or mask > 32:
-            raise ValueError(f'mask must be in the range of {subnet_mask_size + 1}-32')
-        re_subnetting_length = mask - subnet_mask_size
-        network_id_binary_digits = list(self.network_id.binary_digits)
-        netmask_binary_digits = list(self.mask.binary_digits)
-        binary_bit_ipv4_converter = BinaryDigitsIPv4ConverterHandler()
-        netmask_binary_digits[subnet_mask_size: mask] = [1] * re_subnetting_length
-        for subnetting_bit_combination in itertools.product([0, 1], repeat=re_subnetting_length):
-            network_id_binary_digits[subnet_mask_size: mask] = subnetting_bit_combination
-            yield IPv4SubnetConfig(
-                IPv4Addr(binary_bit_ipv4_converter.handle(network_id_binary_digits)),
-                IPv4NetMask(binary_bit_ipv4_converter.handle(netmask_binary_digits))
-            )
+        subnet_mask_size = self.mask.mask_size
+        if type(target_mask_size) is not int:
+            raise TypeError('target mask must be an integer')
+        if target_mask_size <= subnet_mask_size or target_mask_size > 32:
+            raise ValueError(f'target mask must be in the range of {subnet_mask_size + 1}-32')
+        target_mask = IPv4NetMask(f"/{target_mask_size}")
+        mask_diff = target_mask.mask_size - subnet_mask_size
+        target_host_bit_count = list(target_mask.binary_digits).count(0)
+        for mask_change in range(2 ** mask_diff):
+            new_network_id = (mask_change << target_host_bit_count) | self.network_id.as_decimal
+            yield IPv4SubnetConfig(IPv4Addr(DecimalIPv4ConverterHandler().handle(new_network_id)), target_mask)
 
-    def subnet_merge(self, *subnets: str) -> IPv4SubnetConfig:
+    def merge(self, *subnets: str) -> IPv4SubnetConfig:
         """
-        Merges the current subnet with the provided subnets, creating a larger subnet that encompasses them all.
-        The method ensures that the subnets are valid for merging and checks that their network bits match.
+        Merges the current subnet with other compatible subnets into a larger subnet.
 
         Parameters:
-        *subnets (str): A variable-length argument list of subnet strings to merge.
+        *subnets: str
+            - The subnets to merge, provided as strings.
 
         Returns:
-        IPv4SubnetConfig: A new IPv4SubnetConfig representing the merged subnet.
+        IPv4SubnetConfig: The merged subnet.
 
         Raises:
-        ValueError: If the provided subnets cannot be merged.
+        ValueError: If the subnets cannot be merged.
         """
+        # Convert input subnet strings into IPv4SubnetConfig objects
         subnets = [IPv4SubnetConfig(subnet) for subnet in subnets]
+
         # Collect the current subnet and additional subnets into a list
         subnets_need_merge = [self] + list(subnets)
-        # Ensure not all subnets are the same to prevent meaningless merging
-        if len(set(map(str, subnets_need_merge))) == 1:
-            raise ValueError("Merged subnets can not be the same.")
-        # Extract network ID and netmask binary digits from all subnets
-        network_id_binary_digits_list = [list(subnet.network_id.binary_digits) for subnet in subnets_need_merge]
-        netmask_binary_digits_list = [list(subnet.mask.binary_digits) for subnet in subnets_need_merge]
-        # Identify bits that differ among the subnets' network IDs
-        corresponding_network_id_bits = [list(bits) for bits in zip(*network_id_binary_digits_list)]
-        smallest_subnetting_mask_bit = next(
-            (i for i, bits in enumerate(corresponding_network_id_bits) if len(set(bits)) != 1), None
-        )
-        # Determine the range for possible new masks
-        subnet_largest_mask = max(subnet.mask.get_mask_size() for subnet in subnets_need_merge)
-        subnet_smallest_mask = min(subnet.mask.get_mask_size() for subnet in subnets_need_merge)
-        for n in range(subnet_largest_mask - smallest_subnetting_mask_bit, 0, -1):
-            subnets_matching_combination = []
-            desired_matching_combination = list(itertools.product([0, 1], repeat=n))
-            # Check if all combinations of network bits are covered for the new potential mask
-            for network_id_binary_digits, netmask_binary_digits in zip(
-                    network_id_binary_digits_list,
-                    netmask_binary_digits_list
-            ):
-                matching_combination = BinaryTools.expand_by_mask(
-                    network_id_binary_digits[subnet_largest_mask - n: subnet_largest_mask],
-                    netmask_binary_digits[subnet_largest_mask - n: subnet_largest_mask]
-                )
-                subnets_matching_combination.extend(matching_combination)
-            # Validate the potential new mask based on the smallest mask bit position
-            if smallest_subnetting_mask_bit > subnet_smallest_mask:
-                raise ValueError('Provided subnets cannot be merged with current one')
-            # If all combinations are matched, create a new subnet configuration with the adjusted mask
-            if set(subnets_matching_combination) == set(desired_matching_combination):
-                new_mask = copy.deepcopy(list(self.mask.binary_digits))
-                new_mask[subnet_largest_mask - n: subnet_largest_mask] = [0] * n
-                return IPv4SubnetConfig(self.ip_addr, IPv4NetMask(BinaryDigitsIPv4ConverterHandler().handle(new_mask)))
-            elif len(set(subnets_matching_combination)) < len(set(desired_matching_combination)):
-                raise ValueError('Provided subnets cannot be merged with current one')
-        # If no valid merging configuration is found, raise an error
-        raise ValueError('No valid merging configuration found for the provided subnets')
+
+        # Find the largest and smallest mask sizes among the given subnets
+        existing_largest_mask = max([subnet.mask.mask_size for subnet in subnets_need_merge])
+        existing_smallest_mask = min([subnet.mask.mask_size for subnet in subnets_need_merge])
+
+        # Initialize target_mask_size to -1 as a placeholder
+        target_mask_size = -1
+
+        # Determine the target mask size by examining the network ID bits of all subnets
+        for index, network_id_bit in enumerate(zip(*[subnet.network_id.binary_string for subnet in subnets_need_merge])):
+            if len(set(network_id_bit)) > 1:
+                # If there are differing bits at the current position, the target mask size is reached
+                break
+            elif index == existing_smallest_mask:
+                # If we reach the smallest mask size and all bits match, the smallest mask size is sufficient
+                break
+            # Increment the target mask size with each matching bit
+            target_mask_size = index + 1
+
+        # Calculate the number of bits required to cover the range between the largest and target mask sizes
+        repeat = existing_largest_mask - target_mask_size
+
+        # Generate all possible bit combinations for the range of bits required to merge the subnets
+        required_bit_combo_for_merge = set([''.join(bit_combo) for bit_combo in itertools.product('01', repeat=repeat)])
+
+        # Initialize a set to store the actual bit combinations found in the subnets
+        existing_bit_combos = set()
+
+        # Collect the actual bit combinations present in the subnets
+        for subnet in subnets_need_merge:
+            # Expand the network ID bits based on the mask size range to identify all covered combinations
+            subnet_bit_combo = [''.join(map(str, t)) for t in BinaryTools.expand_by_mask(
+                list(subnet.network_id.binary_digits)[target_mask_size: existing_largest_mask],
+                list(subnet.mask.binary_digits)[target_mask_size: existing_largest_mask]
+            )]
+            # Add the resulting combinations to the existing bit combos set
+            existing_bit_combos.update(subnet_bit_combo)
+
+        # Check if the actual bit combinations match the required combinations for merging
+        if existing_bit_combos == required_bit_combo_for_merge:
+            # If all required combinations are covered, create a new merged subnet
+            new_network_id = copy.deepcopy(subnets_need_merge[0].network_id)  # Use the network ID of the first subnet
+            new_mask = IPv4NetMask(f"/{target_mask_size}")  # Create a mask with the target mask size
+            return IPv4SubnetConfig(new_network_id, new_mask)  # Return the new merged subnet
+        else:
+            # If the subnets cannot be merged, raise an error
+            raise ValueError('The subnets cannot be merged')
+
+    def __repr__(self):
+        return f"IPv4SubnetConfig({self.addr.address}/{self.mask.mask_size})"
 
 
 class IPv4WildCardConfig(InterfaceIPv4Config):
     """
-    IPv4WildCardConfig is a subclass of InterfaceIPv4Config designed to handle wildcard configurations for IPv4 addresses.
-    Wildcard addresses are used to match ranges of IP addresses by allowing certain bits of the address to "wildcard" or vary.
-    This class provides methods for initializing, validating, and recalculating wildcard IP addresses, as well as
-    checking if a given IP address falls within the wildcard range.
-
-    Attributes:
-    Inherits attributes from InterfaceIPv4Config, such as:
-    - _ip_addr (IPv4Addr): The wildcard IPv4 address.
-    - _mask (IPv4NetMask): The wildcard netmask associated with the IPv4 address.
+    Represents an IPv4 wildcard configuration, which includes handling wildcard masks and
+    operations related to generating hosts or checking membership within a wildcard-based range.
 
     Methods:
-    - _initialize(*args): Initializes the wildcard IP configuration and recalculates the IP address.
-    - _validate(*args): Validates the wildcard IP address and mask.
-    - _recalculate_ip_addr(): Recalculates the IP address based on the wildcard mask.
-    - get_hosts(): Generator function that yields all possible host IPs matching the wildcard pattern.
-    - is_within(ip_addr): Checks whether a given IP address matches the wildcard range.
-    - __str__(): Returns a string representation of the wildcard configuration in the format "IP mask".
-
-    Parameters:
-    *args: Variable-length argument list for initializing the wildcard IP address and mask.
+    - _initialize: Recalculates the address based on the wildcard mask.
+    - _validate: Validates and standardizes the input IPv4 address and wildcard mask.
+    - _recalculate_addr: Recalculates the IP address by applying the wildcard mask.
+    - total_hosts: Calculates the total number of addresses in the wildcard range.
+    - get_hosts: Generates all addresses covered by the wildcard configuration.
+    - is_within: Checks if a given IP address falls within the wildcard configuration range.
     """
-    def _initialize(self, *args) -> None:
-        """
-        Initializes the IPv4 wildcard configuration by validating the input arguments and recalculating
-        the wildcard IP address based on the mask.
-
-        Parameters:
-        *args: A variable-length argument list containing the IP address and wildcard mask.
-
-        Returns:
-        None
-        """
+    def __init__(self, *args):
         self._validate(*args)
-        self._recalculate_ip_addr()
+        self._initialize(*args)
+
+    def _initialize(self, *args) -> None:
+        self._recalculate_addr()
 
     def _validate(self, *args) -> None:
-        """
-        Validates the IPv4 wildcard address and mask by using an external IP standardizer.
-        Raises a ValueError if the inputs are not valid wildcard objects.
-
-        Parameters:
-        *args: A variable-length argument list containing the IPv4 address and wildcard mask for validation.
-
-        Returns:
-        None
-
-        Raises:
-        ValueError: If the wildcard address or mask is invalid.
-        """
         validation_result = IPStandardizer.ipv4_wildcard(*args)
         if validation_result:
-            self._ip_addr = validation_result[0]
+            self._addr = validation_result[0]
             self._mask = validation_result[1]
         else:
             raise ValueError(f"{str(args)} is not a valid IPv4 wildcard object")
 
-    def _recalculate_ip_addr(self):
+    def _recalculate_addr(self):
         """
-        Recalculates the IP address based on the wildcard mask.
-        For each bit in the mask, a 1 bit indicates a fixed value, and a 0 bit allows variability in the corresponding IP bit.
+        Recalculates the address by applying the wildcard mask to the current address.
 
-        Returns:
-        None
+        For wildcard bits (mask=1), the address bit is set to 0.
+        For fixed bits (mask=0), the corresponding address bit is preserved.
         """
-        ip_addr_binary_digits = list(self.ip_addr.binary_digits)
         mapped_binary_digits = []
         index = 0
         for mask_bit in self.mask.binary_digits:
             if mask_bit == 1:
                 mapped_binary_digits.append(0)
             elif mask_bit == 0:
-                mapped_binary_digits.append(ip_addr_binary_digits[index])
+                mapped_binary_digits.append(list(self._addr.binary_digits)[index])
             index += 1
         binary_bit_ipv4_converter = BinaryDigitsIPv4ConverterHandler()
-        self._ip_addr = IPv4Addr(binary_bit_ipv4_converter.handle(mapped_binary_digits))
+        self._addr = IPv4Addr(binary_bit_ipv4_converter.handle(mapped_binary_digits))
+
+    @property
+    def total_hosts(self) -> int:
+        """
+        Calculates the total number of addresses in the wildcard range.
+
+        Returns:
+        int: The total number of addresses represented by the wildcard configuration.
+        """
+        wildcard_host_bit_count = list(self.mask.binary_digits).count(1)
+        host_count = (2 ** wildcard_host_bit_count)
+        return host_count
 
     def get_hosts(self) -> Generator[IPv4Addr, None, None]:
         """
-        Generates all possible host IPs that match the wildcard pattern by iterating over every possible combination of variable bits.
+        Generates all addresses covered by the wildcard configuration.
 
         Returns:
-        Generator[IPv4Addr, None, None]: A generator yielding all matching host addresses within the wildcard range.
+        Generator[IPv4Addr, None, None]: A generator yielding all possible IPv4 addresses in the range.
         """
-        ip_addr_binary_digits = list(self.ip_addr.binary_digits)
+        addr_binary_digits = list(self.addr.binary_digits)
         mask_binary_digits = list(self.mask.binary_digits)
-        binary_digits_ipv4_converter = BinaryDigitsIPv4ConverterHandler()
         match_bit_index = []
+        binary_digits_ipv4_converter = BinaryDigitsIPv4ConverterHandler()
         for mask_i, mask_bit in enumerate(mask_binary_digits):
             if mask_bit == 1:
                 match_bit_index.append(mask_i)
         for wildcard_bit_combination in itertools.product([0, 1], repeat=len(match_bit_index)):
             for i, mask_i in enumerate(match_bit_index):
-                ip_addr_binary_digits[mask_i] = wildcard_bit_combination[i]
-            yield IPv4Addr(binary_digits_ipv4_converter.handle(ip_addr_binary_digits))
+                addr_binary_digits[mask_i] = wildcard_bit_combination[i]
+            yield IPv4Addr(binary_digits_ipv4_converter.handle(addr_binary_digits))
 
     def is_within(self, ip_addr: Any) -> bool:
         """
-        Checks whether a given IP address falls within the range specified by the wildcard IP and mask.
+        Checks if a given IP address falls within the wildcard configuration range.
 
         Parameters:
-        ip_addr (Any): The IP address to check.
+        ip_addr: Any
+            - The IP address to check.
 
         Returns:
-        bool: True if the IP address matches the wildcard pattern, otherwise False.
+        bool: True if the IP address is within the wildcard range, otherwise False.
 
         Raises:
-        TypeError: If the provided ip_addr is not of type IPv4Addr.
+        TypeError: If the provided IP address is not an `IPv4Addr` object.
         """
         ip_addr = IPv4Addr(ip_addr)
         if type(ip_addr) is not IPv4Addr:
-            raise TypeError('ip_addr must be of type IPv4Addr')
-        wildcard_ip_addr_binary_digits = list(self.ip_addr.binary_digits)
+            raise TypeError('ip_addr must be an IPv4Addr object')
+        wildcard_ip_addr_binary_digits = list(self.addr.binary_digits)
         validate_ip_addr_binary_digits = list(ip_addr.binary_digits)
-        mask_binary_digits = list(self.mask.binary_digits)
+        wildcard_mask_binary_digits = list(self.mask.binary_digits)
         match_validation = []
-        for mask_i, mask_bit in enumerate(mask_binary_digits):
-            if mask_bit == 0:
+        for mask_i, wildcard_mask_bit in enumerate(wildcard_mask_binary_digits):
+            if wildcard_mask_bit == 0:
                 match_validation.append(
                     wildcard_ip_addr_binary_digits[mask_i] == validate_ip_addr_binary_digits[mask_i]
                 )
@@ -737,241 +609,157 @@ class IPv4WildCardConfig(InterfaceIPv4Config):
 
     def __str__(self):
         """
-        Returns a string representation of the IPv4 wildcard configuration, formatted as "IP Wildcard-mask".
+        Returns a string representation of the IPv4 wildcard configuration.
 
         Returns:
-        str: A string representing the wildcard IP address and mask.
+        str: A string showing the address and wildcard mask (e.g., "192.168.0.0 0.0.255.255").
         """
-        return f"{str(self.ip_addr)} {str(self.mask)}"
+        return f"{str(self.addr)} {str(self.mask)}"
+
+    def __repr__(self):
+        """
+        Returns a detailed string representation of the IPv4 wildcard configuration.
+
+        Returns:
+        str: A string in the format "IPv4WildCardConfig(<address> <wildcard_mask>)".
+        """
+        return f"IPv4WildCardConfig({self.__str__()})"
 
 
-class InterfaceIPv6Config(InterfaceIPConfig):
+class InterfaceIPv6Config(InterfaceIPConfig, ABC):
     """
-    InterfaceIPv6Config is an abstract base class for configuring IPv6 interfaces.
-    It inherits from InterfaceIPConfig and provides a basic structure for managing an IPv6 address and its associated netmask.
-    Subclasses must implement initialization and validation logic specific to IPv6 addresses.
+    Abstract class for IPv6 interface configuration. Extends `InterfaceIPConfig`
+    to handle IPv6-specific configurations, including the IPv6 address and subnet mask.
 
-    Attributes:
-    _ip_addr (IPv6Addr): Stores the IPv6 address of the interface.
-    _mask (IPv6NetMask): Stores the netmask or wildcard mask associated with the IPv6 address.
+    Properties:
+    - addr: Returns the IPv6 address associated with the interface.
+    - mask: Returns the IPv6 subnet mask associated with the interface.
 
     Methods:
-    - _initialize(*args): Initializes the IPv6 interface by setting the IPv6 address and netmask.
-    - _validate(*args): Validates the provided IPv6 address and netmask.
-    - ip_addr: Property method that returns the configured IPv6 address.
-    - mask: Property method that returns the configured IPv6 mask.
-    - __str__(): Returns a string representation of the IPv6 configuration as "IP/Netmask size".
-
-    Parameters:
-    *args: Variable-length argument list that includes the IPv6 address and netmask for initialization.
-
-    Returns:
-    None
+    - __str__: Provides a string representation of the IPv6 configuration in CIDR notation.
+    - __repr__: Provides a detailed string representation of the IPv6 configuration.
     """
-    def __init__(self, *args):
-        """
-        Initializes the InterfaceIPv6Config class by calling the _initialize method with the provided arguments.
-
-        Parameters:
-        *args: A variable-length argument list that contains the IPv6 address and netmask.
-
-        Returns:
-        None
-        """
-        self._ip_addr = None
-        self._mask = None
-        self._initialize(*args)
-
-    @abstractmethod
-    def _initialize(self, *args) -> None:
-        """
-        Initializes the IPv6 interface by assigning an IPv6 address and netmask to the configuration.
-        The method is abstract and must be implemented by subclasses.
-
-        Parameters:
-        *args: A variable-length argument list that includes the IPv6 address and netmask.
-
-        Returns:
-        None
-        """
-        self._validate(*args)
-
-    @abstractmethod
-    def _validate(self, *args) -> None:
-        """
-        Validates the provided IPv6 address and netmask. This method is abstract and must be implemented by subclasses
-        to ensure that the IPv6 address and netmask conform to the expected format.
-
-        Parameters:
-        *args: A variable-length argument list that includes the IPv6 address and netmask for validation.
-
-        Returns:
-        None
-        """
-        pass
 
     @property
-    def ip_addr(self) -> IPv6Addr:
+    def addr(self) -> IPv6Addr:
         """
-        Returns the currently configured IPv6 address.
+        Returns the IPv6 address of the interface.
 
         Returns:
-        IPv6Addr: The configured IPv6 address.
+        IPv6Addr: The IPv6 address associated with the interface.
         """
-        return self._ip_addr
+        return self._addr
 
     @property
     def mask(self) -> IPv6NetMask:
         """
-        Returns the currently configured IPv6 netmask.
+        Returns the IPv6 subnet mask of the interface.
 
         Returns:
-        IPv6NetMask: The configured IPv6 netmask.
+        IPv6NetMask: The IPv6 subnet mask associated with the interface.
         """
         return self._mask
 
     def __str__(self) -> str:
         """
-        Returns a string representation of the IPv6 configuration.
-        The format is "IP/Netmask size", showing the IPv6 address and the length of the netmask.
+        Provides a string representation of the IPv6 configuration in CIDR notation.
 
         Returns:
-        str: A string formatted as "IP/Netmask size" (e.g., "2001:db8::/64").
+        str: The IPv6 address and subnet mask in CIDR format (e.g., "2001:db8::/64").
         """
-        return f"{str(self.ip_addr)}/{str(self.mask.get_mask_size())}"
+        return f"{str(self.addr)}/{str(self.mask.mask_size)}"
+
+    def __repr__(self):
+        """
+        Provides a detailed string representation of the IPv6 configuration.
+
+        Returns:
+        str: A detailed IPv6 configuration in the format
+             "InterfaceIPv6Config(<address>/<mask_size>)".
+        """
+        return f"InterfaceIPv6Config({self.addr.address}/{self.mask.mask_size})"
 
 
 class IPv6HostConfig(InterfaceIPv6Config):
     """
-    IPv6HostConfig is a subclass of InterfaceIPv6Config that represents an IPv6 host configuration.
-    It includes methods for calculating the network ID, classifying the IP address type (e.g., global unicast, link-local),
-    and determining the number of hosts in the network. This class is used to configure and manage IPv6 addresses
-    for a specific host.
+    Represents an IPv6 host configuration, including attributes like network ID
+    and host type classification. Extends `InterfaceIPv6Config`.
 
-    Attributes:
-    _ip_type (IPv6AddrType): The type of the IPv6 address (e.g., global unicast, link-local, multicast).
-    _network_id (IPv6Addr): The network ID derived from the IPv6 address and netmask.
+    Properties:
+    - network_id: Returns the calculated network ID.
+    - ip_type: Returns the classification type of the IPv6 address.
+    - total_hosts: Calculates the total number of addresses in the subnet.
+    - is_unspecified: Checks if the IPv6 address is unspecified.
+    - is_loopback: Checks if the IPv6 address is a loopback address.
+    - is_multicast: Checks if the IPv6 address is a multicast address.
+    - is_link_local: Checks if the IPv6 address is a link-local address.
+    - is_global_unicast: Checks if the IPv6 address is a global unicast address.
 
     Methods:
-    - _initialize(*args): Initializes the IPv6 host configuration, validating the input and calculating the network ID and IP type.
-    - _validate(*args): Validates the provided IPv6 address and netmask.
-    - _calculate_network_id(): Calculates the network ID based on the IPv6 address and netmask.
-    - _classify_ip_address_type(): Classifies the type of the IPv6 address (e.g., global unicast, link-local).
-    - network_id: Returns the network ID.
-    - host_counts: Calculates and returns the number of usable hosts in the network.
-    - ip_type: Returns the classified IP address type.
-    - is_unspecified: Checks if the IP type is unspecified.
-    - is_loopback: Checks if the IP type is loopback.
-    - is_multicast: Checks if the IP type is multicast.
-    - is_link_local: Checks if the IP type is link-local.
-    - is_global_unicast: Checks if the IP type is global unicast.
-
-    Parameters:
-    *args: A variable-length argument list that includes the IPv6 address and netmask for initialization.
-
-    Returns:
-    None
+    - _validate: Validates and standardizes the input IPv6 address and subnet mask.
+    - _initialize: Initializes the configuration by calculating the network ID and classifying the IP type.
+    - _calculate_network_id: Computes the network ID by applying the subnet mask to the address.
+    - _classify_ip_address_type: Classifies the IPv6 address type.
     """
     _ip_type: IPv6AddrType = IPv6AddrType.UNDEFINED_TYPE
+    _network_id: IPv6Addr = None
 
     def __init__(self, *args):
-        """
-        Initializes the IPv6HostConfig by calling the parent class's initialization method
-        and setting up the attributes related to network-specific data like network ID.
+        self._validate(*args)
+        self._initialize(*args)
 
-        Parameters:
-        *args: A variable-length argument list containing the IPv6 address and netmask.
-
-        Returns:
-        None
-        """
-        self._broadcast_ip = None
-        self._network_id = None
-        super().__init__(*args)
+    def _validate(self, *args) -> None:
+        validation_result = IPStandardizer.ipv6_interface(*args)
+        if validation_result:
+            self._addr = validation_result[0]
+            self._mask = validation_result[1]
+        else:
+            raise ValueError(f"{str(args)} is not a valid IPv6 Interface object")
 
     def _initialize(self, *args) -> None:
-        """
-        Initializes the IPv6 host configuration by validating the input parameters (IPv6 address and netmask),
-        then calculating the network ID and classifying the IP address type.
-
-        Parameters:
-        *args: A variable-length argument list containing the IPv6 address and netmask.
-
-        Returns:
-        None
-        """
-        self._validate(*args)
         self._calculate_network_id()
         self._classify_ip_address_type()
 
-    def _validate(self, *args) -> None:
-        """
-        Validates the IPv6 address and netmask by using an external standardizer.
-        Raises a ValueError if the inputs are not valid.
-
-        Parameters:
-        *args: A variable-length argument list containing the IPv6 address and netmask for validation.
-
-        Returns:
-        None
-
-        Raises:
-        ValueError: If the IPv6 address or netmask is invalid.
-        """
-        validation_result = IPStandardizer.ipv6_interface(*args)
-        if validation_result:
-            self._ip_addr = validation_result[0]
-            self._mask = validation_result[1]
-        else:
-            raise ValueError(f"{str(args)} is not a valid IPv6 object")
-
     def _calculate_network_id(self) -> None:
         """
-        Calculates the network ID for the IPv6 address and netmask by applying the netmask to the IP address.
-
-        Returns:
-        None
+        Calculates the network ID by applying the subnet mask to the IPv6 address.
         """
-        ip_addr_binary_digits = list(self.ip_addr.binary_digits)
-        network_id_binary_digits = []
-        index = 0
-        for netmask_bit in self.mask.binary_digits:
-            if netmask_bit == 1:
-                network_id_binary_digits.append(ip_addr_binary_digits[index])
-            elif netmask_bit == 0:
-                network_id_binary_digits.append(0)
-            index += 1
-        binary_bit_ipv6_converter = BinaryDigitsIPv6ConverterHandler()
-        self._network_id = IPv6Addr(binary_bit_ipv6_converter.handle(network_id_binary_digits))
+        decimal_network_id = self._addr.as_decimal & self._mask.as_decimal
+        self._network_id = IPv6Addr(DecimalIPv6ConverterHandler().handle(decimal_network_id))
 
     def _classify_ip_address_type(self) -> None:
         """
-        Classifies the IPv6 address type (e.g., global unicast, link-local, multicast)
-        by using the IPAddrTypeClassifier.
-
-        Returns:
-        None
+        Classifies the IPv6 address type (e.g., GLOBAL_UNICAST, LINK_LOCAL).
         """
-        self._ip_type = IPAddrTypeClassifier.classify_ipv6_type(self.network_id)
+        self._ip_type = IPAddrTypeClassifier.classify_ipv6_host_type(self.network_id)
 
     @property
     def network_id(self) -> IPv6Addr:
         """
-        Returns the network ID for the configured IPv6 network.
+        Returns the calculated network ID.
 
         Returns:
-        IPv6Addr: The network ID of the IPv6 address.
+        IPv6Addr: The network ID of the configuration.
         """
         return self._network_id
 
     @property
-    def host_counts(self) -> int:
+    def ip_type(self) -> IPv6AddrType:
         """
-        Calculates and returns the number of usable hosts in the IPv6 network.
-        The count is determined by the number of host bits available in the netmask.
+        Returns the classified type of the IPv6 address.
 
         Returns:
-        int: The number of usable hosts in the network.
+        IPv6AddrType: The type of the IPv6 address (e.g., GLOBAL_UNICAST, LINK_LOCAL).
+        """
+        return self._ip_type
+
+    @property
+    def total_hosts(self) -> int:
+        """
+        Calculates the total number of addresses in the subnet.
+
+        Returns:
+        int: The total number of addresses in the subnet.
         """
         netmask_host_bit_count = list(self.mask.binary_digits).count(0)
         host_count = 2 ** netmask_host_bit_count
@@ -981,19 +769,9 @@ class IPv6HostConfig(InterfaceIPv6Config):
             return 0
 
     @property
-    def ip_type(self) -> IPv6AddrType:
-        """
-        Returns the classified type of the IPv6 address (e.g., global unicast, link-local, multicast).
-
-        Returns:
-        IPv6AddrType: The type of the IPv6 address.
-        """
-        return self._ip_type
-
-    @property
     def is_unspecified(self) -> bool:
         """
-        Checks if the IPv6 address type is unspecified.
+        Checks if the IPv6 address is unspecified.
 
         Returns:
         bool: True if the IPv6 address is unspecified, otherwise False.
@@ -1016,7 +794,7 @@ class IPv6HostConfig(InterfaceIPv6Config):
         Checks if the IPv6 address is a multicast address.
 
         Returns:
-        bool: True if the IPv6 address is a multicast address, otherwise False.
+        bool: True if the IPv6 address is multicast, otherwise False.
         """
         return self.ip_type == IPv6AddrType.MULTICAST
 
@@ -1036,44 +814,54 @@ class IPv6HostConfig(InterfaceIPv6Config):
         Checks if the IPv6 address is a global unicast address.
 
         Returns:
-        bool: True if the IPv6 address is a global unicast address, otherwise False.
+        bool: True if the IPv6 address is global unicast, otherwise False.
         """
         return self._ip_type == IPv6AddrType.GLOBAL_UNICAST
+
+    def __repr__(self):
+        """
+        Provides a detailed string representation of the IPv6 host configuration.
+
+        Returns:
+        str: The IPv6 configuration in the format "IPv6HostConfig(<address>/<mask_size>)".
+        """
+        return f"IPv6HostConfig({self.addr.address}/{self.mask.mask_size})"
 
 
 class IPv6SubnetConfig(IPv6HostConfig):
     """
-    IPv6SubnetConfig is a subclass of IPv6HostConfig that represents an IPv6 subnet configuration.
-    It adds functionality for working with IPv6 subnet ranges and hosts within a subnet, allowing for operations
-    such as retrieving the first and last host, iterating over all hosts, and dividing or merging subnets.
-
-    Attributes:
-    Inherits attributes from IPv6HostConfig, including:
-    - _ip_type (IPv6AddrType): The type of the IPv6 address (e.g., global unicast, link-local).
-    - _network_id (IPv6Addr): The network ID derived from the IPv6 address and netmask.
+    Represents an IPv6 subnet configuration, extending `IPv6HostConfig` to provide
+    subnet-specific functionalities such as host range, subnet division, and merging.
 
     Methods:
-    - first_host: Returns the first usable host address within the subnet.
-    - last_host: Returns the last usable host address within the subnet.
-    - subnet_range: Returns the range of the subnet, from the first host to the last host.
-    - get_hosts: Generator function that yields each host within the subnet.
-    - is_within(ip_addr): Checks whether a given IPv6 address falls within the subnet.
-    - subnet_division(mask): Divides the current subnet into smaller subnets based on a new mask size.
-    - subnet_merge(*subnets): Attempts to merge multiple subnets into a larger subnet.
-
-    Parameters:
-    *args: A variable-length argument list that includes the IPv6 address and netmask for initialization.
-
-    Returns:
-    None
+    - _calculate_network_id: Calculates and assigns the network ID.
+    - first_host: Returns the first usable host in the subnet.
+    - last_host: Returns the last usable host in the subnet.
+    - ip_type: Returns the classifications of the subnet's IP types.
+    - subnet_range: Returns the range of the subnet (network ID and last host).
+    - get_hosts: Generates all addresses within the subnet.
+    - is_within: Checks if a given IP address belongs to the subnet.
+    - division: Divides the subnet into smaller subnets with a specified mask size.
+    - merge: Merges the current subnet with other compatible subnets.
     """
+
+    def _calculate_network_id(self) -> None:
+        """
+        Calculates the network ID and sets the address (`_addr`) to the network ID.
+
+        Overrides:
+        IPv6HostConfig._calculate_network_id
+        """
+        super()._calculate_network_id()
+        self._addr = self._network_id
+
     @property
     def first_host(self) -> IPv6Addr:
         """
-        Returns the first usable host address within the subnet. The first host is the network ID incremented by one.
+        Returns the first usable host in the subnet.
 
         Returns:
-        IPv6Addr: The first usable host address within the subnet.
+        IPv6Addr: The first host address in the subnet.
         """
         host_iterator = self.get_hosts()
         return next(host_iterator)
@@ -1081,291 +869,267 @@ class IPv6SubnetConfig(IPv6HostConfig):
     @property
     def last_host(self) -> IPv6Addr:
         """
-        Returns the last usable host address within the subnet. This is calculated by setting all host bits to 1 except for
-        the least significant bit, which is set to 0 to exclude the broadcast address.
+        Returns the last usable host in the subnet.
 
         Returns:
-        IPv6Addr: The last usable host address within the subnet.
+        IPv6Addr: The last host address in the subnet.
         """
-        network_id_binary_digits = list(self.network_id.binary_digits)
-        netmask_binary_digits = list(self.mask.binary_digits)
-        non_matching_indices = netmask_binary_digits.count(0)
-        network_id_binary_digits[-non_matching_indices:] = ([1] * (non_matching_indices - 1)) + [1]
-        binary_bit_ipv6_converter = BinaryDigitsIPv6ConverterHandler()
-        return IPv6Addr(binary_bit_ipv6_converter.handle(network_id_binary_digits))
+        reversed_mask = ~self.mask.as_decimal & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        return IPv6Addr(DecimalIPv6ConverterHandler().handle(self.addr.as_decimal | reversed_mask))
 
     @property
-    def subnet_range(self) -> str:
+    def subnet_range(self) -> list[IPv6Addr]:
         """
-        Returns the range of the subnet, from the first usable host to the last usable host.
+        Returns the range of the subnet, including the network ID and the last host.
 
         Returns:
-        str: A string representing the subnet range in the format "first_host - last_host".
+        list[IPv6Addr]: A list containing the network ID and the last host.
         """
-        return f"{self.first_host} - {self.last_host}"
+        return [self.network_id, self.last_host]
 
-    def _calculate_network_id(self) -> None:
+    @property
+    def ip_type(self) -> List[IPv6AddrType]:
         """
-        Overrides the parent class method to also set the IP address to the network ID.
-        This ensures that the network ID is used for further subnet operations.
+        Returns the classifications of the subnet's IP types.
 
         Returns:
-        None
+        List[IPv6AddrType]: A list of classifications for all possible IP types in the subnet.
         """
-        super()._calculate_network_id()
-        self._ip_addr = self._network_id
+        return ip_subnet_type_classifiers.IPSubnetTypeClassifier.classify_ipv6_subnet_types(self)
 
     def get_hosts(self) -> Generator[IPv6Addr, None, None]:
         """
-        Generates all usable host addresses within the subnet by iterating over the possible combinations of host bits.
+        Generates all addresses within the subnet.
 
         Returns:
-        Generator[IPv6Addr, None, None]: A generator yielding all host addresses in the subnet.
+        Generator[IPv6Addr, None, None]: A generator yielding IPv6 addresses within the subnet.
         """
-        network_id_binary_digits = list(self.network_id.binary_digits)
-        netmask_binary_digits = list(self.mask.binary_digits)
-        non_matching_indices = netmask_binary_digits.count(0)
-        binary_bit_ipv6_converter = BinaryDigitsIPv6ConverterHandler()
-        for matched_digits in itertools.product([0, 1], repeat=non_matching_indices):
-            network_id_binary_digits[-non_matching_indices:] = matched_digits
-            if not netmask_binary_digits.count(1) == 128:
-                yield IPv6Addr(binary_bit_ipv6_converter.handle(network_id_binary_digits))
-            else:
-                # Skip the network ID and broadcast IP for /128 subnets
-                yield IPv4Addr(binary_bit_ipv6_converter.handle(list(self.network_id.binary_digits)))
+        ip_decimal_range = range(self.network_id.as_decimal, self.last_host.as_decimal + 1)
+        for ip_decimal in ip_decimal_range:
+            yield IPv6Addr(DecimalIPv6ConverterHandler().handle(ip_decimal))
 
     def is_within(self, ip_addr: Any) -> bool:
         """
-        Checks whether a given IPv6 address falls within the current subnet by comparing
-        the binary representations of the network ID, netmask, and the target IPv6 address.
+        Checks if a given IP address belongs to the subnet.
 
         Parameters:
-        ip_addr (Any): The IPv6 address to check.
+        ip_addr: Any
+            - The IP address to check.
 
         Returns:
-        bool: True if the IPv6 address is within the subnet, otherwise False.
+        bool: True if the IP address is within the subnet, otherwise False.
         """
-        ip_addr = IPv6Addr(ip_addr)
-        if type(ip_addr) is not IPv6Addr:
-            raise TypeError('ip_addr must be of type IPv6Addr')
-        return BinaryTools.is_binary_in_range(
-            list(self.network_id.binary_digits),
-            list(self.mask.binary_digits),
-            list(ip_addr.binary_digits)
+        compared_addr = IPv6Addr(ip_addr)
+        return BinaryTools.is_bytes_in_range(
+            self.network_id.as_bytes,
+            self.mask.as_bytes,
+            compared_addr.as_bytes
         )
 
-    def subnet_division(self, mask: int) -> List[IPv6SubnetConfig]:
+    def division(self, target_mask_size: int) -> List[IPv6SubnetConfig]:
         """
-        Divides the current subnet into smaller subnets based on the provided mask size.
-        It generates new subnets that fit within the current subnet's range.
+        Divides the subnet into smaller subnets with the specified mask size.
 
         Parameters:
-        mask (int): The new mask size for the smaller subnets.
+        target_mask_size: int
+            - The desired mask size for the new subnets.
 
         Returns:
-        List[IPv6SubnetConfig]: A list of newly created IPv6SubnetConfig objects.
+        List[IPv6SubnetConfig]: A list of smaller subnets.
 
         Raises:
-        TypeError: If the mask is not an integer.
-        ValueError: If the mask is not valid (i.e., too large or too small).
+        TypeError: If the target mask size is not an integer.
+        ValueError: If the target mask size is invalid (e.g., smaller than the current mask size).
         """
-        subnet_mask_size = self.mask.get_mask_size()
-        if type(mask) is not int:
-            raise TypeError('mask must be of type int')
-        if mask <= subnet_mask_size or mask > 128:
-            raise ValueError(f'mask must be in the range of {subnet_mask_size + 1}-128')
-        re_subnetting_length = mask - subnet_mask_size
-        network_id_binary_digits = list(self.network_id.binary_digits)
-        netmask_binary_digits = list(self.mask.binary_digits)
-        binary_bit_ipv6_converter = BinaryDigitsIPv6ConverterHandler()
-        netmask_binary_digits[subnet_mask_size: mask] = [1] * re_subnetting_length
-        for subnetting_bit_combination in itertools.product([0, 1], repeat=re_subnetting_length):
-            network_id_binary_digits[subnet_mask_size: mask] = subnetting_bit_combination
-            yield IPv6SubnetConfig(
-                IPv6Addr(binary_bit_ipv6_converter.handle(network_id_binary_digits)),
-                IPv6NetMask(binary_bit_ipv6_converter.handle(netmask_binary_digits))
-            )
+        subnet_mask_size = self.mask.mask_size
+        if type(target_mask_size) is not int:
+            raise TypeError('target mask must be an integer')
+        if target_mask_size <= subnet_mask_size or target_mask_size > 128:
+            raise ValueError(f'target mask must be in the range of {subnet_mask_size + 1}-128')
+        target_mask = IPv6NetMask(f"/{target_mask_size}")
+        mask_diff = target_mask.mask_size - subnet_mask_size
+        target_host_bit_count = list(target_mask.binary_digits).count(0)
+        for mask_change in range(2 ** mask_diff):
+            new_network_id = (mask_change << target_host_bit_count) | self.network_id.as_decimal
+            yield IPv6SubnetConfig(IPv6Addr(DecimalIPv6ConverterHandler().handle(new_network_id)), target_mask)
 
-    def subnet_merge(self, *subnets: Any) -> IPv6SubnetConfig:
+    def merge(self, *subnets: str) -> IPv6SubnetConfig:
         """
-        Merges the current subnet with the provided subnets, creating a larger subnet that encompasses them all.
-        The method ensures that the subnets are valid for merging and checks that their network bits match.
+        Merges the current subnet with other compatible subnets into a larger subnet.
 
         Parameters:
-        *subnets (Any): A variable-length argument list of subnet objects to merge.
+        *subnets: str
+            - The subnets to merge, provided as strings.
 
         Returns:
-        IPv6SubnetConfig: A new IPv6SubnetConfig representing the merged subnet.
+        IPv6SubnetConfig: The merged subnet.
 
         Raises:
-        ValueError: If the provided subnets cannot be merged.
+        ValueError: If the subnets cannot be merged.
         """
+        # Convert input subnet strings into IPv6SubnetConfig objects
         subnets = [IPv6SubnetConfig(subnet) for subnet in subnets]
+
         # Collect the current subnet and additional subnets into a list
         subnets_need_merge = [self] + list(subnets)
-        # Ensure not all subnets are the same to prevent meaningless merging
-        if len(set(map(str, subnets_need_merge))) == 1:
-            raise ValueError("Merged subnets can not be the same.")
-        # Extract network ID and netmask binary digits from all subnets
-        network_id_binary_digits_list = [list(subnet.network_id.binary_digits) for subnet in subnets_need_merge]
-        netmask_binary_digits_list = [list(subnet.mask.binary_digits) for subnet in subnets_need_merge]
-        # Identify bits that differ among the subnets' network IDs
-        corresponding_network_id_bits = [list(bits) for bits in zip(*network_id_binary_digits_list)]
-        smallest_subnetting_mask_bit = next(
-            (i for i, bits in enumerate(corresponding_network_id_bits) if len(set(bits)) != 1), None
-        )
-        # Determine the range for possible new masks
-        subnet_largest_mask = max(subnet.mask.get_mask_size() for subnet in subnets_need_merge)
-        subnet_smallest_mask = min(subnet.mask.get_mask_size() for subnet in subnets_need_merge)
-        for n in range(subnet_largest_mask - smallest_subnetting_mask_bit, 0, -1):
-            subnets_matching_combination = []
-            desired_matching_combination = list(itertools.product([0, 1], repeat=n))
-            # Check if all combinations of network bits are covered for the new potential mask
-            for network_id_binary_digits, netmask_binary_digits in zip(
-                    network_id_binary_digits_list,
-                    netmask_binary_digits_list
-            ):
-                matching_combination = BinaryTools.expand_by_mask(
-                    network_id_binary_digits[subnet_largest_mask - n: subnet_largest_mask],
-                    netmask_binary_digits[subnet_largest_mask - n: subnet_largest_mask]
-                )
-                subnets_matching_combination.extend(matching_combination)
-            # Validate the potential new mask based on the smallest mask bit position
-            if smallest_subnetting_mask_bit > subnet_smallest_mask:
-                raise ValueError('Provided subnets cannot be merged with current one')
-            # If all combinations are matched, create a new subnet configuration with the adjusted mask
-            if set(subnets_matching_combination) == set(desired_matching_combination):
-                new_mask = copy.deepcopy(list(self.mask.binary_digits))
-                new_mask[subnet_largest_mask - n: subnet_largest_mask] = [0] * n
-                return IPv6SubnetConfig(self.ip_addr, IPv6NetMask(BinaryDigitsIPv6ConverterHandler().handle(new_mask)))
-            elif len(set(subnets_matching_combination)) < len(set(desired_matching_combination)):
-                raise ValueError('Provided subnets cannot be merged with current one')
-        # If no valid merging configuration is found, raise an error
-        raise ValueError('No valid merging configuration found for the provided subnets')
+
+        # Find the largest and smallest mask sizes among the given subnets
+        existing_largest_mask = max([subnet.mask.mask_size for subnet in subnets_need_merge])
+        existing_smallest_mask = min([subnet.mask.mask_size for subnet in subnets_need_merge])
+
+        # Initialize target_mask_size to -1 as a placeholder
+        target_mask_size = -1
+
+        # Determine the target mask size by examining the network ID bits of all subnets
+        for index, network_id_bit in enumerate(zip(*[subnet.network_id.binary_string for subnet in subnets_need_merge])):
+            if len(set(network_id_bit)) > 1:
+                # If there are differing bits at the current position, the target mask size is reached
+                break
+            elif index == existing_smallest_mask:
+                # If we reach the smallest mask size and all bits match, the smallest mask size is sufficient
+                break
+            # Increment the target mask size with each matching bit
+            target_mask_size = index + 1
+
+        # Calculate the number of bits required to cover the range between the largest and target mask sizes
+        repeat = existing_largest_mask - target_mask_size
+
+        # Generate all possible bit combinations for the range of bits required to merge the subnets
+        required_bit_combo_for_merge = set([''.join(bit_combo) for bit_combo in itertools.product('01', repeat=repeat)])
+
+        # Initialize a set to store the actual bit combinations found in the subnets
+        existing_bit_combos = set()
+
+        # Collect the actual bit combinations present in the subnets
+        for subnet in subnets_need_merge:
+            # Expand the network ID bits based on the mask size range to identify all covered combinations
+            subnet_bit_combo = [''.join(map(str, t)) for t in BinaryTools.expand_by_mask(
+                list(subnet.network_id.binary_digits)[target_mask_size: existing_largest_mask],
+                list(subnet.mask.binary_digits)[target_mask_size: existing_largest_mask]
+            )]
+            # Add the resulting combinations to the existing bit combos set
+            existing_bit_combos.update(subnet_bit_combo)
+
+        # Check if the actual bit combinations match the required combinations for merging
+        if existing_bit_combos == required_bit_combo_for_merge:
+            # If all required combinations are covered, create a new merged subnet
+            new_network_id = copy.deepcopy(subnets_need_merge[0].network_id)
+            new_mask = IPv6NetMask(f"/{target_mask_size}")
+            return IPv6SubnetConfig(new_network_id, new_mask)
+        else:
+            # If the subnets cannot be merged, raise an error
+            raise ValueError('The subnets cannot be merged')
+
+    def __repr__(self):
+        """
+        Provides a detailed string representation of the IPv6 subnet configuration.
+
+        Returns:
+        str: The IPv6 configuration in the format "IPv6SubnetConfig(<address>/<mask_size>)".
+        """
+        return f"IPv6SubnetConfig({self.addr.address}/{self.mask.mask_size})"
 
 
 class IPv6WildCardConfig(InterfaceIPv6Config):
     """
-    IPv6WildCardConfig is a subclass of InterfaceIPv6Config designed to handle wildcard configurations for IPv6 addresses.
-    Wildcard addresses are used to match ranges of IPv6 addresses by allowing certain bits of the address to "wildcard" or vary.
-    This class provides methods for initializing, validating, recalculating the wildcard IPv6 address, and checking if a given IP
-    address falls within the wildcard range.
-
-    Attributes:
-    Inherits attributes from InterfaceIPv6Config, such as:
-    - _ip_addr (IPv6Addr): The wildcard IPv6 address.
-    - _mask (IPv6NetMask): The wildcard netmask associated with the IPv6 address.
+    Represents an IPv6 wildcard configuration, handling wildcard masks and operations
+    related to generating hosts or checking membership within a wildcard-based range.
 
     Methods:
-    - _initialize(*args): Initializes the wildcard IPv6 configuration and recalculates the IP address.
-    - _validate(*args): Validates the wildcard IPv6 address and netmask.
-    - _recalculate_ip_addr(): Recalculates the wildcard IP address based on the netmask.
-    - get_hosts(): Generator function that yields all possible host IPs matching the wildcard pattern.
-    - is_within(ip_addr): Checks whether a given IP address matches the wildcard range.
-    - __str__(): Returns a string representation of the wildcard configuration in the format "IP Netmask".
-
-    Parameters:
-    *args: A variable-length argument list for initializing the wildcard IPv6 address and netmask.
-
-    Returns:
-    None
+    - _initialize: Initializes the configuration by recalculating the IPv6 address.
+    - _validate: Validates and standardizes the IPv6 wildcard configuration.
+    - _recalculate_addr: Recalculates the IPv6 address based on the wildcard mask.
+    - total_hosts: Calculates the total number of addresses in the wildcard range.
+    - get_hosts: Generates all addresses covered by the wildcard configuration.
+    - is_within: Checks if a given IPv6 address falls within the wildcard configuration range.
     """
-    def _initialize(self, *args) -> None:
-        """
-        Initializes the IPv6 wildcard configuration by validating the input arguments and recalculating
-        the wildcard IPv6 address based on the netmask.
-
-        Parameters:
-        *args: A variable-length argument list containing the IPv6 address and wildcard netmask.
-
-        Returns:
-        None
-        """
+    def __init__(self, *args):
         self._validate(*args)
-        self._recalculate_ip_addr()
+        self._initialize(*args)
+
+    def _initialize(self, *args) -> None:
+        self._recalculate_addr()
 
     def _validate(self, *args) -> None:
-        """
-        Validates the IPv6 wildcard address and netmask using an external standardizer.
-        Raises a ValueError if the inputs are not valid wildcard objects.
-
-        Parameters:
-        *args: A variable-length argument list containing the IPv6 address and wildcard netmask for validation.
-
-        Returns:
-        None
-
-        Raises:
-        ValueError: If the wildcard address or netmask is invalid.
-        """
         validation_result = IPStandardizer.ipv6_wildcard(*args)
         if validation_result:
-            self._ip_addr = validation_result[0]
+            self._addr = validation_result[0]
             self._mask = validation_result[1]
         else:
             raise ValueError(f"{str(args)} is not a valid IPv6 wildcard object")
 
-    def _recalculate_ip_addr(self):
+    def _recalculate_addr(self):
         """
-        Recalculates the wildcard IPv6 address based on the wildcard netmask. For each bit in the netmask, a 1 bit
-        indicates a fixed value, while a 0 bit allows variability in the corresponding IP bit.
+        Recalculates the IPv6 address by applying the wildcard mask to the address.
 
-        Returns:
-        None
+        For wildcard bits (mask=1), the address bit is set to 0.
+        For fixed bits (mask=0), the corresponding address bit is preserved.
         """
-        ip_addr_binary_digits = list(self.ip_addr.binary_digits)
         mapped_binary_digits = []
         index = 0
-        for netmask_bit in self.mask.binary_digits:
-            if netmask_bit == 1:
+        for mask_bit in self.mask.binary_digits:
+            if mask_bit == 1:
                 mapped_binary_digits.append(0)
-            elif netmask_bit == 0:
-                mapped_binary_digits.append(ip_addr_binary_digits[index])
+            elif mask_bit == 0:
+                mapped_binary_digits.append(list(self._addr.binary_digits)[index])
             index += 1
         binary_bit_ipv6_converter = BinaryDigitsIPv6ConverterHandler()
-        self._ip_addr = IPv6Addr(binary_bit_ipv6_converter.handle(mapped_binary_digits))
+        self._addr = IPv6Addr(binary_bit_ipv6_converter.handle(mapped_binary_digits))
+
+    @property
+    def total_hosts(self) -> int:
+        """
+        Calculates the total number of addresses in the wildcard range.
+
+        Returns:
+        int: The total number of addresses represented by the wildcard configuration.
+        """
+        wildcard_host_bit_count = list(self.mask.binary_digits).count(1)
+        host_count = (2 ** wildcard_host_bit_count)
+        return host_count
 
     def get_hosts(self) -> Generator[IPv6Addr, None, None]:
         """
-        Generates all possible host IPs that match the wildcard pattern by iterating over every possible combination of variable bits.
+        Generates all addresses covered by the wildcard configuration.
 
         Returns:
-        Generator[IPv6Addr, None, None]: A generator yielding all matching host addresses within the wildcard range.
+        Generator[IPv6Addr, None, None]: A generator yielding all possible IPv6 addresses in the range.
         """
-        ip_addr_binary_digits = list(self.ip_addr.binary_digits)
-        netmask_binary_digits = list(self.mask.binary_digits)
-        binary_digits_ipv6_converter = BinaryDigitsIPv6ConverterHandler()
+        addr_binary_digits = list(self.addr.binary_digits)
+        mask_binary_digits = list(self.mask.binary_digits)
         match_bit_index = []
-        for mask_i, mask_bit in enumerate(netmask_binary_digits):
+        binary_digits_ipv6_converter = BinaryDigitsIPv6ConverterHandler()
+        for mask_i, mask_bit in enumerate(mask_binary_digits):
             if mask_bit == 1:
                 match_bit_index.append(mask_i)
         for wildcard_bit_combination in itertools.product([0, 1], repeat=len(match_bit_index)):
             for i, mask_i in enumerate(match_bit_index):
-                ip_addr_binary_digits[mask_i] = wildcard_bit_combination[i]
-            yield IPv6Addr(binary_digits_ipv6_converter.handle(ip_addr_binary_digits))
+                addr_binary_digits[mask_i] = wildcard_bit_combination[i]
+            yield IPv6Addr(binary_digits_ipv6_converter.handle(addr_binary_digits))
 
     def is_within(self, ip_addr: Any) -> bool:
         """
-        Checks whether a given IPv6 address falls within the range specified by the wildcard IPv6 address and netmask.
+        Checks if a given IPv6 address falls within the wildcard configuration range.
 
         Parameters:
-        ip_addr (Any): The IPv6 address to check.
+        ip_addr: Any
+            - The IPv6 address to check.
 
         Returns:
-        bool: True if the IPv6 address matches the wildcard pattern, otherwise False.
+        bool: True if the IPv6 address is within the wildcard range, otherwise False.
 
         Raises:
-        TypeError: If the provided ip_addr is not of type IPv6Addr.
+        TypeError: If the provided IPv6 address is not an `IPv6Addr` object.
         """
         ip_addr = IPv6Addr(ip_addr)
         if type(ip_addr) is not IPv6Addr:
-            raise TypeError('ip_addr must be of type IPv6Addr')
-        wildcard_ip_addr_binary_digits = list(self.ip_addr.binary_digits)
+            raise TypeError('ip_addr must be an IPv6Addr object')
+        wildcard_ip_addr_binary_digits = list(self.addr.binary_digits)
         validate_ip_addr_binary_digits = list(ip_addr.binary_digits)
-        netmask_binary_digits = list(self.mask.binary_digits)
+        wildcard_mask_binary_digits = list(self.mask.binary_digits)
         match_validation = []
-        for mask_i, mask_bit in enumerate(netmask_binary_digits):
-            if mask_bit == 0:
+        for mask_i, wildcard_mask_bit in enumerate(wildcard_mask_binary_digits):
+            if wildcard_mask_bit == 0:
                 match_validation.append(
                     wildcard_ip_addr_binary_digits[mask_i] == validate_ip_addr_binary_digits[mask_i]
                 )
@@ -1373,103 +1137,19 @@ class IPv6WildCardConfig(InterfaceIPv6Config):
 
     def __str__(self):
         """
-        Returns a string representation of the IPv6 wildcard configuration, formatted as "IP Netmask".
+        Returns a string representation of the IPv6 wildcard configuration.
 
         Returns:
-        str: A string representing the wildcard IPv6 address and netmask.
+        str: A string showing the address and wildcard mask (e.g., "2001:db8:: 0:0:ffff:ffff:ffff:ffff").
         """
-        return f"{str(self.ip_addr)} {str(self.mask)}"
+        return f"{str(self.addr)} {str(self.mask)}"
 
 
-class IPWildCardCalculator:
-    """
-    IPWildCardCalculator provides static methods for calculating the minimum wildcard configuration
-    for a given set of subnets, both for IPv4 and IPv6 addresses. The goal of these methods is to generate
-    wildcard addresses that can cover all the provided subnets with minimal complexity.
-
-    Methods:
-    - calculate_minimum_ipv4_wildcard(*subnets): Calculates the minimum IPv4 wildcard configuration for a set of subnets.
-    - calculate_minimum_ipv6_wildcard(*subnets): Calculates the minimum IPv6 wildcard configuration for a set of subnets.
-
-    Returns:
-    None (These are static methods for generating wildcard configurations).
-    """
-    @staticmethod
-    def calculate_minimum_ipv4_wildcard(*subnets: Any) -> IPv4WildCardConfig:
+    def __repr__(self):
         """
-        Calculates the minimum IPv4 wildcard configuration for a set of IPv4 subnets.
-        The method identifies the bits that are common across all subnets and creates a wildcard
-        configuration that encompasses all subnets.
-
-        Parameters:
-        *subnets (Any): A variable-length argument list of IPv4 subnet strings.
+        Returns a detailed string representation of the IPv6 wildcard configuration.
 
         Returns:
-        IPv4WildCardConfig: A new IPv4WildCardConfig object that represents the wildcard configuration covering the provided subnets.
-
-        Raises:
-        ValueError: If the subnets are invalid or cannot be merged into a single wildcard configuration.
+        str: A string in the format "IPv6WildCardConfig(<address> <wildcard_mask>)".
         """
-        ipv4_subnets = [IPv4SubnetConfig(subnet) for subnet in subnets]
-        network_id_bits_list = [list(subnet.network_id.binary_digits) for subnet in ipv4_subnets]
-        netmask_bits_list = [list(subnet.mask.binary_digits) for subnet in ipv4_subnets]
-        max_host_bits = max([netmask_bits.count(0) for netmask_bits in netmask_bits_list])
-        wildcard_address_bits = []
-        wildcard_mask_bits = []
-        for network_id_bits in zip(*network_id_bits_list):
-            if len(set(network_id_bits)) == 1:
-                wildcard_address_bits.append(network_id_bits[0])
-                wildcard_mask_bits.append(0)
-            else:
-                wildcard_address_bits.append(0)
-                wildcard_mask_bits.append(1)
-        wildcard_mask_bits[-max_host_bits:] = [1] * max_host_bits
-        address_digits = [
-            OctetFlyWeightFactory.get_octet(''.join(map(str, wildcard_address_bits))[index: index + 8])
-            for index in range(0, len(wildcard_address_bits), 8)
-        ]
-        wildcard_digits = [
-            OctetFlyWeightFactory.get_octet(''.join(map(str, wildcard_mask_bits))[index: index + 8])
-            for index in range(0, len(wildcard_mask_bits), 8)
-        ]
-        return IPv4WildCardConfig(IPv4Addr(address_digits), IPv4WildCard(wildcard_digits))
-
-    @staticmethod
-    def calculate_minimum_ipv6_wildcard(*subnets: Any) -> IPv6WildCardConfig:
-        """
-        Calculates the minimum IPv6 wildcard configuration for a set of IPv6 subnets.
-        The method identifies the bits that are common across all subnets and creates a wildcard
-        configuration that encompasses all subnets.
-
-        Parameters:
-        *subnets (Any): A variable-length argument list of IPv6 subnet strings.
-
-        Returns:
-        IPv6WildCardConfig: A new IPv6WildCardConfig object that represents the wildcard configuration covering the provided subnets.
-
-        Raises:
-        ValueError: If the subnets are invalid or cannot be merged into a single wildcard configuration.
-        """
-        ipv6_subnets = [IPv6SubnetConfig(subnet) for subnet in subnets]
-        network_id_bits_list = [list(subnet.network_id.binary_digits) for subnet in ipv6_subnets]
-        netmask_bits_list = [list(subnet.mask.binary_digits) for subnet in ipv6_subnets]
-        max_host_bits = max([netmask_bits.count(0) for netmask_bits in netmask_bits_list])
-        wildcard_address_bits = []
-        wildcard_mask_bits = []
-        for network_id_bits in zip(*network_id_bits_list):
-            if len(set(network_id_bits)) == 1:
-                wildcard_address_bits.append(network_id_bits[0])
-                wildcard_mask_bits.append(0)
-            else:
-                wildcard_address_bits.append(0)
-                wildcard_mask_bits.append(1)
-        wildcard_mask_bits[-max_host_bits:] = [1] * max_host_bits
-        address_digits = [
-            OctetFlyWeightFactory.get_octet(''.join(map(str, wildcard_address_bits))[index: index + 8])
-            for index in range(0, len(wildcard_address_bits), 8)
-        ]
-        wildcard_digits = [
-            OctetFlyWeightFactory.get_octet(''.join(map(str, wildcard_mask_bits))[index: index + 8])
-            for index in range(0, len(wildcard_mask_bits), 8)
-        ]
-        return IPv6WildCardConfig(IPv6Addr(address_digits), IPv6WildCard(wildcard_digits))
+        return f"IPv6WildCardConfig({self.__str__()})"

@@ -1,4 +1,3 @@
-import pytest
 from ttlinks.ipservice.ip_addr_type_classifiers import (
     IPv4AddrTypeLimitedBroadcastHandler,
     IPv4AddrTypeCurrentNetworkHandler,

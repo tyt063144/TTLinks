@@ -44,7 +44,7 @@ def test_ipv4_address_empty():
 # IPv6 Address Tests
 def test_ipv6_address_valid():
     ip = IPv6Addr("2001:0db8:85a3:0000:0000:8a2e:0370:7334")
-    assert str(ip) == "2001:db8:85a3::8a2e:370:7334", "Should return the correct string representation"
+    assert str(ip) == "2001:db8:85a3::8a2e:370:7334".upper(), "Should return the correct string representation"
 
 
 def test_ipv6_address_invalid():
@@ -72,7 +72,7 @@ def test_ipv6_address_binary_digits():
 
 def test_ipv6_address_compressed():
     ip = IPv6Addr("2001:db8::8a2e:370:7334")
-    assert str(ip) == "2001:db8::8a2e:370:7334", "Should handle and return compressed IPv6 address correctly"
+    assert str(ip) == "2001:db8::8a2e:370:7334".upper(), "Should handle and return compressed IPv6 address correctly"
 
 
 def test_ipv6_address_loopback():
@@ -98,7 +98,7 @@ def test_ipv4_netmask_invalid():
 
 def test_ipv4_netmask_size():
     mask = IPv4NetMask("255.255.255.0")
-    assert mask.get_mask_size() == 24, "Should return the correct mask size"
+    assert mask.mask_size == 24, "Should return the correct mask size"
 
 
 def test_ipv4_netmask_binary_string():
@@ -114,12 +114,12 @@ def test_ipv4_netmask_cidr_notation():
 
 def test_ipv4_netmask_all_zeros():
     mask = IPv4NetMask("0.0.0.0")
-    assert mask.get_mask_size() == 0, "Should handle zero netmask correctly"
+    assert mask.mask_size == 0, "Should handle zero netmask correctly"
 
 
 def test_ipv4_netmask_all_ones():
     mask = IPv4NetMask("255.255.255.255")
-    assert mask.get_mask_size() == 32, "Should handle full netmask correctly"
+    assert mask.mask_size == 32, "Should handle full netmask correctly"
 
 
 # IPv4 Wildcard Tests
@@ -135,7 +135,7 @@ def test_ipv4_wildcard_invalid():
 
 def test_ipv4_wildcard_mask_size():
     wildcard = IPv4WildCard("0.0.0.255")
-    assert wildcard.get_mask_size() == 256, "Should return the correct range size based on the wildcard mask"
+    assert wildcard.mask_size == 8, "Should return the correct range size based on the wildcard mask"
 
 
 def test_ipv4_wildcard_binary_string():
@@ -146,18 +146,18 @@ def test_ipv4_wildcard_binary_string():
 
 def test_ipv4_wildcard_all_ones():
     wildcard = IPv4WildCard("0.0.0.0")
-    assert wildcard.get_mask_size() == 1, "Should handle the wildcard that matches no IPs"
+    assert wildcard.mask_size == 0, "Should handle the wildcard that matches no IPs"
 
 
 def test_ipv4_wildcard_all_zeros():
     wildcard = IPv4WildCard("255.255.255.255")
-    assert wildcard.get_mask_size() == 2 ** 32, "Should handle the wildcard that matches all IPs"
+    assert wildcard.mask_size == 32, "Should handle the wildcard that matches all IPs"
 
 
 # IPv6 Netmask Tests
 def test_ipv6_netmask_valid():
     mask = IPv6NetMask("ffff:ffff:ffff:ffff::")
-    assert str(mask) == "ffff:ffff:ffff:ffff::", "Should return the correct string representation"
+    assert str(mask) == "ffff:ffff:ffff:ffff::".upper(), "Should return the correct string representation"
 
 
 def test_ipv6_netmask_invalid():
@@ -167,7 +167,7 @@ def test_ipv6_netmask_invalid():
 
 def test_ipv6_netmask_size():
     mask = IPv6NetMask("ffff:ffff:ffff:ffff::")
-    assert mask.get_mask_size() == 64, "Should return the correct mask size"
+    assert mask.mask_size == 64, "Should return the correct mask size"
 
 
 def test_ipv6_netmask_binary_string():
@@ -179,23 +179,23 @@ def test_ipv6_netmask_binary_string():
 
 def test_ipv6_netmask_cidr_notation():
     mask = IPv6NetMask("/64")
-    assert str(mask) == "ffff:ffff:ffff:ffff::", "Should convert CIDR to full IPv6 netmask"
+    assert str(mask) == "ffff:ffff:ffff:ffff::".upper(), "Should convert CIDR to full IPv6 netmask"
 
 
 def test_ipv6_netmask_all_zeros():
     mask = IPv6NetMask("::")
-    assert mask.get_mask_size() == 0, "Should handle zero netmask correctly"
+    assert mask.mask_size == 0, "Should handle zero netmask correctly"
 
 
 def test_ipv6_netmask_all_ones():
     mask = IPv6NetMask("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-    assert mask.get_mask_size() == 128, "Should handle full netmask correctly"
+    assert mask.mask_size == 128, "Should handle full netmask correctly"
 
 
 # IPv6 Wildcard Tests
 def test_ipv6_wildcard_valid():
     wildcard = IPv6WildCard("ffff:ffff::ffff")
-    assert str(wildcard) == "ffff:ffff::ffff", "Should return the correct string representation"
+    assert str(wildcard) == "ffff:ffff::ffff".upper(), "Should return the correct string representation"
 
 
 def test_ipv6_wildcard_invalid():
@@ -205,7 +205,7 @@ def test_ipv6_wildcard_invalid():
 
 def test_ipv6_wildcard_mask_size():
     wildcard = IPv6WildCard("ffff:ffff::")
-    assert wildcard.get_mask_size() == 2 ** 32, "Should return the correct range size based on the wildcard mask"
+    assert wildcard.mask_size == 32, "Should return the correct range size based on the wildcard mask"
 
 
 def test_ipv6_wildcard_binary_string():
@@ -217,9 +217,9 @@ def test_ipv6_wildcard_binary_string():
 
 def test_ipv6_wildcard_all_zeros():
     wildcard = IPv6WildCard("::")
-    assert wildcard.get_mask_size() == 1, "Should handle wildcard that matches only one address"
+    assert wildcard.mask_size == 0, "Should handle wildcard that matches only one address"
 
 
 def test_ipv6_wildcard_all_ones():
     wildcard = IPv6WildCard("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-    assert wildcard.get_mask_size() == 2 ** 128, "Should handle wildcard that matches all IPs"
+    assert wildcard.mask_size == 128, "Should handle wildcard that matches all IPs"

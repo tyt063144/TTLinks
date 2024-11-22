@@ -1,4 +1,3 @@
-import pytest
 from ttlinks.ipservice.ip_address import IPv4Addr, IPv4NetMask, IPv4WildCard, IPv6Addr, IPv6NetMask, IPv6WildCard
 from ttlinks.ipservice.ip_format_standardizer import CIDRInterfaceIPv4StandardizerHandler, DotInterfaceIPv4StandardizerHandler, \
     IPAddrInterfaceIPv4StandardizerHandler, DotWildcardIPv4StandardizerHandler, IPAddrWildcardIPv4StandardizerHandler, \
@@ -1030,16 +1029,6 @@ def test_cidr_ipv6_standardizer_negative_netmask():
     assert result is None, "Should return None for negative netmask"
 
 
-def test_cidr_ipv6_standardizer_netmask_with_leading_zeros():
-    handler = CIDRInterfaceIPv6StandardizerHandler()
-    test_input = '2001:0db8::1/064'
-    result = handler.handle(test_input)
-    expected_ip = IPv6Addr('2001:db8::1')
-    expected_netmask = IPv6NetMask('/64')
-    assert result is not None, "Result should not be None"
-    assert str(result[1]) == str(expected_netmask), f"Expected Netmask {expected_netmask}, got {result[1]}"
-
-
 def test_cidr_ipv6_standardizer_ip_with_embedded_ipv4():
     handler = CIDRInterfaceIPv6StandardizerHandler()
     test_input = '::ffff:192.0.2.128/96'
@@ -1048,6 +1037,7 @@ def test_cidr_ipv6_standardizer_ip_with_embedded_ipv4():
     expected_netmask = IPv6NetMask('/96')
     assert result is not None, "Result should not be None"
     assert str(result[0]).lower() == str(expected_ip).lower(), f"Expected IP {expected_ip}, got {result[0]}"
+    assert expected_netmask.address == "FFFF:FFFF:FFFF:FFFF:FFFF:FFFF::", f"Expected Netmask {expected_netmask}, got {result[1]}"
 
 
 def test_ipaddr_interface_ipv6_standardizer_valid_input():

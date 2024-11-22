@@ -1,60 +1,9 @@
-import pytest
-from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
+from ttlinks.common.tools.converters import NumeralConverter
 from ttlinks.ipservice.ip_converters import (
-    OctetIPv4ConverterHandler, BinaryDigitsIPv4ConverterHandler, CIDRIPv4ConverterHandler,
-    DotIPv4ConverterHandler, OctetIPv6ConverterHandler, BinaryDigitsIPv6ConverterHandler,
+    BinaryDigitsIPv4ConverterHandler, CIDRIPv4ConverterHandler,
+    DotIPv4ConverterHandler, BinaryDigitsIPv6ConverterHandler,
     CIDRIPv6ConverterHandler, ColonIPv6ConverterHandler
 )
-
-
-# IPv4 Octet Handler Tests
-def test_octet_ipv4_handler_valid_address():
-    request = [
-        OctetFlyWeightFactory.get_octet('11000000'),  # 192
-        OctetFlyWeightFactory.get_octet('10101000'),  # 168
-        OctetFlyWeightFactory.get_octet('00000001'),  # 1
-        OctetFlyWeightFactory.get_octet('00000001')  # 1
-    ]
-    result = OctetIPv4ConverterHandler().handle(request)
-    assert result == request, "Should return the input octets for a valid IPv4 address."
-
-
-def test_octet_ipv4_handler_less_octets():
-    request = [
-        OctetFlyWeightFactory.get_octet('11000000'),  # 192
-        OctetFlyWeightFactory.get_octet('10101000')  # 168
-    ]
-    result = OctetIPv4ConverterHandler().handle(request)
-    assert result is None, "Should return None for invalid IPv4 address with less than 4 octets."
-
-
-def test_octet_ipv4_handler_more_octets():
-    request = [
-        OctetFlyWeightFactory.get_octet('11000000'),  # 192
-        OctetFlyWeightFactory.get_octet('10101000'),  # 168
-        OctetFlyWeightFactory.get_octet('00000001'),  # 1
-        OctetFlyWeightFactory.get_octet('00000001'),  # 1
-        OctetFlyWeightFactory.get_octet('00000010')  # 2
-    ]
-    result = OctetIPv4ConverterHandler().handle(request)
-    assert result is None, "Should return None for invalid IPv4 address with more than 4 octets."
-
-
-def test_octet_ipv4_handler_empty_list():
-    request = []
-    result = OctetIPv4ConverterHandler().handle(request)
-    assert result is None, "Should return None for an empty list of octets."
-
-
-def test_octet_ipv4_handler_none_input():
-    result = OctetIPv4ConverterHandler().handle(None)
-    assert result is None, "Should return None when None is passed as input."
-
-
-def test_octet_ipv4_handler_non_octet_list():
-    request = [192, 168, 1, 1]  # Incorrect types, should be instances of Octet
-    result = OctetIPv4ConverterHandler().handle(request)
-    assert result is None, "Should return None for non-octet type inputs."
 
 
 # IPv4 Binary Digits Handler Tests
@@ -65,15 +14,10 @@ def test_binary_digits_ipv4_handler_valid_address():
         0, 0, 0, 0, 0, 0, 0, 1,  # 1
         0, 0, 0, 0, 0, 0, 0, 1  # 1
     ]
-    expected_octets = [
-        OctetFlyWeightFactory.get_octet('11000000'),
-        OctetFlyWeightFactory.get_octet('10101000'),
-        OctetFlyWeightFactory.get_octet('00000001'),
-        OctetFlyWeightFactory.get_octet('00000001')
-    ]
+    expected_bytes = b'\xc0\xa8\x01\x01'
     converter = BinaryDigitsIPv4ConverterHandler()
     result = converter.handle(request)
-    assert result == expected_octets, "Should correctly convert binary digits to octets for a valid IPv4 address."
+    assert result == expected_bytes, "Should correctly convert binary digits to octets for a valid IPv4 address."
 
 
 def test_binary_digits_ipv4_handler_incorrect_number_of_digits():
@@ -115,9 +59,8 @@ def test_cidr_ipv4_handler_valid_notation():
         ("/0", [0, 0, 0, 0])
     ]
     for cidr, expected in test_cases:
-        expected_octets = [OctetFlyWeightFactory.get_octet(format(num, '08b')) for num in expected]
-        result = converter.handle(cidr)
-        assert result == expected_octets, f"Failed for CIDR {cidr}. Expected {expected_octets}, got {result}"
+        result = [x for x in converter.handle(cidr)]
+        assert result == expected, f"Failed for CIDR {cidr}. Expected {expected}, got {result}"
 
 
 def test_cidr_ipv4_handler_invalid_notation():
@@ -146,12 +89,7 @@ def test_cidr_ipv4_handler_empty_string():
 def test_dot_ipv4_handler_valid_address():
     converter = DotIPv4ConverterHandler()
     ipv4_address = "192.168.1.1"
-    expected = [
-        OctetFlyWeightFactory.get_octet('11000000'),  # 192
-        OctetFlyWeightFactory.get_octet('10101000'),  # 168
-        OctetFlyWeightFactory.get_octet('00000001'),  # 1
-        OctetFlyWeightFactory.get_octet('00000001')  # 1
-    ]
+    expected = b'\xc0\xa8\x01\x01'
     result = converter.handle(ipv4_address)
     assert result == expected, f"Should correctly convert {ipv4_address} to octets."
 
@@ -178,53 +116,11 @@ def test_dot_ipv4_handler_empty_string():
     assert result is None, "Should return None for an empty string input"
 
 
-# IPv6 Octet Handler Tests
-def test_octet_ipv6_handler_valid_address():
-    converter = OctetIPv6ConverterHandler()
-    request = [OctetFlyWeightFactory.get_octet('00100000') for _ in range(16)]  # Simplified for brevity
-    result = converter.handle(request)
-    assert result == request, "Should return the input octets for a valid IPv6 address."
-
-
-def test_octet_ipv6_handler_less_octets():
-    converter = OctetIPv6ConverterHandler()
-    request = [OctetFlyWeightFactory.get_octet('00100000') for _ in range(15)]  # 15 octets
-    result = converter.handle(request)
-    assert result is None, "Should return None for invalid IPv6 address with less than 16 octets."
-
-
-def test_octet_ipv6_handler_more_octets():
-    converter = OctetIPv6ConverterHandler()
-    request = [OctetFlyWeightFactory.get_octet('00100000') for _ in range(17)]  # 17 octets
-    result = converter.handle(request)
-    assert result is None, "Should return None for invalid IPv6 address with more than 16 octets."
-
-
-def test_octet_ipv6_handler_empty_list():
-    converter = OctetIPv6ConverterHandler()
-    result = converter.handle([])
-    assert result is None, "Should return None for an empty list of octets."
-
-
-def test_octet_ipv6_handler_none_input():
-    converter = OctetIPv6ConverterHandler()
-    result = converter.handle(None)
-    assert result is None, "Should return None when None is passed as input."
-
-
-def test_octet_ipv6_handler_non_octet_list():
-    converter = OctetIPv6ConverterHandler()
-    request = ['00100000'] * 16  # Incorrect input as strings instead of octet objects
-    result = converter.handle(request)
-    assert result is None, "Should return None for non-octet type inputs."
-
-
 # IPv6 Binary Digits Handler Tests
 def test_binary_digits_ipv6_handler_valid_address():
     converter = BinaryDigitsIPv6ConverterHandler()
     request = [0] * 64 + [1] * 64  # Simplified example of ::FFFF:FFFF:FFFF:FFFF
-    expected_octets = [OctetFlyWeightFactory.get_octet('00000000')] * 8 + \
-                      [OctetFlyWeightFactory.get_octet('11111111')] * 8
+    expected_octets = b'\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff'
     result = converter.handle(request)
     assert result == expected_octets, "Should correctly convert 128 binary digits to octets for a valid IPv6 address."
 
@@ -274,7 +170,7 @@ def test_cidr_ipv6_handler_valid_notation():
         ("/114", ['11111111'] * 14 + ['11000000', '00000000'])
     ]
     for cidr, expected in test_cases:
-        expected_octets = [OctetFlyWeightFactory.get_octet(binary_string) for binary_string in expected]
+        expected_octets = NumeralConverter.binary_to_bytes(''.join(expected), 16)
         result = converter.handle(cidr)
         assert result == expected_octets, f"Failed for CIDR {cidr}. Expected {expected_octets}, got {result}"
 
@@ -317,7 +213,7 @@ def test_colon_ipv6_handler_valid_address():
          ["00000000"] * 16)
     ]
     for ipv6, expected_binaries in test_cases:
-        expected_octets = [OctetFlyWeightFactory.get_octet(binary) for binary in expected_binaries]
+        expected_octets = NumeralConverter.binary_to_bytes(''.join(expected_binaries), 16)
         result = converter.handle(ipv6)
         assert result == expected_octets, f"Failed for IPv6 {ipv6}. Expected {expected_octets}, got {result}"
 
@@ -385,12 +281,7 @@ def test_cidr_ipv6_handler_boundary_values():
 def test_dot_ipv4_handler_leading_zeros():
     converter = DotIPv4ConverterHandler()
     ipv4_address = "192.168.001.001"
-    expected = [
-        OctetFlyWeightFactory.get_octet('11000000'),  # 192
-        OctetFlyWeightFactory.get_octet('10101000'),  # 168
-        OctetFlyWeightFactory.get_octet('00000001'),  # 1
-        OctetFlyWeightFactory.get_octet('00000001')  # 1
-    ]
+    expected = b'\xc0\xa8\x01\x01'
     result = converter.handle(ipv4_address)
     assert result == expected, f"Should correctly convert {ipv4_address} to octets."
 
@@ -403,6 +294,6 @@ def test_colon_ipv6_handler_leading_zeros():
         "00100000", "00000001", "00001101", "10111000", "10000101", "10100011", "00000000", "00000000",
         "00000000", "00000000", "10001010", "00101110", "00000011", "01110000", "01110011", "00110100"
     ]
-    expected_octets = [OctetFlyWeightFactory.get_octet(binary) for binary in expected_binaries]
+    expected_octets = NumeralConverter.binary_to_bytes(''.join(expected_binaries), 16)
     result = converter.handle(ipv6_address)
     assert result == expected_octets, f"Failed for IPv6 {ipv6_address}. Expected {expected_octets}, got {result}"

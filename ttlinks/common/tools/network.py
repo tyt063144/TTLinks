@@ -7,6 +7,7 @@ from typing import List, Tuple, Any
 
 from ttlinks.common.binary_utils.binary import Octet
 from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
+from ttlinks.common.tools.converters import NumeralConverter
 
 
 class BinaryTools:
@@ -85,6 +86,35 @@ class BinaryTools:
                 adjusted_address += address_bit
         return [OctetFlyWeightFactory.get_octet(adjusted_address[i:i+8]) for i in range(0, len(adjusted_address), 8)]
 
+    @staticmethod
+    def is_bytes_in_range(id_bytes: bytes, mask_bytes: bytes, bytes_need_compare: bytes) -> bool:
+        """
+        Determines if a given set of compared bytes falls within the range defined by the id bytes and mask bytes.
+
+        This method compares the `id_bytes` and `bytes_need_compare` up to the number of bits specified by the `mask_bytes`.
+        The method checks if the `bytes_need_compare` match the `id_bytes` for the positions where the `mask_bytes` are set to 1.
+
+        Args:
+            id_bytes (bytes): A bytes object representing the ID.
+            mask_bytes (bytes): A bytes object representing the mask, where 1s indicate the positions to be compared.
+            bytes_need_compare (bytes): A bytes object representing the values to compare against the ID.
+
+        Returns:
+            bool: True if the `bytes_need_compare` are within the range defined by the `id_bytes` and `mask_bytes`, False otherwise.
+
+        Raises:
+            ValueError: If the lengths of `id_bytes`, `mask_bytes`, and `bytes_need_compare` are not the same.
+        """
+        if len(id_bytes) != len(mask_bytes) != len(bytes_need_compare):
+            raise ValueError("The lengths of id_bytes, mask_bytes, and compared_bytes must be the same.")
+
+        id_decimal = NumeralConverter.bytes_to_decimal(id_bytes)
+        mask_decimal = NumeralConverter.bytes_to_decimal(mask_bytes)
+        bytes_need_compare_decimal = NumeralConverter.bytes_to_decimal(bytes_need_compare)
+
+        convert_bytes_need_compare = bytes_need_compare_decimal & mask_decimal
+        return id_decimal == convert_bytes_need_compare
+
 class NetTools:
     """
     NetTools is a utility class providing essential network-related methods for:
@@ -160,3 +190,5 @@ class NetTools:
         offset = random.randint(1, 1000)
         identification = (identification + offset) % (2**16)
         return identification
+
+

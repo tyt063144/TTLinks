@@ -146,7 +146,8 @@ For more examples, refer to
 ## 3. `ip_configs` - IPv4 and IPv6 HostConfig, SubnetConfig, and WildCardConfig
 The `ip_config` module provides advanced classes for configuring IP host interfaces, subnets, and wildcard objects, essential for efficient network setup and management. Each class combines an `IPAddr` object for representing IP addresses with an `IPMask` object tailored to the specific use case, such as netmask or wildcard configurations. These classes offer more properties and methods you can leverage to streamline network IP configurations.
 
-<font color='#FD7E14'>**Note:** The functionalities of these classes can also be achieved through the `ip_factory` module, which provides a more flexible and dynamic approach to generating various IP configurations. However, these classes can still be utilized directly when a more specific or tailored solution is required for certain use cases.</font>
+> [!Note]\
+> The functionalities of these classes can also be achieved through the `ip_factory` module, which provides a more flexible and dynamic approach to generating various IP configurations. However, these classes can still be utilized directly when a more specific or tailored solution is required for certain use cases.</font>
 
 <details>
 <summary>(Click to Expand) Example:</summary>
@@ -441,5 +442,171 @@ There are more specific handlers under `ip_type_classifiers` that can be used to
 - `ColonIPv6IPTypeClassifierHandler`
 - `CIDRIPv6NetmaskClassifierHandler`
 - `BytesIPv6IPTypeClassifierHandler`
+
+</details>
+
+
+## 7. `ip_addr_type_classifiers` - IP Address Type Classifiers for IPv4 and IPv6 address types
+
+`ip_addr_type_classifiers` module provides functions to classify IP address types based on specific criteria. It uses the Chain of Responsibility (CoR) design pattern to implement a set of classifier handlers, which determine whether an input of an IPv4 or IPv6 address belongs to a specific range, such as public, private, multicast, or reserved.
+
+<details>
+<summary>(Click to Expand) Example: Classify Address Types</summary>
+
+```python
+from ttlinks.ipservice.ip_addr_type_classifiers import IPAddrTypeClassifier
+from ttlinks.ipservice.ip_address import IPv4Addr, IPv6Addr
+
+# IPAddrTypeClassifier is a utility class that classifies IP addresses based on their type.
+ip_addr_type_classifier = IPAddrTypeClassifier
+
+# Example usage of the IPAddrTypeClassifier class for IPv4 addresses.
+print('IPv4 Address Types'.center(50, '-'))
+ipv4_address1 = IPv4Addr('192.168.1.1')
+ipv4_address2 = IPv4Addr('239.255.1.1')
+ipv4_address3 = IPv4Addr('8.8.8.8')
+ipv4_address4 = IPv4Addr('127.0.0.1')
+ipv4_address5 = IPv4Addr('169.254.10.10')
+print('IPv4 Address 1 is:', ip_addr_type_classifier.classify_ipv4_host_type(ipv4_address1))
+print('IPv4 Address 2 is:', ip_addr_type_classifier.classify_ipv4_host_type(ipv4_address2))
+print('IPv4 Address 3 is:', ip_addr_type_classifier.classify_ipv4_host_type(ipv4_address3))
+print('IPv4 Address 4 is:', ip_addr_type_classifier.classify_ipv4_host_type(ipv4_address4))
+print('IPv4 Address 5 is:', ip_addr_type_classifier.classify_ipv4_host_type(ipv4_address5))
+
+# Example usage of the IPAddrTypeClassifier class for IPv6 addresses.
+print('IPv6 Address Types'.center(50, '-'))
+ipv6_address1 = IPv6Addr('2001:db8::1')
+ipv6_address2 = IPv6Addr('fe80::1')
+ipv6_address3 = IPv6Addr('ff02::1')
+ipv6_address4 = IPv6Addr('::1')
+ipv6_address5 = IPv6Addr('2003::1')
+print('IPv6 Address 1 is:', ip_addr_type_classifier.classify_ipv6_host_type(ipv6_address1))
+print('IPv6 Address 2 is:', ip_addr_type_classifier.classify_ipv6_host_type(ipv6_address2))
+print('IPv6 Address 3 is:', ip_addr_type_classifier.classify_ipv6_host_type(ipv6_address3))
+print('IPv6 Address 4 is:', ip_addr_type_classifier.classify_ipv6_host_type(ipv6_address4))
+print('IPv6 Address 5 is:', ip_addr_type_classifier.classify_ipv6_host_type(ipv6_address5))
+```
+Example output:
+```
+----------------IPv4 Address Types----------------
+IPv4 Address 1 is: IPv4AddrType.PRIVATE
+IPv4 Address 2 is: IPv4AddrType.MULTICAST
+IPv4 Address 3 is: IPv4AddrType.PUBLIC
+IPv4 Address 4 is: IPv4AddrType.LOOPBACK
+IPv4 Address 5 is: IPv4AddrType.LINK_LOCAL
+----------------IPv6 Address Types----------------
+IPv6 Address 1 is: IPv6AddrType.DOCUMENTATION
+IPv6 Address 2 is: IPv6AddrType.LINK_LOCAL
+IPv6 Address 3 is: IPv6AddrType.MULTICAST
+IPv6 Address 4 is: IPv6AddrType.LOOPBACK
+IPv6 Address 5 is: IPv6AddrType.GLOBAL_UNICAST
+```
+
+There are more specific handlers under `ip_addr_type_classifiers` that can be used to classify IP addresses based on specific criteria. You can use them individually or in combination to classify IP addresses based on your requirements. Supported handlers include:
+
+- `IPv4AddrTypeUnspecifiedHandler`
+- `IPv4AddrTypeLimitedBroadcastHandler`
+- `IPv4AddrTypeCurrentNetworkHandler`
+- `IPv4AddrClassifierPrivateHandler`
+- `IPv4AddrClassifierPublicHandler`
+- `IPv4AddrClassifierDocumentationHandler`
+- `IPv4AddrClassifierMulticastHandler`
+- `IPv4AddrClassifierLinkLocalHandler`
+- `IPv4AddrClassifierLoopbackHandler`
+- `IPv4AddrClassifierDSLiteHandler`
+- `IPv4AddrClassifierCarrierNATHandler`
+- `IPv4AddrClassifierBenchmarkTestingHandler`
+- `IPv4AddrClassifierIP6To4RelayHandler`
+- `IPv4AddrClassifierReservedHandler`
+- `IPv6AddrClassifierUnspecifiedHandler`
+- `IPv6AddrClassifierLoopbackHandler`
+- `IPv6AddrClassifierIPv4MappedHandler`
+- `IPv6AddrClassifierIPv4TranslatedHandler`
+- `IPv6AddrClassifierIPv4To6TranslationHandler`
+- `IPv6AddrClassifierDiscardPrefixHandler`
+- `IPv6AddrClassifierTeredoTunnelingHandler`
+- `IPv6AddrClassifierDocumentationHandler`
+- `IPv6AddrClassifierORCHIDV2Handler`
+- `IPv6AddrClassifier6To4SchemeHandler`
+- `IPv6AddrClassifierSRV6Handler`
+- `IPv6AddrClassifierLinkLocalHandler`
+- `IPv6AddrClassifierMulticastHandler`
+- `IPv6AddrClassifierUniqueLocalHandler`
+- `IPv6AddrClassifierGlobalUnicastHandler`
+
+</details>
+
+## 8. `ip_subnet_type_classifiers` - IP Subnet Type Classifiers for IPv4 and IPv6 subnets
+
+`ip_subnet_type_classifiers` module provides similar functionalities as `ip_addr_type_classifiers` but for IP subnets. Instead of returning one type that `ip_addr_type_classifiers` does, `ip_subnet_type_classifiers` returns a list of types that the subnet belongs to. This is because a subnet can belong to multiple types.
+
+<details>
+<summary>(Click to Expand) Example: Classify Subnet Types</summary>
+
+```python
+from ttlinks.ipservice.ip_configs import IPv4SubnetConfig, IPv6SubnetConfig
+from ttlinks.ipservice.ip_subnet_type_classifiers import IPSubnetTypeClassifier
+
+ip_subnet_type_classifier = IPSubnetTypeClassifier
+
+print('IPv4 subnet types:'.center(50, '-'))
+ipv4_subnet1 = IPv4SubnetConfig("192.168.0.0/16")
+ipv4_subnet2 = IPv4SubnetConfig("192.168.0.0/15")
+ipv4_subnet3 = IPv4SubnetConfig("224.0.0.0/4")
+print('IPv4 subnet 1 belongs to:', [subnet_type.name for subnet_type in ip_subnet_type_classifier.classify_ipv4_subnet_types(ipv4_subnet1)])
+print('IPv4 subnet 2 belongs to:', [subnet_type.name for subnet_type in ip_subnet_type_classifier.classify_ipv4_subnet_types(ipv4_subnet2)])
+print('IPv4 subnet 3 belongs to:', [subnet_type.name for subnet_type in ip_subnet_type_classifier.classify_ipv4_subnet_types(ipv4_subnet3)])
+
+print('IPv6 subnet types:'.center(50, '-'))
+ipv6_subnet1 = IPv6SubnetConfig("2001:db8::/32")
+ipv6_subnet2 = IPv6SubnetConfig("fe80::/64")
+ipv6_subnet3 = IPv6SubnetConfig("2002::/16")
+print('IPv6 subnet 1 belongs to:', [subnet_type.name for subnet_type in ip_subnet_type_classifier.classify_ipv6_subnet_types(ipv6_subnet1)])
+print('IPv6 subnet 2 belongs to:', [subnet_type.name for subnet_type in ip_subnet_type_classifier.classify_ipv6_subnet_types(ipv6_subnet2)])
+print('IPv6 subnet 3 belongs to:', [subnet_type.name for subnet_type in ip_subnet_type_classifier.classify_ipv6_subnet_types(ipv6_subnet3)])
+```
+Example output:
+```
+----------------IPv4 subnet types:----------------
+IPv4 subnet 1 belongs to: ['PRIVATE']
+IPv4 subnet 2 belongs to: ['PRIVATE', 'PUBLIC']
+IPv4 subnet 3 belongs to: ['DOCUMENTATION', 'MULTICAST']
+----------------IPv6 subnet types:----------------
+IPv6 subnet 1 belongs to: ['DOCUMENTATION', 'GLOBAL_UNICAST']
+IPv6 subnet 2 belongs to: ['LINK_LOCAL']
+IPv6 subnet 3 belongs to: ['IP6_TO4', 'GLOBAL_UNICAST']
+```
+
+Again, there are more specific handlers under `ip_subnet_type_classifiers` that can be used to classify IP subnets based on specific criteria. You can use them individually or in combination to classify IP subnets based on your requirements. Supported handlers include:
+
+- `IPv4SubnetTypeUnspecifiedHandler`
+- `IPv4SubnetTypeLimitedBroadcastHandler`
+- `IPv4SubnetTypeCurrentNetworkHandler`
+- `IPv4SubnetClassifierPrivateHandler`
+- `IPv4SubnetClassifierPublicHandler`
+- `IPv4SubnetClassifierDocumentationHandler`
+- `IPv4SubnetClassifierMulticastHandler`
+- `IPv4SubnetClassifierLinkLocalHandler`
+- `IPv4SubnetClassifierLoopbackHandler`
+- `IPv4SubnetClassifierDSLiteHandler`
+- `IPv4SubnetClassifierCarrierNATHandler`
+- `IPv4SubnetClassifierBenchmarkTestingHandler`
+- `IPv4SubnetClassifierIP6To4RelayHandler`
+- `IPv4SubnetClassifierReservedHandler`
+- `IPv6SubnetClassifierUnspecifiedHandler`
+- `IPv6SubnetClassifierLoopbackHandler`
+- `IPv6SubnetClassifierIPv4MappedHandler`
+- `IPv6SubnetClassifierIPv4TranslatedHandler`
+- `IPv6SubnetClassifierIPv4To6TranslationHandler`
+- `IPv6SubnetClassifierDiscardPrefixHandler`
+- `IPv6SubnetClassifierTeredoTunnelingHandler`
+- `IPv6SubnetClassifierDocumentationHandler`
+- `IPv6SubnetClassifierORCHIDV2Handler`
+- `IPv6SubnetClassifier6To4SchemeHandler`
+- `IPv6SubnetClassifierSRV6Handler`
+- `IPv6SubnetClassifierLinkLocalHandler`
+- `IPv6SubnetClassifierMulticastHandler`
+- `IPv6SubnetClassifierUniqueLocalHandler`
+- `IPv6SubnetClassifierGlobalUnicastHandler`
 
 </details>

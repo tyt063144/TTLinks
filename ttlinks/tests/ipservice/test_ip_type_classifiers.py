@@ -1,45 +1,6 @@
-import pytest
-
-from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
-from ttlinks.ipservice.ip_type_classifiers import OctetIPv4IPTypeClassifierHandler, DotIPv4IPTypeClassifierHandler, OctetIPv4NetmaskClassifierHandler, \
-    DotIPv4NetmaskClassifierHandler, CIDRIPv4NetmaskClassifierHandler, OctetIPv6IPTypeClassifierHandler, ColonIPv6IPTypeClassifierHandler, \
-    OctetIPv6NetmaskClassifierHandler, ColonIPv6NetmaskClassifierHandler, CIDRIPv6NetmaskClassifierHandler, IPType
-
-
-def test_octet_ipv4_ip_type_classifier_valid_ipv4_address():
-    handler = OctetIPv4IPTypeClassifierHandler()
-    request_ipv4 = [
-        OctetFlyWeightFactory.get_octet('11000000'),  # 192
-        OctetFlyWeightFactory.get_octet('10101000'),  # 168
-        OctetFlyWeightFactory.get_octet('00000001'),  # 1
-        OctetFlyWeightFactory.get_octet('00000001')  # 1
-    ]
-    result = handler.handle(request_ipv4)
-    assert result == IPType.IPv4, "The IP should be classified as IPv4."
-
-
-def test_octet_ipv4_ip_type_classifier_invalid_fewer_octets():
-    handler = OctetIPv4IPTypeClassifierHandler()
-    request_ipv4 = [
-        OctetFlyWeightFactory.get_octet('11000000'),  # 192
-        OctetFlyWeightFactory.get_octet('10101000'),  # 168
-        OctetFlyWeightFactory.get_octet('00000001')  # 1
-    ]
-    result = handler.handle(request_ipv4)
-    assert result != IPType.IPv4, "The IP should not be classified as IPv4 due to insufficient octets."
-
-
-def test_octet_ipv4_ip_type_classifier_invalid_more_octets():
-    handler = OctetIPv4IPTypeClassifierHandler()
-    request_ipv4 = [
-        OctetFlyWeightFactory.get_octet('11000000'),  # 192
-        OctetFlyWeightFactory.get_octet('10101000'),  # 168
-        OctetFlyWeightFactory.get_octet('00000001'),  # 1
-        OctetFlyWeightFactory.get_octet('00000001'),  # 1
-        OctetFlyWeightFactory.get_octet('00000001')  # Extra octet
-    ]
-    result = handler.handle(request_ipv4)
-    assert result != IPType.IPv4, "The IP should not be classified as IPv4 due to excess octets."
+from ttlinks.ipservice.ip_type_classifiers import DotIPv4IPTypeClassifierHandler, \
+    DotIPv4NetmaskClassifierHandler, CIDRIPv4NetmaskClassifierHandler, ColonIPv6IPTypeClassifierHandler, \
+    ColonIPv6NetmaskClassifierHandler, CIDRIPv6NetmaskClassifierHandler, IPType
 
 
 def test_dot_ipv4_ip_type_classifier_valid_dotted_decimal_address():
@@ -75,53 +36,6 @@ def test_dot_ipv4_ip_type_classifier_leading_zeros():
     request_ipv4 = "192.168.001.001"
     result = handler.handle(request_ipv4)
     assert result == IPType.IPv4, "The IP with leading zeros should be classified as IPv4."
-
-
-def test_octet_ipv4_netmask_classifier_valid_netmask():
-    handler = OctetIPv4NetmaskClassifierHandler()
-    request_netmask = [
-        OctetFlyWeightFactory.get_octet('11111111'),  # 255
-        OctetFlyWeightFactory.get_octet('11111111'),  # 255
-        OctetFlyWeightFactory.get_octet('11111111'),  # 255
-        OctetFlyWeightFactory.get_octet('00000000')  # 0
-    ]
-    result = handler.handle(request_netmask)
-    assert result == IPType.IPv4, "The netmask should be classified as IPv4."
-
-
-def test_octet_ipv4_netmask_classifier_invalid_non_contiguous():
-    handler = OctetIPv4NetmaskClassifierHandler()
-    request_netmask = [
-        OctetFlyWeightFactory.get_octet('11111111'),  # 255
-        OctetFlyWeightFactory.get_octet('00000000'),  # 0
-        OctetFlyWeightFactory.get_octet('11111111'),  # 255
-        OctetFlyWeightFactory.get_octet('00000000')  # 0
-    ]
-    result = handler.handle(request_netmask)
-    assert result != IPType.IPv4, "The netmask with non-contiguous bits should not be classified as IPv4."
-
-
-def test_octet_ipv4_netmask_classifier_valid_full_netmask():
-    handler = OctetIPv4NetmaskClassifierHandler()
-    request_netmask = [
-        OctetFlyWeightFactory.get_octet('11111111'),  # 255
-        OctetFlyWeightFactory.get_octet('11111111'),  # 255
-        OctetFlyWeightFactory.get_octet('11111111'),  # 255
-        OctetFlyWeightFactory.get_octet('11111111')  # 255
-    ]
-    result = handler.handle(request_netmask)
-    assert result == IPType.IPv4, "The full netmask should be classified as IPv4."
-
-
-def test_octet_ipv4_netmask_classifier_invalid_short_netmask():
-    handler = OctetIPv4NetmaskClassifierHandler()
-    request_netmask = [
-        OctetFlyWeightFactory.get_octet('11111111'),  # 255
-        OctetFlyWeightFactory.get_octet('11111111'),  # 255
-        OctetFlyWeightFactory.get_octet('11111111')  # 255
-    ]
-    result = handler.handle(request_netmask)
-    assert result != IPType.IPv4, "The short netmask should not be classified as IPv4."
 
 
 def test_dot_ipv4_netmask_classifier_valid_dotted_decimal_netmask():
@@ -201,41 +115,6 @@ def test_cidr_ipv4_netmask_classifier_invalid_non_numeric():
     assert result != IPType.IPv4, "The CIDR notation '/abc' should not be classified as IPv4 because it is non-numeric."
 
 
-def test_octet_ipv6_ip_type_classifier_valid_ipv6_address():
-    handler = OctetIPv6IPTypeClassifierHandler()
-    request_ipv6 = [OctetFlyWeightFactory.get_octet('00000000') for _ in range(16)]  # 16 octets representing zeros
-    result = handler.handle(request_ipv6)
-    assert result == IPType.IPv6, "The IPv6 address should be classified as IPv6."
-
-
-def test_octet_ipv6_ip_type_classifier_invalid_fewer_octets():
-    handler = OctetIPv6IPTypeClassifierHandler()
-    request_ipv6 = [OctetFlyWeightFactory.get_octet('00000000') for _ in range(15)]  # 15 octets
-    result = handler.handle(request_ipv6)
-    assert result != IPType.IPv6, "The address with fewer than 16 octets should not be classified as IPv6."
-
-
-def test_octet_ipv6_ip_type_classifier_invalid_more_octets():
-    handler = OctetIPv6IPTypeClassifierHandler()
-    request_ipv6 = [OctetFlyWeightFactory.get_octet('00000000') for _ in range(17)]  # 17 octets
-    result = handler.handle(request_ipv6)
-    assert result != IPType.IPv6, "The address with more than 16 octets should not be classified as IPv6."
-
-
-def test_octet_ipv6_ip_type_classifier_all_zero_address():
-    handler = OctetIPv6IPTypeClassifierHandler()
-    request_ipv6 = [OctetFlyWeightFactory.get_octet('00000000') for _ in range(16)]  # All zeros
-    result = handler.handle(request_ipv6)
-    assert result == IPType.IPv6, "An all-zero IPv6 address should be classified as IPv6."
-
-
-def test_octet_ipv6_ip_type_classifier_all_ones_address():
-    handler = OctetIPv6IPTypeClassifierHandler()
-    request_ipv6 = [OctetFlyWeightFactory.get_octet('11111111') for _ in range(16)]  # All ones
-    result = handler.handle(request_ipv6)
-    assert result == IPType.IPv6, "An all-ones IPv6 address should be classified as IPv6."
-
-
 def test_colon_ipv6_ip_type_classifier_valid_address():
     handler = ColonIPv6IPTypeClassifierHandler()
     request_ipv6 = "2001:0db8::1"
@@ -277,56 +156,6 @@ def test_colon_ipv6_ip_type_classifier_embedded_ipv4():
     result = handler.handle(request_ipv6)
     print('result', result)
     assert result == IPType.IPv6, "The IPv6 address with embedded IPv4 should be classified as IPv6."
-
-
-def test_octet_ipv6_netmask_classifier_valid_netmask():
-    handler = OctetIPv6NetmaskClassifierHandler()
-    request_netmask = [
-                          OctetFlyWeightFactory.get_octet('11111111') for _ in range(8)  # 8 leading octets as 255 (full bits)
-                      ] + [
-                          OctetFlyWeightFactory.get_octet('00000000') for _ in range(8)  # 8 trailing octets as 0
-                      ]
-    result = handler.handle(request_netmask)
-    assert result == IPType.IPv6, "The valid IPv6 netmask should be classified as IPv6."
-
-
-def test_octet_ipv6_netmask_classifier_invalid_non_contiguous():
-    handler = OctetIPv6NetmaskClassifierHandler()
-    request_netmask = [
-                          OctetFlyWeightFactory.get_octet('11111111'),  # 255
-                          OctetFlyWeightFactory.get_octet('00000000'),  # 0
-                          OctetFlyWeightFactory.get_octet('11111111'),  # 255
-                          OctetFlyWeightFactory.get_octet('00000000')  # 0
-                      ] * 4  # Repeated to make up 16 octets
-    result = handler.handle(request_netmask)
-    assert result != IPType.IPv6, "The netmask with non-contiguous bits should not be classified as IPv6."
-
-
-def test_octet_ipv6_netmask_classifier_mixed_contiguous_non_contiguous():
-    handler = OctetIPv6NetmaskClassifierHandler()
-    request_netmask = [
-                          OctetFlyWeightFactory.get_octet('11111111'),  # 255
-                          OctetFlyWeightFactory.get_octet('11110000'),  # 240
-                          OctetFlyWeightFactory.get_octet('11111111'),  # 255
-                          OctetFlyWeightFactory.get_octet('00001111')  # 15
-                      ] * 4  # Repeated to make up 16 octets
-    result = handler.handle(request_netmask)
-    assert result != IPType.IPv6, "The netmask with mixed contiguous and non-contiguous bits should not be classified as IPv6."
-
-
-def test_octet_ipv6_netmask_classifier_valid_full_netmask():
-    handler = OctetIPv6NetmaskClassifierHandler()
-    request_netmask = [OctetFlyWeightFactory.get_octet('11111111') for _ in range(16)]  # All bits set
-    result = handler.handle(request_netmask)
-    assert result == IPType.IPv6, "The full netmask should be classified as IPv6."
-
-
-def test_octet_ipv6_netmask_classifier_invalid_length():
-    handler = OctetIPv6NetmaskClassifierHandler()
-    short_netmask = [OctetFlyWeightFactory.get_octet('11111111') for _ in range(15)]
-    long_netmask = [OctetFlyWeightFactory.get_octet('11111111') for _ in range(17)]
-    assert handler.handle(short_netmask) != IPType.IPv6, "A netmask with fewer than 16 octets should not be classified as IPv6."
-    assert handler.handle(long_netmask) != IPType.IPv6, "A netmask with more than 16 octets should not be classified as IPv6."
 
 
 def test_colon_ipv6_netmask_classifier_valid_netmask():

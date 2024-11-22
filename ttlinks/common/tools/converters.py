@@ -147,3 +147,108 @@ class NumeralConverter:
         if type(byte_string) is not bytes:
             raise TypeError("byte_string must be a bytes object.")
         return int.from_bytes(byte_string, byteorder='big')
+
+    @staticmethod
+    def decimal_to_bytes(decimal: int, length: int) -> bytes:
+        """
+        Converts a decimal (base-10) number to a bytes object of a specified length.
+
+        Parameters:
+        decimal (int): The decimal number to convert.
+        length (int): The number of bytes in the output.
+
+        Returns:
+        bytes: The bytes object representing the decimal number.
+
+        Raises:
+        TypeError: If the input types are not as expected (int for both parameters).
+        """
+        if type(decimal) is not int:
+            raise TypeError("decimal must be an int.")
+        if type(length) is not int:
+            raise TypeError("length must be an int.")
+        return decimal.to_bytes(length, byteorder='big')
+
+    @staticmethod
+    def binary_to_bytes(binary_string: str, length: int) -> bytes:
+        """
+        Converts a binary string to a bytes object of a specified length.
+
+        Parameters:
+        binary_string (str): A binary string to be converted.
+        length (int): The number of bytes in the output.
+
+        Returns:
+        bytes: The bytes object representing the binary string.
+
+        Raises:
+        TypeError: If the input types are not as expected (str for binary_string, int for length).
+        """
+        if type(binary_string) is not str:
+            raise TypeError("binary_string must be a string.")
+        if type(length) is not int:
+            raise TypeError("length must be an int.")
+        return int(binary_string, 2).to_bytes(length, byteorder='big')
+
+    @staticmethod
+    def hexadecimal_to_bytes(hex_string: str, length: int) -> bytes:
+        """
+        Converts a hexadecimal string to a bytes object of a specified length.
+
+        Parameters:
+        hex_string (str): A hexadecimal string to be converted.
+        length (int): The number of bytes in the output.
+
+        Returns:
+        bytes: The bytes object representing the hexadecimal string.
+
+        Raises:
+        TypeError: If the input types are not as expected (str for hex_string, int for length).
+        """
+        if type(hex_string) is not str:
+            raise TypeError("hex_string must be a string.")
+        if type(length) is not int:
+            raise TypeError("length must be an int.")
+        return bytes.fromhex(hex_string.rjust(length * 2, '0'))
+
+    @staticmethod
+    def bytes_to_binary(byte_string: bytes, r_just: int = 8) -> str:
+        """
+        Converts a bytes object to its binary string equivalent, with optional right-justified padding.
+
+        Parameters:
+        byte_string (bytes): A bytes object to be converted.
+        r_just (int): The number of digits to right-justify the binary output (default is 8).
+
+        Returns:
+        str: The binary string equivalent of the bytes object.
+
+        Raises:
+        TypeError: If the input types are not as expected (bytes for byte_string, int for r_just).
+        """
+        if type(byte_string) is not bytes:
+            raise TypeError("byte_string must be a bytes object.")
+        if type(r_just) is not int:
+            raise TypeError("r_just must be an int.")
+        return bin(int.from_bytes(byte_string, byteorder='big'))[2:].rjust(r_just, '0')
+
+    @staticmethod
+    def bytes_to_hexadecimal(byte_string: bytes, r_just: int = 2) -> str:
+        """
+        Converts a bytes object to its hexadecimal string equivalent, with optional right-justified padding.
+
+        Parameters:
+        byte_string (bytes): A bytes object to be converted.
+        r_just (int): The number of digits to right-justify the hexadecimal output (default is 2).
+
+        Returns:
+        str: The hexadecimal string equivalent of the bytes object.
+
+        Raises:
+        TypeError: If the input types are not as expected (bytes for byte_string, int for r_just).
+        """
+        if type(byte_string) is not bytes:
+            raise TypeError("byte_string must be a bytes object.")
+        if type(r_just) is not int:
+            raise TypeError("r_just must be an int.")
+        return byte_string.hex().upper().rjust(r_just * 2, '0')
