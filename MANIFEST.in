@@ -1,9 +1,9 @@
 include LICENSE.txt
 include README.md
 recursive-include ipservice *
-recursive-include macservice *
-recursive-include macservice/data *
-recursive-include macservice/resources *
+exclude macservice *
+exclude macservice/data *
+exclude macservice/resources *
 recursive-include test *
 recursive-include files *
 recursive-include common *

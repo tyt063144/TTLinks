@@ -209,6 +209,21 @@ class IPv4HostConfig(InterfaceIPv4Config):
     @property
     def total_hosts(self) -> int:
         """
+        Calculates the total number of total hosts in the network.
+
+        Returns:
+        int: The number of total hosts, or 0 for networks with no total hosts.
+        """
+        netmask_host_bit_count = list(self.mask.binary_digits).count(0)
+        host_count = 2 ** netmask_host_bit_count
+        if host_count > 0:
+            return host_count
+        else:
+            return 0
+
+    @property
+    def usable_hosts(self) -> int:
+        """
         Calculates the total number of usable hosts in the network.
 
         Returns:

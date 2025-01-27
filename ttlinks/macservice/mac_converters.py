@@ -4,266 +4,190 @@ import re
 from abc import abstractmethod
 from typing import Any, List, Union
 
-from ttlinks.common.binary_utils.binary import Octet
-from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
 from ttlinks.common.design_template.cor import SimpleCoRHandler
 from ttlinks.common.tools.converters import NumeralConverter
 
 
 class MACConverterHandler(SimpleCoRHandler):
-    def __init__(self, padding: bool = True):
-        super().__init__()
-        self._padding = padding  # padding 0 from left to right to fill total of 48
-
-    def set_padding(self, padding: bool):
-        self._padding = padding
-
     @abstractmethod
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         if self._next_handler:
             return self._next_handler.handle(request)
         return self._next_handler
 
     @abstractmethod
-    def _to_octets(self, request: Any) -> List[Octet]:
+    def _to_bytes(self, request: Any) -> bytes:
         pass
-
-
-class OctetMAC48ConverterHandler(MACConverterHandler):
-    def handle(self, request: Any):
-        if isinstance(request, list) and len(request) == 6 and all(isinstance(item, Octet) for item in request):
-            return self._to_octets(request)
-        else:
-            return super().handle(request)
-
-    def _to_octets(self, request: List[Octet]) -> List[Octet]:
-        return request
-
 
 class BinaryDigitsMAC48ConverterHandler(MACConverterHandler):
 
-    def handle(self, request: Any):
-        if isinstance(request, list) and all(isinstance(item, int) for item in request) and len(request) == 48:
-            return self._to_octets(request)
+    def handle(self, request: Any, *args, **kwargs):
+        if isinstance(request, list) and len(request) == 48 and set(request) == {0, 1}:
+            return self._to_bytes(request)
         else:
             return super().handle(request)
 
-    def _to_octets(self, request: Any) -> List[Octet]:
-        binary_string_list = [
-            ''.join(map(str, request[bit_index: bit_index + 8]))
-            for bit_index in range(0, len(request), 8)
-        ]
-        return [
-            OctetFlyWeightFactory.get_octet(binary_string)
-            for binary_string in binary_string_list
-        ]
+    def _to_bytes(self, request: Any) -> bytes:
+        return NumeralConverter.binary_to_bytes(''.join(map(str, request)), 6)
 
 
 class DashedHexMAC48ConverterHandler(MACConverterHandler):
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         if isinstance(request, str) and re.match(r'^[0-9A-F]{12}$', request.replace('-', '').upper()):
-            return self._to_octets(request)
+            return self._to_bytes(request)
         else:
             return super().handle(request)
 
-    def _to_octets(self, request: Any) -> List[Octet]:
+    def _to_bytes(self, request: Any) -> bytes:
         raw_mac = request.replace('-', '').upper()
-        return [
-            OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary(raw_mac[octet_i: octet_i + 2]))
+        bytes_list = [
+            NumeralConverter.hexadecimal_to_bytes(raw_mac[octet_i: octet_i + 2], 1)
             for octet_i in range(0, len(raw_mac), 2)
         ]
+        return b''.join(bytes_list)
 
 
 class ColonHexMAC48ConverterHandler(MACConverterHandler):
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         if isinstance(request, str) and re.match(r'^[0-9A-F]{12}$', request.replace(':', '').upper()):
-            return self._to_octets(request)
+            return self._to_bytes(request)
         else:
             return super().handle(request)
 
-    def _to_octets(self, request: Any) -> List[Octet]:
+    def _to_bytes(self, request: Any) -> bytes:
         raw_mac = request.replace(':', '').upper()
-        return [
-            OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary(raw_mac[octet_i: octet_i + 2]))
+        bytes_list = [
+            NumeralConverter.hexadecimal_to_bytes(raw_mac[octet_i: octet_i + 2], 1)
             for octet_i in range(0, len(raw_mac), 2)
         ]
+        return b''.join(bytes_list)
 
 
 class DotHexMAC48ConverterHandler(MACConverterHandler):
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         if isinstance(request, str) and re.match(r'^[0-9A-F]{12}$', request.replace('.', '').upper()):
-            return self._to_octets(request)
+            return self._to_bytes(request)
         else:
             return super().handle(request)
 
-    def _to_octets(self, request: Any) -> List[Octet]:
+    def _to_bytes(self, request: Any) -> bytes:
         raw_mac = request.replace('.', '').upper()
-        return [
-            OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary(raw_mac[octet_i: octet_i + 2]))
+        bytes_list = [
+            NumeralConverter.hexadecimal_to_bytes(raw_mac[octet_i: octet_i + 2], 1)
             for octet_i in range(0, len(raw_mac), 2)
         ]
+        return b''.join(bytes_list)
 
 
 class DecimalMAC48ConverterHandler(MACConverterHandler):
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         if isinstance(request, int) and request.bit_length() <= 48 and request > 0:
-            return self._to_octets(request)
+            return self._to_bytes(request)
         else:
             return super().handle(request)
 
-    def _to_octets(self, request: int) -> List[Octet]:
-        return [
-            OctetFlyWeightFactory.get_octet(NumeralConverter.decimal_to_binary((request >> (8 * i)) & 0xFF).zfill(8))
-            for i in reversed(range(6))
-        ]
-
+    def _to_bytes(self, request: int) -> bytes:
+        return NumeralConverter.decimal_to_bytes(request, 6)
 
 class BytesMAC48ConverterHandler(MACConverterHandler):
-    def handle(self, request: Any):
-        if isinstance(request, bytes) and len(request) == 6:
-            return self._to_octets(request)
+    def handle(self, request: Any, *args, **kwargs):
+        if isinstance(request, bytes) and len(request) == 6 and max(request) <= 255 and min(request) >= 0:
+            return self._to_bytes(request)
         else:
             return super().handle(request)
 
-    def _to_octets(self, request: bytes) -> List[Octet]:
-        return [
-            OctetFlyWeightFactory.get_octet(NumeralConverter.decimal_to_binary(byte).zfill(8))
-            for byte in request
-        ]
-
-
-class OctetOUI24ConverterHandler(MACConverterHandler):
-    def handle(self, request: Any):
-        if len(request) == 3 and all(isinstance(item, Octet) for item in request):
-            return self._to_octets(request)
-        else:
-            return super().handle(request)
-
-    def _to_octets(self, request: List[Octet]) -> List[Octet]:
-        result = request
-        if self._padding:
-            result.extend([OctetFlyWeightFactory.get_octet('00000000')] * 3)
-        return result
+    def _to_bytes(self, request: bytes) -> bytes:
+        return request
 
 
 class BinaryDigitsOUI24ConverterHandler(MACConverterHandler):
 
-    def handle(self, request: Any):
-        if isinstance(request, list) and all(isinstance(item, int) for item in request) and len(request) == 24:
-            return self._to_octets(request)
+    def handle(self, request: Any, *args, **kwargs):
+        if isinstance(request, list) and len(request) == 24 and set(request) == {0, 1}:
+            return self._to_bytes(request)
         else:
             return super().handle(request)
 
-    def _to_octets(self, request: Any) -> List[Octet]:
-        binary_string_list = [
-            ''.join(map(str, request[bit_index: bit_index + 8]))
-            for bit_index in range(0, len(request), 8)
-        ]
-        result = [OctetFlyWeightFactory.get_octet(binary_string) for binary_string in binary_string_list]
-        if self._padding:
-            result.extend([OctetFlyWeightFactory.get_octet('00000000')] * 3)
-        return result
+    def _to_bytes(self, request: Any) -> bytes:
+        return NumeralConverter.binary_to_bytes(''.join(map(str, request)), 3) + b'\x00' * 3
 
 
 class DashedHexOUI24ConverterHandler(MACConverterHandler):
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         if isinstance(request, str) and re.match(r'^[0-9A-F]{6}$', request.replace('-', '').upper()):
-            return self._to_octets(request)
+            return self._to_bytes(request)
         else:
             return super().handle(request)
 
-    def _to_octets(self, request: Any) -> List[Octet]:
+    def _to_bytes(self, request: Any) -> bytes:
         raw_mac = request.replace('-', '').upper()
-        result = [
-            OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary(raw_mac[octet_i: octet_i + 2]))
+        bytes_list = [
+            NumeralConverter.hexadecimal_to_bytes(raw_mac[octet_i: octet_i + 2], 1)
             for octet_i in range(0, len(raw_mac), 2)
         ]
-        if self._padding:
-            result.extend([OctetFlyWeightFactory.get_octet('00000000')] * 3)
-        return result
+        return b''.join(bytes_list) + b'\x00' * 3
 
 
 class ColonHexOUI24ConverterHandler(MACConverterHandler):
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         if isinstance(request, str) and re.match(r'^[0-9A-F]{6}$', request.replace(':', '').upper()):
-            return self._to_octets(request)
+            return self._to_bytes(request)
         else:
             return super().handle(request)
 
-    def _to_octets(self, request: Any) -> List[Octet]:
+    def _to_bytes(self, request: Any) -> bytes:
         raw_mac = request.replace(':', '').upper()
-        result = [
-            OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary(raw_mac[octet_i: octet_i + 2]))
+        bytes_list = [
+            NumeralConverter.hexadecimal_to_bytes(raw_mac[octet_i: octet_i + 2], 1)
             for octet_i in range(0, len(raw_mac), 2)
         ]
-        if self._padding:
-            result.extend([OctetFlyWeightFactory.get_octet('00000000')] * 3)
-        return result
-
+        return b''.join(bytes_list) + b'\x00' * 3
 
 class DotHexOUI24ConverterHandler(MACConverterHandler):
-    def handle(self, request: Any):
+    def handle(self, request: Any, *args, **kwargs):
         if isinstance(request, str) and re.match(r'^[0-9A-F]{6}$', request.replace('.', '').upper()):
-            return self._to_octets(request)
+            return self._to_bytes(request)
         else:
             return super().handle(request)
 
-    def _to_octets(self, request: Any) -> List[Octet]:
+    def _to_bytes(self, request: Any) -> bytes:
         raw_mac = request.replace('.', '').upper()
-        result = [
-            OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary(raw_mac[octet_i: octet_i + 2]))
+        bytes_list = [
+            NumeralConverter.hexadecimal_to_bytes(raw_mac[octet_i: octet_i + 2], 1)
             for octet_i in range(0, len(raw_mac), 2)
         ]
-        if self._padding:
-            result.extend([OctetFlyWeightFactory.get_octet('00000000')] * 3)
-        return result
+        return b''.join(bytes_list) + b'\x00' * 3
 
 
 class BytesMAC24ConverterHandler(MACConverterHandler):
-    def handle(self, request: Any):
-        if isinstance(request, bytes) and len(request) == 3:
-            return self._to_octets(request)
+    def handle(self, request: Any, *args, **kwargs):
+        if isinstance(request, bytes) and len(request) == 3 and max(request) <= 255 and min(request) >= 0:
+            return self._to_bytes(request)
         else:
             return super().handle(request)
 
-    def _to_octets(self, request: bytes) -> List[Octet]:
-        result = [
-            OctetFlyWeightFactory.get_octet(NumeralConverter.decimal_to_binary(byte).zfill(8))
-            for byte in request
-        ]
-        if self._padding:
-            result.extend([OctetFlyWeightFactory.get_octet('00000000')] * 3)
-        return result
+    def _to_bytes(self, request: bytes) -> bytes:
+        return request + b'\x00' * 3
 
 
 class OctetEUI64ConverterHandler(MACConverterHandler):
-    def handle(self, request: Any):
-        if len(request) == 6 and all(isinstance(item, Octet) for item in request):
-            return self._to_octets(request)
+    def handle(self, request: Any, *args, **kwargs):
+        if isinstance(request, bytes) and len(request) == 6:
+            return self._to_bytes(request)
         else:
             return super().handle(request)
 
-    def _to_octets(self, request: List[Octet]) -> List[Octet]:
-        left_binary_digits = [octet.binary_digits for octet in request[0:3]]
-        right_binary_digits = [octet.binary_digits for octet in request[3:]]
-        middle = [
-            OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary(hexadecimal)).binary_digits
-            for hexadecimal in ['ff', 'fe']
-        ]
-        left_binary_digits[0][6] = 1 if int(left_binary_digits[0][6]) == 0 else 0
-        eui64_binary_digits = left_binary_digits + middle + right_binary_digits
-        return [
-            OctetFlyWeightFactory.get_octet(''.join(map(str, binary_digit)))
-            for binary_digit in eui64_binary_digits
-        ]
+    def _to_bytes(self, request: bytes) -> bytes:
+        left_binary_digits = request[0:3]
+        right_binary_digits = request[3:]
+        return b''.join([left_binary_digits, b'\xFF\xFE', right_binary_digits])
 
 
 class MACConverter:
     @staticmethod
-    def convert_mac(mac: Any, converters: List[MACConverterHandler] = None) -> List[Octet]:
+    def convert_mac(mac: Any, converters: List[MACConverterHandler] = None) -> bytes:
         if converters is None:
             converters = [
-                OctetMAC48ConverterHandler(),
                 BinaryDigitsMAC48ConverterHandler(),
                 DashedHexMAC48ConverterHandler(),
                 ColonHexMAC48ConverterHandler(),
@@ -278,17 +202,15 @@ class MACConverter:
         return converters[0].handle(mac)
 
     @staticmethod
-    def convert_oui(mac: Any, converters: List[MACConverterHandler] = None) -> List[Octet]:
+    def convert_oui(mac: Any, converters: List[MACConverterHandler] = None) -> bytes:
         if converters is None:
             converters = [
-                OctetMAC48ConverterHandler(),
                 BinaryDigitsMAC48ConverterHandler(),
                 DashedHexMAC48ConverterHandler(),
                 ColonHexMAC48ConverterHandler(),
                 DotHexMAC48ConverterHandler(),
                 DecimalMAC48ConverterHandler(),
                 BytesMAC48ConverterHandler(),
-                OctetOUI24ConverterHandler(),
                 BinaryDigitsOUI24ConverterHandler(),
                 DashedHexOUI24ConverterHandler(),
                 ColonHexOUI24ConverterHandler(),
@@ -302,7 +224,7 @@ class MACConverter:
         return converters[0].handle(mac)
 
     @staticmethod
-    def convert_to_eui64(mac: Any) -> Union[List[Octet], None]:
+    def convert_to_eui64(mac: Any) -> Union[bytes, None]:
         mac_address = MACConverter.convert_mac(mac)
         if mac_address is not None:
             converter_handler = OctetEUI64ConverterHandler()
