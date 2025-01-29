@@ -233,8 +233,10 @@ class IPv4HostConfig(InterfaceIPv4Config):
         host_count = (2 ** netmask_host_bit_count) - 2
         if host_count > 0:
             return host_count
+        elif netmask_host_bit_count == 1:
+            return 2
         else:
-            return 0
+            return 1
 
     @property
     def is_unspecified(self) -> bool:
