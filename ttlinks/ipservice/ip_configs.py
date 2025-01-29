@@ -345,9 +345,7 @@ class IPv4SubnetConfig(IPv4HostConfig):
         Returns:
         IPv4Addr: The first usable host in the subnet.
         """
-        if self.mask.mask_size == 32:
-            raise ValueError('No hosts available for a /32 subnet')
-        if self.mask.mask_size == 31:
+        if self.mask.mask_size == 31 or self.mask.mask_size == 32:
             return self.network_id
         else:
             host_iterator = self.get_hosts()
@@ -365,9 +363,7 @@ class IPv4SubnetConfig(IPv4HostConfig):
         Returns:
         IPv4Addr: The last usable host in the subnet.
         """
-        if self.mask.mask_size == 32:
-            raise ValueError('No hosts available for a /32 subnet')
-        if self.mask.mask_size == 31:
+        if self.mask.mask_size == 31 or self.mask.mask_size == 32:
             return self.broadcast_ip
         else:
             return IPv4Addr(DecimalIPv4ConverterHandler().handle(self.broadcast_ip.as_decimal - 1))
