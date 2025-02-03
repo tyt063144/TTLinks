@@ -33,7 +33,8 @@ def calculate_minimum_ipv4_wildcard(*subnets: str) -> IPv4WildCardConfig:
         else:
             wildcard_address_bits.append(0)
             wildcard_mask_bits.append(1)
-    wildcard_mask_bits[-max_host_bits:] = [1] * max_host_bits
+    if max_host_bits != 0:
+        wildcard_mask_bits[-max_host_bits:] = [1] * max_host_bits
     return IPv4WildCardConfig(
         IPv4Addr(BinaryDigitsIPv4ConverterHandler().handle(wildcard_address_bits)),
         IPv4WildCard(BinaryDigitsIPv4ConverterHandler().handle(wildcard_mask_bits))
@@ -70,7 +71,8 @@ def calculate_minimum_ipv6_wildcard(*subnets: str) -> IPv6WildCardConfig:
         else:
             wildcard_address_bits.append(0)
             wildcard_mask_bits.append(1)
-    wildcard_mask_bits[-max_host_bits:] = [1] * max_host_bits
+    if max_host_bits != 0:
+        wildcard_mask_bits[-max_host_bits:] = [1] * max_host_bits
     return IPv6WildCardConfig(
         IPv6Addr(BinaryDigitsIPv6ConverterHandler().handle(wildcard_address_bits)),
         IPv6WildCard(BinaryDigitsIPv6ConverterHandler().handle(wildcard_mask_bits))
