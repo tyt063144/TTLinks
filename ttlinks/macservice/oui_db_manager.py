@@ -9,7 +9,7 @@ from ttlinks.macservice.oui_file_parsers import OuiFileParser, IEEEOuiCsvFile
 from ttlinks.macservice.oui_utils import OUIUnit, OUIType
 
 Base = declarative_base()
-base_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources\\')
+base_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
 
 class OUIDB(Base):
     """
