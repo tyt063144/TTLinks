@@ -1,222 +1,165 @@
 from enum import Enum
-from typing import Dict, List, Union
-
-from ttlinks.common.binary_utils.binary import Octet
-from ttlinks.common.binary_utils.binary_factory import OctetFlyWeightFactory
-from ttlinks.common.design_template.factory import Factory
+from typing import Dict, Union
 from ttlinks.common.tools.converters import NumeralConverter
-from ttlinks.macservice.mac_converters import MACConverter
-
 
 class OUIType(Enum):
     """
-    An enumeration to categorize different types of Organizationally Unique Identifiers (OUIs).
-    OUI types include:
-    UNKNOWN: Unidentified or unspecified OUI type.
-    IAB: Individual Address Block for smaller requirements.
-    MA_S: Standard MAC Address block size typically used by most organizations.
-    MA_M: Medium-sized MAC Address block for larger organizational needs.
-    MA_L: Large MAC Address block allocated for extensive hardware requirements.
-    CID: Company ID, often used to identify specific entities or manufacturers beyond the usual MAC address allocations.
+    Enumeration representing different Organizationally Unique Identifier (OUI) types.
+
+    Each type has a specific block size and a corresponding value.
     """
-    UNKNOWN = 0
-    IAB = 1
-    MA_S = 2
-    MA_M = 3
-    MA_L = 4
-    CID = 5
+    UNKNOWN = {"block_size": 0, "value": 'UNKNOWN'}
+    IAB = {"block_size": 4095, "value": 'IAB'}
+    MA_S = {"block_size": 4095, "value": 'MA_S'}
+    MA_M = {"block_size": 1048575, "value": 'MA_M'}
+    MA_L = {"block_size": 16777215, "value": 'MA_L'}
+    CID = {"block_size": 16777215, "value": 'CID'}
 
 
 class OUIUnit:
     """
-    Represents an Organizational Unique Identifier (OUI) unit that is used for identifying the manufacturer
-    or organization by a unique MAC prefix in network technologies. This class utilizes the flyweight design pattern
-    to manage instances efficiently by ensuring that identical objects are shared rather than duplicated.
+    A class representing an OUI unit, which defines a range of MAC addresses assigned to an organization.
+
+    This class implements the Singleton pattern for unique OUI units based on a combination of
+    `oui_id`, `start_hex`, `end_hex`, and `oui_type`.
 
     Attributes:
-        _oui_units (dict): A class-level dictionary that stores unique OUIUnit instances indexed by a tuple key.
+        __oui_id (str): The OUI identifier (prefix of the MAC address).
+        __start_hex (str): The starting hexadecimal value of the MAC address range.
+        __end_hex (str): The ending hexadecimal value of the MAC address range.
+        __block_size (int): The block size allocated to this OUI.
+        __oui_type (OUIType): The type of OUI (IAB, MA_S, MA_M, etc.).
+        __organization (str, optional): The name of the organization owning the OUI.
+        __address (str, optional): The address of the organization.
     """
+
     _oui_units = {}
 
     def __new__(
             cls,
-            oui_id: List[Octet],
-            oui_mask: List[Octet],
+            oui_id: str,
+            start_hex: str,
+            end_hex: str,
+            block_size: int,
             oui_type: OUIType,
-            organization: Union[str, None],
-            mac_range: Union[str, None],
-            oui_hex: Union[str, None],
-            address: Union[str, None]
+            organization: str,
+            address: str
     ):
         """
-        Ensures that only one instance of OUIUnit is created for each unique combination of start binaries,
-        MAC mask, and OUI type. If an instance with the same key already exists, it returns the existing instance
-        instead of creating a new one.
+        Ensures that only one instance exists for each unique OUI unit.
 
-        Parameters:
-            oui_id (List[BinaryClass]): Binary representations of the start of the OUI.
-            oui_mask (List[BinaryClass]): Binary mask that applies to the OUI.
-            oui_type (OUIType): The type of the OUI, indicating its use.
-            organization (Union[str, None]): Name of the organization associated with the OUI.
-            mac_range (Union[str, None]): The MAC range associated with the OUI.
-            oui_hex (Union[str, None]): The hexadecimal representation of the OUI.
-            address (Union[str, None]): The address of the organization owning the OUI.
+        Args:
+            oui_id (str): OUI identifier (prefix of the MAC address).
+            start_hex (str): Start of the OUI's hexadecimal MAC range.
+            end_hex (str): End of the OUI's hexadecimal MAC range.
+            block_size (int): The block size allocated to this OUI.
+            oui_type (OUIType): Type of OUI.
+            organization (str): Organization name associated with the OUI.
+            address (str): Organization's address.
 
         Returns:
-            OUIUnit: A new or existing instance of the OUIUnit.
+            OUIUnit: A unique instance corresponding to the provided parameters.
         """
-        key = (tuple(oui_id), tuple(oui_mask), oui_type)
+        key = (oui_id, start_hex, end_hex, oui_type)
         if key not in cls._oui_units.keys():
             instance = super().__new__(cls)
             cls._oui_units[key] = instance
             instance.__oui_id = oui_id
-            instance.__oui_mask = oui_mask
+            instance.__start_hex = start_hex
+            instance.__end_hex = end_hex
+            instance.__block_size = block_size
             instance.__oui_type = oui_type
             instance.__organization = organization
-            instance.__mac_range = mac_range
-            instance.__oui_hex = oui_hex
             instance.__address = address
             return instance
         return cls._oui_units[key]
 
     def __init__(
             self,
-            oui_id: List[Octet],
-            oui_mask: List[Octet],
+            oui_id: str,
+            start_hex: str,
+            end_hex: str,
+            block_size: int,
             oui_type: OUIType,
             organization: Union[str, None],
-            mac_range: Union[str, None],
-            oui_hex: Union[str, None],
             address: Union[str, None],
     ):
         """
-        Initializes the OUIUnit instance with provided parameters. This method is typically called only
-        once when the instance is first created.
+        Initializes an OUIUnit instance.
 
-        Parameters:
-            oui_id, oui_mask, oui_type, organization, mac_range, oui_hex, address: See __new__ for details.
+        Args:
+            oui_id (str): OUI identifier (prefix of the MAC address).
+            start_hex (str): Start of the OUI's hexadecimal MAC range.
+            end_hex (str): End of the OUI's hexadecimal MAC range.
+            block_size (int): The block size allocated to this OUI.
+            oui_type (OUIType): Type of OUI.
+            organization (Union[str, None]): Organization name (optional).
+            address (Union[str, None]): Organization's address (optional).
         """
         self.__oui_id = oui_id
-        self.__oui_mask = oui_mask
+        self.__start_hex = start_hex
+        self.__end_hex = end_hex
+        self.__block_size = block_size
         self.__oui_type = oui_type
         self.__organization = organization
-        self.__mac_range = mac_range
-        self.__oui_hex = oui_hex
         self.__address = address
 
     @property
-    def oui_id_binary_digits(self) -> List[int]:
+    def first_mac_hex(self) -> str:
         """
-        Returns the binary digits for the OUI's identifier as a list of integers.
+        Returns the first MAC address in hexadecimal format.
 
         Returns:
-        - List[int]: Binary digits of the OUI ID.
+            str: The first MAC address as a concatenation of OUI ID and start hex.
         """
-        result = []
-        for octet in self.__oui_id:
-            result.extend(octet.binary_digits)
-        return result
+        return self.__oui_id + self.__start_hex
 
     @property
-    def oui_mask_binary_digits(self) -> List[int]:
+    def last_mac_hex(self) -> str:
         """
-        Returns the binary digits for the OUI's mask as a list of integers.
+        Returns the last MAC address in hexadecimal format.
 
         Returns:
-        - List[int]: Binary digits of the OUI mask.
+            str: The last MAC address as a concatenation of OUI ID and end hex.
         """
-        result = []
-        for octet in self.__oui_mask:
-            result.extend(octet.binary_digits)
-        return result
+        return self.__oui_id + self.__end_hex
+
+    @property
+    def first_mac_decimal(self) -> int:
+        """
+        Converts the first MAC address from hexadecimal to decimal.
+
+        Returns:
+            int: The decimal representation of the first MAC address.
+        """
+        return NumeralConverter.hexadecimal_to_decimal(self.first_mac_hex)
+
+    @property
+    def last_mac_decimal(self) -> int:
+        """
+        Converts the last MAC address from hexadecimal to decimal.
+
+        Returns:
+            int: The decimal representation of the last MAC address.
+        """
+        return NumeralConverter.hexadecimal_to_decimal(self.last_mac_hex)
 
     @property
     def record(self) -> Dict:
         """
-        Returns a dictionary containing the hexadecimal representation of the OUI details.
+        Returns a dictionary representation of the OUI unit.
 
         Returns:
-        - Dict: A dictionary with keys 'oui_id', 'oui_mask', 'oui_type', 'organization', 'mac_range', 'oui_hex', 'address'.
+            Dict: Dictionary containing OUI details, including MAC address range and organization info.
         """
         return {
-            'oui_id': ':'.join([
-                NumeralConverter.binary_to_hexadecimal(str(start_bin)).rjust(2, '0')
-                for start_bin in self.__oui_id
-            ]),
-            'oui_mask': ':'.join([
-                NumeralConverter.binary_to_hexadecimal(str(mask_bin)).rjust(2, '0')
-                for mask_bin in self.__oui_mask
-            ]),
+            'oui_id': self.__oui_id,
+            'start_hex': self.__start_hex,
+            'end_hex': self.__end_hex,
+            'start_decimal': self.first_mac_decimal,
+            'end_decimal': self.last_mac_decimal,
+            'block_size': self.__block_size,
             'oui_type': self.__oui_type.name,
             'organization': self.__organization,
-            'mac_range': self.__mac_range,
-            'oui_hex': self.__oui_hex,
-            'address': self.__address
+            'address': self.__address,
         }
-
-
-class OUIUnitCreator(Factory):
-    """
-    A factory class for creating instances of OUIUnit. It processes the raw input and creates the appropriate OUIUnit.
-
-    Method:
-    - create_product: Creates a new OUIUnit based on the provided arguments (oui_id, oui_mask, oui_type, etc.).
-    """
-
-    def create_product(self, **kwargs):
-        """
-        Converts the provided OUI data to octets and creates an OUIUnit instance.
-
-        Parameters:
-        - kwargs (dict): Contains raw input like 'oui_id', 'oui_mask', 'oui_type', etc., which is processed before creating the OUIUnit.
-
-        Returns:
-        - OUIUnit: A new instance of the OUIUnit class.
-        """
-        data = {
-            'oui_id': MACConverter.convert_oui(kwargs['oui_id']),
-            'oui_mask': MACConverter.convert_oui(kwargs['oui_mask']),
-            'oui_type': OUIType[kwargs['oui_type']]
-        }
-        kwargs.update(data)
-        return OUIUnit(**kwargs)
-
-
-class OUIDBStrategy(Enum):
-    """
-    An enumeration to categorize different strategies for loading or searching OUI data.
-    OUI loader strategies include:
-    - SIMPLE_ITERATION: A simple iteration strategy for loading or searching OUI data.
-    - TRIE: A trie-based strategy for loading or searching OUI data.
-    """
-    SIMPLE_ITERATION = 0
-    TRIE = 1
-
-class OUIMask(Enum):
-    """
-    An enumeration to categorize different types of masks used for OUI search.
-    OUI masks include:
-    """
-    IAB = (
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 4 +
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('F0'))] +
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))]
-    )
-    MA_S = (
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 4 +
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('F0'))] +
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))]
-    )
-    MA_M = (
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 3 +
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('F0'))] +
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))] * 2
-    )
-    MA_L = (
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 3 +
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))] * 3
-    )
-    CID = (
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('FF'))] * 3 +
-            [OctetFlyWeightFactory.get_octet(NumeralConverter.hexadecimal_to_binary('00'))] * 3
-    )

@@ -1,74 +1,89 @@
-### `mac_address.py` Module Documentation
+# `mac_address` Module  
 
-### Overview
+## 1. Create a `MACAddr` Object  
 
-The `mac_address.py` module provides a comprehensive solution for handling, validating, and classifying MAC (Media Access Control) addresses. It also provides functionalities to interact with the OUI (Organizationally Unique Identifier) database to determine the organization associated with the MAC address. This module implements the Chain of Responsibility (CoR) pattern for MAC address classification and offers utilities for MAC address conversion to binary formats and string representations.
+This example demonstrates how to create a `MACAddr` object using the **TTLinks** `macservice` library. The accepted formats include **dashed**, **dotted**, **colon-separated**, and **pure string** representations.  
 
-### Key Components
-
-1. **`InterfaceMACAddr` Class**:
-   - An abstract base class defining the structure for handling MAC addresses, including validation, classification, and interaction with the OUI database.
-   - **Key Methods**:
-     - `_initialization(mac: List[Octet])`: Initializes and validates the MAC address.
-     - `_validate(mac: List[Octet])`: Validates the MAC address and converts it into its binary form.
-     - `_classify_mac_address()`: Classifies the MAC address as either unicast, multicast, or broadcast.
-     - `_search_oui()`: Searches the local OUI database to find the OUI associated with the MAC address.
-     - `binary_digits`: Returns the binary representation of the MAC address as a list of bits.
-     - `binary_string`: Returns the binary representation of the MAC address as a binary string.
-     - `address`: Returns the MAC address as a list of octets.
-     - `__str__()`: Returns the MAC address in a human-readable hexadecimal format.
-
-2. **`MACAddr` Class**:
-   - A concrete implementation of the `InterfaceMACAddr` class, responsible for initializing, validating, classifying, and searching OUI information for a MAC address.
-   - **Key Methods**:
-     - `_initialization(mac: Any)`: Initializes the MAC address, classifies its type, and searches for OUI information.
-     - `_validate(mac: Any)`: Converts the input MAC address to binary format and raises an error if invalid.
-     - `_classify_mac_address()`: Classifies the MAC address using the `MACAddrClassifier`.
-     - `_search_oui()`: Searches the OUI database for the organization associated with the MAC address.
-     - `binary_digits`: Returns the binary representation of the MAC address as a list of bits.
-     - `binary_string`: Returns the MAC address as a binary string.
-     - `__str__()`: Returns the MAC address formatted as a colon-separated hexadecimal string (e.g., `AA:BB:CC:DD:EE:FF`).
-
-### Example Usage
-
-#### Example 1: Initialize and Classify a MAC Address
 ```python
 from ttlinks.macservice.mac_address import MACAddr
 
-mac_addr = MACAddr("b0-fc-0d-60-51-f8")
-print(mac_addr)            # Human-readable format
-print(mac_addr.mac_type)   # MAC Type (UNICAST, MULTICAST, or BROADCAST)
-print(mac_addr.oui.record) # OUI record from the database
+mac1 = MACAddr("08-BF-B8-34-b0-03")
+mac2 = MACAddr("08:BF:B8:34:b0:03")
+mac3 = MACAddr("08.BF.B8.34.b0.03")
+mac4 = MACAddr("08BFB834b003")
+
+print(str(mac1))
+print(str(mac2))
+print(str(mac3))
+print(str(mac4))
 ```
 
-**Expected Output**:
+### Example Output:
 ```
-B0:FC:0D:60:51:F8
-MACType.UNICAST
-[OUI Record Information]
+08:BF:B8:34:B0:03
+08:BF:B8:34:B0:03
+08:BF:B8:34:B0:03
+08:BF:B8:34:B0:03
 ```
 
-#### Example 2: Convert MAC Address to Binary Formats
+## 2. Show MAC Address in Bit-Level Representation  
+
+The `.binary_string` property provides the bit-level representation of a given MAC address.  
+
 ```python
-from ttlinks.macservice.mac_address import MACAddr
-
-mac_addr = MACAddr("60-57-c8-98-43-13")
-print(mac_addr.binary_digits)  # List of binary digits
-print(mac_addr.binary_string)  # Binary string representation
+mac1.binary_string
 ```
 
-**Expected Output**:
+### Example Output:
 ```
-[Binary Digits as List]
-Binary String: "01100000010101111100100010011000010000110011"
+000010001011111110111000001101001011000000000011
 ```
 
-### Dependencies
+## 3. Convert MAC Address to Decimal  
 
-The module relies on several key components:
-- **`ttlinks.common.binary_utils.binary.Octet`**: Represents an octet of a MAC address.
-- **`ttlinks.common.tools.converters.NumeralConverter`**: Converts binary values into hexadecimal representations.
-- **`ttlinks.macservice.mac_classifiers.MACAddrClassifier`**: Classifies MAC addresses as Unicast, Multicast, or Broadcast.
-- **`ttlinks.macservice.mac_converters.MACConverter`**: Converts MAC addresses to and from different formats (e.g., hexadecimal, binary).
-- **`ttlinks.macservice.oui_db.database.LocalOUIDatabase`**: Provides access to the local OUI database for retrieving OUI records.
+The `.as_decimal` property converts a MAC address to its decimal format.  
 
+```python
+mac1.as_decimal
+```
+
+### Example Output:
+```
+9619522236419
+```
+
+## 4. Check OUI Information  
+
+When a `MACAddr` object is created, **TTLinks** automatically searches the **OUI database** and links any corresponding **OUI information** to the MAC address.  
+
+- The result is returned as a **list**.  
+- Typically, the list contains **one OUI entry**, which can be accessed using `[0]`.  
+- If no OUI is found, an **empty list** is returned.  
+
+```python
+if mac1.oui:
+    print(mac1.oui[0].record)
+else:
+    print("No OUI record for mac1")
+
+if mac2.oui:
+    print(mac2.oui[0].record)
+else:
+    print("No OUI record for mac2")
+```
+
+### Example Output:
+```
+mac1:  {
+    'oui_id': '08BFB8', 
+    'start_hex': '000000', 
+    'end_hex': 'FFFFFF', 
+    'start_decimal': 9619518783488, 
+    'end_decimal': 9619535560703, 
+    'block_size': 16777215, 
+    'oui_type': 'MA_L', 
+    'organization': 'ASUSTek COMPUTER INC.', 
+    'address': 'No.15, Lide Rd., Beitou Dist., Taipei 112, Taiwan Taipei Taiwan TW 112'
+}
+No OUI record for mac2
+```

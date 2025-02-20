@@ -1,66 +1,128 @@
 import pytest
 
-from ttlinks.macservice.mac_address import MACAddr
 from ttlinks.macservice import MACType
+from ttlinks.macservice.mac_address import MACAddr
+# from ttlinks.common.tools.converters import NumeralConverter
+
+@pytest.mark.parametrize("input_mac, expected_bytes", [
+    ("AA-BB-CC-DD-EE-FF", b'\xAA\xBB\xCC\xDD\xEE\xFF'),  # Dashed Hex
+    ("AA:BB:CC:DD:EE:FF", b'\xAA\xBB\xCC\xDD\xEE\xFF'),  # Colon Hex
+    ("AABB.CCDD.EEFF", b'\xAA\xBB\xCC\xDD\xEE\xFF'),  # Dotted Hex
+    (281474976710655, b'\xFF\xFF\xFF\xFF\xFF\xFF'),  # Decimal
+    (b'\x00\x11\x22\x33\x44\x55', b'\x00\x11\x22\x33\x44\x55'),  # Bytes
+])
+def test_mac_address_initialization(input_mac, expected_bytes):
+    """
+    Test valid MAC address inputs in different formats.
+    """
+    mac = MACAddr(input_mac)
+    assert mac._address == expected_bytes
 
 
-def test_mac_initialization_unicast():
-    """Test the initialization and classification of a unicast MAC address."""
-    mac_addr = MACAddr("b0-fc-0d-60-51-f8")
-    assert str(mac_addr) == "B0:FC:0D:60:51:F8", "MAC address string conversion failed."
-    assert mac_addr.mac_type == MACType.UNICAST, "Failed to classify unicast MAC address."
+@pytest.mark.parametrize("invalid_mac", [
+    "AA-BB-CC-DD-EE",  # Too short
+    "AA:BB:CC:DD:EE:FF:00",  # Too long
+    "GG-HH-II-JJ-KK-LL",  # Non-hex characters
+    "01-23-45-67-89",  # Missing octet
+    281474976710656,  # Exceeds 48-bit limit
+    -1,  # Negative number
+    "",  # Empty string
+    None,  # NoneType
+    1234567890123456,  # Too large integer
+])
+def test_invalid_mac_address_initialization(invalid_mac):
+    """
+    Test invalid MAC address inputs.
+    """
+    with pytest.raises(ValueError):
+        MACAddr(invalid_mac)
 
 
-def test_mac_initialization_multicast():
-    """Test the initialization and classification of a multicast MAC address."""
-    mac_addr = MACAddr("01-00-5e-00-00-fb")
-    assert str(mac_addr) == "01:00:5E:00:00:FB", "MAC address string conversion failed."
-    assert mac_addr.mac_type == MACType.MULTICAST, "Failed to classify multicast MAC address."
+@pytest.mark.parametrize("input_mac, expected_type", [
+    (b'\xff\xff\xff\xff\xff\xff', MACType.BROADCAST),  # Broadcast Address
+    (b'\x00\x11\x22\x33\x44\x55', MACType.UNICAST),  # Standard Unicast
+    (b'\x02\xAA\xBB\xCC\xDD\xEE', MACType.UNICAST),  # LSB = 0 (Unicast)
+    (b'\x01\x00\x5e\x00\x00\xfb', MACType.MULTICAST),  # IPv4 Multicast
+    (b'\x33\x33\x00\x00\x00\x01', MACType.MULTICAST),  # IPv6 Multicast
+])
+def test_mac_address_classification(input_mac, expected_type):
+    """
+    Test MAC address classification (Unicast, Multicast, Broadcast).
+    """
+    mac = MACAddr(input_mac)
+    assert mac.mac_type == expected_type
 
 
-def test_mac_initialization_broadcast():
-    """Test the initialization and classification of a broadcast MAC address."""
-    mac_addr = MACAddr("ff:ff:ff:ff:ff:ff")
-    assert str(mac_addr) == "FF:FF:FF:FF:FF:FF", "MAC address string conversion failed."
-    assert mac_addr.mac_type == MACType.BROADCAST, "Failed to classify broadcast MAC address."
+def test_mac_address_oui_lookup():
+    """
+    Test OUI lookup (mocked to return a test vendor).
+    """
+    mac = MACAddr("08-BF-B8-34-00-00")
+    assert len(mac.oui) == 1
+    assert mac.oui[0].record == {'oui_id': '08BFB8', 'start_hex': '000000', 'end_hex': 'FFFFFF', 'start_decimal': 9619518783488, 'end_decimal': 9619535560703, 'block_size': 16777215, 'oui_type': 'MA_L', 'organization': 'ASUSTek COMPUTER INC.', 'address': 'No.15,Lide Rd., Beitou, Dist.,Taipei 112,Taiwan Taipei Taiwan TW 112'}
 
 
-def test_invalid_mac_initialization():
-    """Test that invalid MAC addresses raise an error during initialization."""
-    with pytest.raises(ValueError, match=r"MAC address .* is not valid"):
-        MACAddr("ZZ:ZZ:ZZ:ZZ:ZZ:ZZ")
+@pytest.mark.parametrize("input_mac, expected_binary", [
+    ("AA-BB-CC-DD-EE-FF", "101010101011101111001100110111011110111011111111"),
+    ("00-11-22-33-44-55", "000000000001000100100010001100110100010001010101"),
+    ("FF-FF-FF-FF-FF-FF", "111111111111111111111111111111111111111111111111"),
+])
+def test_mac_binary_string(input_mac, expected_binary):
+    """
+    Test binary string representation of MAC address.
+    """
+    mac = MACAddr(input_mac)
+    assert mac.binary_string == expected_binary
 
 
-def test_mac_binary_digits():
-    """Test that the MAC address is correctly converted into its binary representation as digits."""
-    mac_addr = MACAddr("b0-fc-0d-60-51-f8")
-    expected_binary_digits = [
-        1, 0, 1, 1, 0, 0, 0, 0,  # B0
-        1, 1, 1, 1, 1, 1, 0, 0,  # FC
-        0, 0, 0, 0, 1, 1, 0, 1,  # 0D
-        0, 1, 1, 0, 0, 0, 0, 0,  # 60
-        0, 1, 0, 1, 0, 0, 0, 1,  # 51
-        1, 1, 1, 1, 1, 0, 0, 0   # F8
-    ]
-    assert mac_addr.binary_digits == expected_binary_digits, "Binary digits conversion failed."
+@pytest.mark.parametrize("input_mac, expected_hex", [
+    ("AA-BB-CC-DD-EE-FF", "AABBCCDDEEFF"),
+    ("00-11-22-33-44-55", "001122334455"),
+    ("FF-FF-FF-FF-FF-FF", "FFFFFFFFFFFF"),
+])
+def test_mac_hexadecimal_representation(input_mac, expected_hex):
+    """
+    Test hexadecimal string representation of MAC address.
+    """
+    mac = MACAddr(input_mac)
+    assert mac.as_hexadecimal == expected_hex
 
 
-def test_mac_binary_string():
-    """Test that the MAC address is correctly converted into its binary string representation."""
-    mac_addr = MACAddr("60-57-c8-98-43-13")
-    expected_binary_string = "011000000101011111001000100110000100001100010011"
-    assert mac_addr.binary_string == expected_binary_string, "Binary string conversion failed."
+@pytest.mark.parametrize("input_mac, expected_decimal", [
+    ("AA-BB-CC-DD-EE-FF", 187723572702975),
+    ("00-11-22-33-44-55", 73588229205),
+    ("FF-FF-FF-FF-FF-FF", 281474976710655),
+])
+def test_mac_decimal_representation(input_mac, expected_decimal):
+    """
+    Test decimal representation of MAC address.
+    """
+    mac = MACAddr(input_mac)
+    assert mac.as_decimal == expected_decimal
 
 
-def test_mac_search_oui():
-    """Test that the OUI database correctly identifies the organization associated with a MAC address."""
-    mac_addr = MACAddr("b0-fc-0d-60-51-f8")
-    assert mac_addr.oui is not None, "OUI search failed, OUI should not be None."
-    assert "B0FC0D" in mac_addr.oui.record['oui_id'].replace(':', ''), "OUI record does not match the MAC address."
+@pytest.mark.parametrize("input_mac, expected_string", [
+    ("AA-BB-CC-DD-EE-FF", "AA:BB:CC:DD:EE:FF"),
+    ("00-11-22-33-44-55", "00:11:22:33:44:55"),
+    ("FF-FF-FF-FF-FF-FF", "FF:FF:FF:FF:FF:FF"),
+])
+def test_mac_string_representation(input_mac, expected_string):
+    """
+    Test human-readable string representation of MAC address.
+    """
+    mac = MACAddr(input_mac)
+    assert str(mac) == expected_string
 
 
-def test_mac_type_property():
-    """Test that the mac_type property returns the correct MACType."""
-    mac_addr = MACAddr("b0-fc-0d-60-51-f8")
-    assert mac_addr.mac_type == MACType.UNICAST, "Failed to return correct mac_type property."
-
+@pytest.mark.parametrize("invalid_mac", [
+    "AA-BB-CC-DD-EE",  # Too short
+    "GG-HH-II-JJ-KK-LL",  # Non-hex characters
+    None,  # NoneType
+    1234567890123456,  # Too large integer
+])
+def test_mac_address_validation_raises_exception(invalid_mac):
+    """
+    Ensure validation raises ValueError for invalid MAC inputs.
+    """
+    with pytest.raises(ValueError):
+        MACAddr(invalid_mac)

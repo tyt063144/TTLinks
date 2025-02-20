@@ -320,31 +320,62 @@ For more details, visit:
 - [IP Address Service](docs/ipservice/ip_service.md)
 
 ---
+
+### 2. `macservice` - MAC Address Services
+The MAC service module in TTLinks provides a comprehensive set of tools for working with MAC addresses. It includes features for:
+
+- Classifying and converting MAC addresses into various formats, including bit-level and decimal representations.
+- Retrieving the Organizationally Unique Identifier (OUI) associated with a given MAC address.
+- Generating random MAC addresses.
+- Creating MAC address objects in batch, streamlining large-scale processing.
+
+This module enhances the efficiency of managing MAC addresses, making it an essential tool for network professionals.
+
+
+<details>
+
+**TTLinks** provides a way to create MACAddr object for IPv4. The following example demonstrates how to create this object and access its properties:
+
+<summary>(Click to Expand) Example: MAC Object</summary>
+
+```python
+from ttlinks.macservice.mac_factory import MACFactory
+
+mac_factory = MACFactory()
+mac_addr = mac_factory.mac("08-BF-B8-34-b0-03")
+print('MAC Type: ', mac_addr.mac_type.name)
+print('Bit-level representation: ', mac_addr.binary_string)
+print('OUI: ', mac_addr.oui[0].record)
+print('Standardized output: ', str(mac_addr))
+```
+Example output:
+```
+-----------Display MAC Information------------
+MAC Type:  UNICAST
+Bit-level representation:  000010001011111110111000001101001011000000000011
+OUI: {
+    'oui_id': '08BFB8', 
+    'start_hex': '000000', 
+    'end_hex': 'FFFFFF', 
+    'start_decimal': 9619518783488, 
+    'end_decimal': 9619535560703, 
+    'block_size': 16777215, 
+    'oui_type': 'MA_L', 
+    'organization': 'ASUSTek COMPUTER INC.', 
+    'address': 'No.15,Lide Rd., Beitou, Dist.,Taipei 112,Taiwan Taipei Taiwan TW 112'
+}
+Standardized output:  08:BF:B8:34:B0:03
+```
+</details>
+
+Above only shows very basic examples. **TTLinks** provides more functionalities and tools for working with MAC addresses.
+For more details, visit:
+- [MAC Address Service](docs/macservice/mac_services.md)
+
+---
 <details>
 
 <summary>The hiding document is gradually deprecated. New Document will be updated.</summary>
-
-
-### Common Utilities
-**TTLinks** includes a set of common utilities that provide essential functionality for network management tasks. These utilities are designed to be reusable and extensible, offering a foundation for building more complex network tools.
-For more details, visit:
-- [Common Utilities](docs/common/common_utilities.md)
-
-### IP Services
-The IP service module in **TTLinks** offers a variety of tools to classify and work with both IPv4 and IPv6 addresses. These services allow you to:
-- Identify address types (public, private, multicast, etc.)
-- Perform address calculations, subnetting operations, and wildcard calculation.
-
-For more details, visit:
-- [IP Address Services](docs/ipservice/ip_services.md)
-- [design diagram](docs/ipservice/Class%20Diagram.pdf)
-
-### MAC Services
-**TTLinks** includes a powerful MAC service module for validating MAC addresses, converting between various formats, and performing OUI lookups using a local database. This is especially useful for managing devices across a network.
-
-For more details, visit:
-- [MAC Address Services](docs/macservice/mac_services.md)
-- [design diagram](docs/macservice/Class%20Diagram.pdf)
 
 ### Ping Check Services
 - **Reachability (Ping) Checks**: Test the reachability of hosts over the network using ICMP ping.

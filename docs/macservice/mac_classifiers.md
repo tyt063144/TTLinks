@@ -1,86 +1,83 @@
-### `mac_classifiers.py` Module Documentation
+# `mac_classifiers` Module  
 
-### Overview
+The **`mac_classifiers`** module provides functionality to classify **MAC addresses** into three categories:  
+- **Unicast**  
+- **Multicast**  
+- **Broadcast**  
 
-The `mac_classifiers.py` module provides functionality for classifying MAC (Media Access Control) addresses based on their type: Unicast, Multicast, or Broadcast. Using the Chain of Responsibility (CoR) design pattern, the module supports flexible classification by delegating requests through a chain of handlers. The handlers classify MAC addresses based on their binary representation and the properties of the first octet.
+This classification follows the **IEEE 802 MAC addressing standard** and is implemented using the **Chain of Responsibility** design pattern.  
 
-The module allows users to classify MAC addresses into three types:
-- **Unicast**: A point-to-point communication where the least significant bit (LSB) of the first octet is 0.
-- **Multicast**: A communication where the least significant bit (LSB) of the first octet is 1.
-- **Broadcast**: A communication to all devices in a network, where all bits of the MAC address are set to 1.
+## 1. Classify a MAC Address  
 
-### Key Components
+The `MACAddrClassifier` class provides a method to classify a given MAC address by processing it through a chain of classifiers.  
 
-1. **`MACAddrClassifierHandler` Class**:
-   - Abstract base class for MAC address classification, following the Chain of Responsibility pattern.
-   - Provides the `handle()` method to process the MAC address and `_verify_type()` method to check if a MAC address matches a specific type.
-
-2. **Subclasses of `MACAddrClassifierHandler`**:
-   - **`BroadcastMACAddrClassifierHandler`**: Classifies a MAC address as `MACType.BROADCAST` if all bits in the address are set to 1.
-   - **`UnicastMACAddrClassifierHandler`**: Classifies a MAC address as `MACType.UNICAST` if the least significant bit (LSB) of the first octet is 0.
-   - **`MulticastMACAddrClassifierHandler`**: Classifies a MAC address as `MACType.MULTICAST` if the least significant bit (LSB) of the first octet is 1.
-
-3. **`MACAddrClassifier` Class**:
-   - Static class that classifies MAC addresses using a chain of `MACAddrClassifierHandler` objects.
-   - Provides the `classify_mac()` method that takes a MAC address and processes it through the chain of handlers to determine its type.
-
-### Example Usage
-
-This section demonstrates how to use the `mac_classifiers.py` module to classify MAC addresses as Unicast, Multicast, or Broadcast.
-
-#### Example 1: Classifying a Broadcast MAC Address
 ```python
 from ttlinks.macservice.mac_classifiers import MACAddrClassifier
-from ttlinks.macservice.mac_converters import MACConverter
+from ttlinks.macservice import MACType
 
-# Broadcast MAC address (all bits set to 1)
-mac_address = "FF:FF:FF:FF:FF:FF"
-mac_type = MACAddrClassifier.classify_mac(MACConverter.convert_mac(mac_address))
-print(mac_type)
+mac1 = b'\xff\xff\xff\xff\xff\xff'  # Broadcast MAC
+mac2 = b'\x02\x11\x22\x33\x44\x55'  # Unicast MAC
+mac3 = b'\x01\x11\x22\x33\x44\x55'  # Multicast MAC
+
+print(MACAddrClassifier.classify_mac(mac1))  # Expected Output: MACType.BROADCAST
+print(MACAddrClassifier.classify_mac(mac2))  # Expected Output: MACType.UNICAST
+print(MACAddrClassifier.classify_mac(mac3))  # Expected Output: MACType.MULTICAST
 ```
-**Expected Output**:
+
+### Example Output:
+```
+MACType.BROADCAST
+MACType.UNICAST
+MACType.MULTICAST
+```
+
+## 2. Broadcast MAC Address Classification  
+
+A **broadcast MAC address** consists of all `FF` bytes (`0xFF:FF:FF:FF:FF:FF`). The `BroadcastMACAddrClassifierHandler` identifies whether a given MAC address matches this pattern.  
+
+```python
+from ttlinks.macservice.mac_classifiers import BroadcastMACAddrClassifierHandler
+from ttlinks.macservice import MACType
+
+handler = BroadcastMACAddrClassifierHandler()
+print(handler.handle(b'\xff\xff\xff\xff\xff\xff'))  # Expected Output: MACType.BROADCAST
+```
+
+### Example Output:
 ```
 MACType.BROADCAST
 ```
 
-#### Example 2: Classifying a Unicast MAC Address
-```python
-from ttlinks.macservice.mac_classifiers import MACAddrClassifier
-from ttlinks.macservice.mac_converters import MACConverter
+## 3. Unicast MAC Address Classification  
 
-# Unicast MAC address (LSB of first octet is 0)
-mac_address = "00:00:00:00:00:00"
-mac_type = MACAddrClassifier.classify_mac(MACConverter.convert_mac(mac_address))
-print(mac_type)
+A **unicast MAC address** is identified by checking the **least significant bit (LSB) of the first byte**. If the **LSB is 0**, it is an unicast address.  
+
+```python
+from ttlinks.macservice.mac_classifiers import UnicastMACAddrClassifierHandler
+from ttlinks.macservice import MACType
+
+handler = UnicastMACAddrClassifierHandler()
+print(handler.handle(b'\x02\x11\x22\x33\x44\x55'))  # Expected Output: MACType.UNICAST
 ```
-**Expected Output**:
+
+### Example Output:
 ```
 MACType.UNICAST
 ```
 
-#### Example 3: Classifying a Multicast MAC Address
-```python
-from ttlinks.macservice.mac_classifiers import MACAddrClassifier
-from ttlinks.macservice.mac_converters import MACConverter
+## 4. Multicast MAC Address Classification  
 
-# Multicast MAC address (LSB of first octet is 1)
-mac_address = "01:00:AA:cb:00:00"
-mac_type = MACAddrClassifier.classify_mac(MACConverter.convert_mac(mac_address))
-print(mac_type)
+A **multicast MAC address** is identified by checking the **least significant bit (LSB) of the first byte**. If the **LSB is 1**, it is a multicast address.  
+
+```python
+from ttlinks.macservice.mac_classifiers import MulticastMACAddrClassifierHandler
+from ttlinks.macservice import MACType
+
+handler = MulticastMACAddrClassifierHandler()
+print(handler.handle(b'\x01\x11\x22\x33\x44\x55'))  # Expected Output: MACType.MULTICAST
 ```
-**Expected Output**:
+
+### Example Output:
 ```
 MACType.MULTICAST
 ```
-
-### Dependencies
-
-The module relies on several key components:
-- **`ttlinks.common.binary_utils.binary.Octet`**: Represents an octet of a MAC address.
-- **`ttlinks.common.design_template.cor.SimpleCoRHandler`**: Implements the Chain of Responsibility pattern.
-- **`ttlinks.macservice.mac_converters.MACConverter`**: Converts MAC addresses from various formats (e.g., hexadecimal) into a list of `Octet` objects.
-
-### Conclusion
-
-The `mac_classifiers.py` module provides a flexible and extensible solution for classifying MAC addresses as Unicast, Multicast, or Broadcast using a Chain of Responsibility pattern. The module can be easily extended by adding more classifier handlers if additional classification logic is needed.
-
